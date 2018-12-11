@@ -4,9 +4,11 @@ This importer is used for raw data provided in the Bruker BES3T data format.
 """
 
 
-import aspecd.io
-import numpy as np
 import os.path
+import numpy as np
+
+
+import aspecd.io
 
 
 class Error(Exception):
@@ -121,11 +123,45 @@ class ImporterEPRGeneral(aspecd.io.Importer):
 
 
 class ImporterBES3T(aspecd.io.Importer):
+    """Specialized Importer for the BES3T format."""
+
     def __init__(self, source=None):
         super().__init__(source=source)
 
     def _import(self):
-        """"""
-        complete_filename = self.source+".DTA"
-        return np.fromfile(complete_filename)
+        """Import data file in BES3T format.
 
+        The data is checked for plausibility; if values are
+        too large or too small the byte order is changed.
+
+        Returns
+        ------
+        raw_data: 'numpy.array'
+        Raw numerical data in processable form.
+        """
+        complete_filename = self.source+".DTA"
+        raw_data = np.fromfile(complete_filename)
+        print(raw_data)
+        if not self._are_values_plausible(raw_data):
+            raw_data=raw_data.byteswap()
+        print(raw_data)
+        return raw_data
+
+    @staticmethod
+    def _are_values_plausible(array):
+        """Check whether the values imported are plausible, i.e.
+        not extremely high or low.
+
+        Note: In case of a wrong byteorder the values observed can
+        reach 10**300 and higher. The threshold of what is considered
+        plausible is, so far, rather arbitrary.
+
+        Parameters
+        ------
+        array: 'numpy.array'
+        Array to check the values of.
+        """
+        for v in array:
+            if v > 10**4 or v < 10**-10:
+                return False
+        return True

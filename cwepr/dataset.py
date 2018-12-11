@@ -1,14 +1,19 @@
 """Dataset (Container for experimental data and respective metadata)"""
 
-import os.path
 
 import aspecd
+
 
 import cwepr.importers as importers
 
 
 class Dataset(aspecd.dataset.Dataset):
-    """
+    """Set of data uniting all relevant information.
+
+    The unity of numerical and metadata is indispensable for the
+    reproducibility of data and is possible by saving all information
+    available for one set of measurement data in a single instance of
+    this class.
 
     """
     def __init__(self):
@@ -33,9 +38,3 @@ class Dataset(aspecd.dataset.Dataset):
         self.data = super().import_from(
             importers.ImporterEPRGeneral(source=filename,
                                          setformat=setformat))
-
-
-#dts = Dataset()
-#path = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
-#dts.import_from_file((path+"/Messdaten/1_No1-dunkel"))
-
