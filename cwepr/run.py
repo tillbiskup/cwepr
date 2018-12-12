@@ -1,5 +1,5 @@
 import os.path
-import cwepr.dataset.Dataset
+import cwepr.dataset
 
 
 dts = cwepr.dataset.Dataset()

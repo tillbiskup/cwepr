@@ -48,6 +48,20 @@ class NoMatchingFilePairError(Error):
         super().__init__()
         self.message = message
 
+class MissingInfoFileError(Error):
+    """Exception raised when user created info file is found.
+
+    Attributes
+    ----------
+    message : `str`
+        explanation of the error
+
+    """
+
+    def __init__(self, message=''):
+        super().__init__()
+        self.message = message
+
 
 class ImporterEPRGeneral(aspecd.io.Importer):
     """Importer super class that determines the correct
@@ -77,6 +91,7 @@ class ImporterEPRGeneral(aspecd.io.Importer):
         super().__init__(source=source)
         self.setformat=setformat
         self.importers_for_formats = {"BES3T": ImporterBES3T}
+        self.special_importer=None
 
     def _import(self):
         """Call the correct importer for the data format set.
@@ -95,9 +110,14 @@ class ImporterEPRGeneral(aspecd.io.Importer):
             if self.setformat not in self.importers_for_formats.keys():
                 raise UnsupportedDataFormatError(("""The following format 
                 is not supported: """+self.setformat))
-        special_importer = self.importers_for_formats[
+        self.special_importer = self.importers_for_formats[
             self.setformat](source=self.source)
-        return special_importer.import_into(self.dataset)
+        return self.special_importer.import_into(self.dataset)
+
+    def import_metadata(self):
+        if not os.path.isfile((self.source + ".info")):
+            raise MissingInfoFileError("No infofile provided")
+        return self.special_importer.import_metadata()
 
     def _find_format(self):
         """Determine the format of the given filename by checking
@@ -141,11 +161,21 @@ class ImporterBES3T(aspecd.io.Importer):
         """
         complete_filename = self.source+".DTA"
         raw_data = np.fromfile(complete_filename)
-        print(raw_data)
+        #print(raw_data)
         if not self._are_values_plausible(raw_data):
             raw_data=raw_data.byteswap()
-        print(raw_data)
+        #print(raw_data)
         return raw_data
+
+    def import_metadata(self):
+        """Import parameter file in BES3T format and
+        user created info file.
+        """
+        file_info = open(self.source+".info")
+        raw_info_data = file_info.readlines()
+        file_param = open(self.source+".DSC")
+        raw_param_data = file_param.readlines()
+        return [raw_param_data, raw_info_data]
 
     @staticmethod
     def _are_values_plausible(array):
@@ -165,3 +195,53 @@ class ImporterBES3T(aspecd.io.Importer):
             if v > 10**4 or v < 10**-10:
                 return False
         return True
+
+
+class ParserDSC:
+    def __init__(self):
+        pass
+
+    def parse_dsc(self, file_content):
+        pass
+
+    @staticmethod
+    def _get_three_parts(file_content):
+        three_parts = []
+        first_split = file_content.split("#SPL")
+        three_parts.append(first_split[0])
+        second_split = first_split[1].split("#DSL")
+        three_parts.extend(second_split)
+        return three_parts
+
+    @staticmethod
+    def _subdivide_part1(desc_part):
+        subparts_descriptor = desc_part.split("\n*\n")
+        del(subparts_descriptor[0])
+        subparts_clean = {}
+        for part in subparts_descriptor:
+            part_split = part.slit("\n")
+            part_split_clean = []
+            for line in part_split:
+                if line != "*":
+                    part_split_clean.append(line)
+            subparts_clean[part_split_clean[0][2:]] = part_split_clean[1:]
+        return subparts_clean
+
+    @staticmethod
+    def _create_dict_part1(desc_part_split):
+        dict_final = {}
+        for title, subpart in desc_part_split.items():
+            subdict = {}
+            for line in subpart:
+                line_split = line.split("\t")
+                if len(line_split) == 1:
+                    subdict[line_split[0]] = ""
+                else:
+                    subdict[line_split[0]] = line_split[1]
+            dict_final[title] = subdict
+        return dict_final
+
+
+
+
+

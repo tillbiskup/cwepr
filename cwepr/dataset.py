@@ -35,6 +35,13 @@ class Dataset(aspecd.dataset.Dataset):
              importer tries to automatically determine the format.
          """
 
-        self.data = super().import_from(
-            importers.ImporterEPRGeneral(source=filename,
-                                         setformat=setformat))
+        importer = importers.ImporterEPRGeneral(source=filename,
+                                                setformat=setformat)
+        self.data = super().import_from(importer=importer)
+        self.metadata = self._import_metadata(importer=importer)
+
+    @staticmethod
+    def _import_metadata(importer=None):
+        if not importer:
+            raise aspecd.dataset.MissingImporterError("No importer provided")
+        importer.import_metadata()
