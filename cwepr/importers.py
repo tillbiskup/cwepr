@@ -206,6 +206,23 @@ class ParserDSC:
 
     @staticmethod
     def _get_three_parts(file_content):
+        """Split a *.DSC file into three parts (Descriptor
+        Information, Standard Parameter Layer and Device
+        Specific Layer).
+
+        The file is split at the second and third headline which
+        start with convenient markers.
+
+        Parameters
+        ------
+        file_content: 'str'
+        Content of a complete *.DSC file.
+
+        Returns
+        ------
+        three_parts: 'list'
+        The three parts of the file.
+        """
         three_parts = []
         first_split = file_content.split("#SPL")
         three_parts.append(first_split[0])
@@ -214,8 +231,33 @@ class ParserDSC:
         return three_parts
 
     @staticmethod
-    def _subdivide_part1(desc_part):
-        subparts_descriptor = desc_part.split("\n*\n")
+    def _subdivide_part1(part1):
+        """Preprocess the first part ("Descriptor Information")
+         of a *.DSC file.
+
+        The crude string is split into subdivisions; the delimiter
+        employed allows to detect the different headlines made up
+        of three lines starting with asterisks, the center line
+        containing additional text.
+
+        Each subdivision is then transformed into a dict entry
+        with the headline, stripped of the first to characters
+        (*\t) as key and the remaining information as value.
+        Lines containing an asterisk only are removed.
+
+        Parameters
+        ------
+        part1: 'str'
+        Raw first part of a file.
+
+        Returns
+        ------
+        subparts_clean: 'dict'
+        All subdivisions from the file with headlines as keys
+        and list of lines as values; lines devoid of information
+        removed.
+        """
+        subparts_descriptor = part1.split("\n*\n")
         del(subparts_descriptor[0])
         subparts_clean = {}
         for part in subparts_descriptor:
@@ -228,9 +270,30 @@ class ParserDSC:
         return subparts_clean
 
     @staticmethod
-    def _create_dict_part1(desc_part_split):
-        dict_final = {}
-        for title, subpart in desc_part_split.items():
+    def _create_dict_part1(part1_split):
+        """Create a dict from the first part ("Descriptor Information")
+        of a *.DSC file.
+
+        For every subdivision. lines are split at tabs. The method
+        accounts for lines containing only a parameter name with no
+        corresponding value.
+
+        Parameters
+        ------
+        part1_split: 'dict'
+        Preprocessed first part of a file, split into
+        subdivisions with the headline as key. Subdivisions split into
+        lines with lines devoid of information removed.
+
+        Returns
+        ------
+        part2_dict: 'dict'
+        Data from the input as pairs of key (subdivision name) and
+        value (subdivision info). Each subdivision info is also a dict
+        with keys (parameter names) and values (parameter values).
+        """
+        part1_dict = {}
+        for title, subpart in part1_split.items():
             subdict = {}
             for line in subpart:
                 line_split = line.split("\t")
@@ -238,10 +301,65 @@ class ParserDSC:
                     subdict[line_split[0]] = ""
                 else:
                     subdict[line_split[0]] = line_split[1]
-            dict_final[title] = subdict
-        return dict_final
+            part1_dict[title] = subdict
+        return part1_dict
 
+    @staticmethod
+    def _subdivide_part2(part2):
+        """Preprocess the second part ("Standard parameter
+        layer") of a *.DSC file.
 
+        The crude string is split into lines; lines devoid of
+        information (e.g. containing only an asterisk) are
+        removed.
 
+        Note: every line containing asterisks is removed as
+        these appear only in headlines and as delimiters.
 
+        Parameters
+        ------
+        part2: 'str'
+        Raw second part of a file.
 
+        Returns
+        ------
+        entries_clean: 'list'
+        All lines from the file part except those devoid of
+        information.
+        """
+        entries_param = part2.split("\n")
+        entries_clean = []
+        for line in entries_param:
+            if "*" not in line:
+                entries_clean.append(line)
+        return entries_clean
+
+    @staticmethod
+    def _create_dict_part2(part2_split):
+        """Create a dict from the second part ("Standard parameter
+        layer") of a *.DSC file.
+
+        Lines are split at tabs. The method accounts for lines
+        containing only a parameter name with no corresponding
+        value.
+
+        Parameters
+        ------
+        part2_split: 'list'
+        Preprocessed second part of a file, split into lines,
+        with lines devoid of information already removed.
+
+        Returns
+        ------
+        part2_dict: 'dict'
+        Data from the input as pairs of key (parameter name) and
+        value (parameter value).
+        """
+        part2_dict = {}
+        for line in part2_split:
+            line_split = line.split("\t")
+            if len(line_split) == 1:
+                part2_dict[line_split[0]] = ""
+            else:
+                part2_dict[line_split[0]] = line_split[1]
+        return part2_dict
