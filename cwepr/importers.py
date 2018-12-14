@@ -10,6 +10,8 @@ import collections as col
 
 
 import aspecd.io
+import aspecd.infofile
+import aspecd.metadata
 
 
 class Error(Exception):
@@ -49,8 +51,43 @@ class NoMatchingFilePairError(Error):
         super().__init__()
         self.message = message
 
+
 class MissingInfoFileError(Error):
-    """Exception raised when user created info file is found.
+    """Exception raised when no user created info file is found.
+
+    Attributes
+    ----------
+    message : `str`
+        explanation of the error
+
+    """
+
+    def __init__(self, message=''):
+        super().__init__()
+        self.message = message
+
+
+class ImportMetadataOnlyError(Error):
+    """Exception raised when import of metadata is attempted
+    without importing experimental data first and no importer
+    has been initialized.
+
+    Attributes
+    ----------
+    message : `str`
+        explanation of the error
+
+    """
+
+    def __init__(self, message=''):
+        super().__init__()
+        self.message = message
+
+
+class ExperimentTypeError(Error):
+    """Exception raised when the data provided does not correspond
+    to a continuous wave experiment or the experiment type cannot be
+    determined.
 
     Attributes
     ----------
@@ -88,15 +125,15 @@ class ImporterEPRGeneral(aspecd.io.Importer):
     """
     supported_formats = {"BES3T": [".DTA", ".DSC"]}
 
-    def __init__(self, setformat=None, source=None):
+    def __init__(self, set_format=None, source=None):
         super().__init__(source=source)
-        self.setformat=setformat
+        self.set_format = set_format
         self.importers_for_formats = {"BES3T": ImporterBES3T}
-        self.special_importer=None
+        self.special_importer = None
 
     def _import(self):
         """Call the correct importer for the data format set.
-        If no format is set it is automatically determined
+        If no format is set, it is automatically determined
         from the given filename.
 
         Raises
@@ -105,20 +142,49 @@ class ImporterEPRGeneral(aspecd.io.Importer):
             Raised if a format is set but does not match any of
             the supported formats
             """
-        if self.setformat is None:
-            self.setformat = self._find_format()
+        if self.set_format is None:
+            self.set_format = self._find_format()
         else:
-            if self.setformat not in self.importers_for_formats.keys():
+            if self.set_format not in self.importers_for_formats.keys():
                 raise UnsupportedDataFormatError(("""The following format 
-                is not supported: """+self.setformat))
+                is not supported: """+self.set_format))
         self.special_importer = self.importers_for_formats[
-            self.setformat](source=self.source)
+            self.set_format](source=self.source)
         return self.special_importer.import_into(self.dataset)
 
     def import_metadata(self):
+        """Import metadata from user made info file and device
+        parameter file.
+
+        .. todo:: Process/Map the data.
+
+        Raises
+        ------
+        MissingInfoFileError
+            Raised if no user made info file is provided.
+        ImportMetadataOnlyError
+            Raised when no format specific importer is initialized.
+            This should happen and only happen, when the method is
+            called without first importing the experimental data,
+            because :meth:'_import' creates an instance of a
+            format specific importer.
+
+        """
         if not os.path.isfile((self.source + ".info")):
-            raise MissingInfoFileError("No infofile provided")
-        return self.special_importer.import_metadata()
+            raise MissingInfoFileError("No info file provided")
+        if not self.special_importer:
+            raise ImportMetadataOnlyError(("""No format specific importer"
+                was available as metadata import was attempted. This 
+                probably happened due to not importing experimental data
+                first."""))
+        info_data = self._import_infofile((self.source + ".info"))
+        param_data = self.special_importer.import_metadata
+        for file_part in param_data:
+            info_data.update(file_part)
+        metadata_mapper = aspecd.metadata.MetadataMapper()
+        metadata_mapper.metadata = info_data
+        metadata_mapper.mappings = []
+        return metadata_mapper.metadata
 
     def _find_format(self):
         """Determine the format of the given filename by checking
@@ -133,6 +199,7 @@ class ImporterEPRGeneral(aspecd.io.Importer):
             is supported.
 
         """
+
         for k, v in self.supported_formats.items():
             if os.path.isfile((self.source+v[0])) and os.path.isfile(
                 (self.source+v[1])
@@ -141,6 +208,22 @@ class ImporterEPRGeneral(aspecd.io.Importer):
         else:
             raise NoMatchingFilePairError("""No file pair matching a single
             format was found for path: """+self.source)
+
+    @staticmethod
+    def _import_infofile(filename):
+        """Import and parse user made info file using the method
+        provided by ASpecD.
+
+        The data is checked for plausibility; if values are
+        too large or too small the byte order is changed.
+
+        Returns
+        ------
+        infofile_data: 'dict'
+        Parsed data from the info file.
+        """
+        infofile_data = aspecd.infofile.parse(filename)
+        return infofile_data
 
 
 class ImporterBES3T(aspecd.io.Importer):
@@ -169,13 +252,17 @@ class ImporterBES3T(aspecd.io.Importer):
     def import_metadata(self):
         """Import parameter file in BES3T format and
         user created info file.
+
+        Returns
+        ------
+        processed_param_data: 'dict'
+        Parsed data from the source parameter file.
         """
-        #file_info = open(self.source+".info")
-        #raw_info_data = file_info.readlines()
 
         file_param = open(self.source+".DSC")
         raw_param_data = file_param.read()
-        processed_param_data = ParserDSC().parse_dsc(raw_param_data)
+        dsc_file_parser = ParserDSC()
+        processed_param_data = dsc_file_parser.parse_dsc(raw_param_data)
         return processed_param_data
 
     @staticmethod
@@ -230,7 +317,6 @@ class ParserDSC:
             self._subdivide_part3(three_parts[2]), " ",
             delimiter_width=19
         ))
-        print(three_parts_processed)
         return three_parts_processed
 
     @staticmethod
@@ -355,7 +441,8 @@ class ParserDSC:
         for other delimiters, too, though). The method will count
         all characters before the first delimiter character and determine
         the number of delimiter characters from the difference to the value
-        of delimiter width.
+        of delimiter width. If set to zero a single character
+        delimiter will be applied.
 
         Returns
         ------
@@ -436,6 +523,13 @@ class ParserDSC:
         Preprocessed second part of a file, split into lines,
         with lines devoid of information already removed.
 
+        Raises
+        ------
+        ExperimentTypeError:
+            raised when the type of the experiment file cannot
+            be determined from the parameter file or if it is
+            not CW.
+
         Returns
         ------
         part2_dict: 'dict'
@@ -450,6 +544,11 @@ class ParserDSC:
                     part2_dict[line_split[0]] = ""
                 else:
                     part2_dict[line_split[0]] = line_split[1]
+        if "EXPT" not in part2_dict.keys():
+            raise ExperimentTypeError("Could not determine experiment type")
+        elif part2_dict["EXPT"] != "CW":
+            raise ExperimentTypeError("""Experiment type is not CW according
+                                      "to parameter file""")
         return part2_dict
 
     @staticmethod

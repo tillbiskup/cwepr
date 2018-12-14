@@ -19,7 +19,7 @@ class Dataset(aspecd.dataset.Dataset):
     def __init__(self):
         super().__init__()
 
-    def import_from_file(self, filename, setformat=None):
+    def import_from_file(self, filename, set_format=None):
         """Import data and metadata for a given filename.
 
         The appropriate importer automatically checks whether
@@ -36,12 +36,28 @@ class Dataset(aspecd.dataset.Dataset):
          """
 
         importer = importers.ImporterEPRGeneral(source=filename,
-                                                setformat=setformat)
+                                                set_format=set_format)
         self.data = super().import_from(importer=importer)
         self.metadata = self._import_metadata(importer=importer)
 
     @staticmethod
     def _import_metadata(importer=None):
+        """Import metadata using a selected importer.
+
+        The appropriate importer automatically checks whether
+        data and metadata files exist, matching a single format
+
+        Parameters
+        ----------
+        importer : ????
+        ????
+
+        Raises
+        ----------
+        MissingImporterError :
+            Raised, when no importer is provided
+
+        """
         if not importer:
             raise aspecd.dataset.MissingImporterError("No importer provided")
-        importer.import_metadata()
+        return importer.import_metadata
