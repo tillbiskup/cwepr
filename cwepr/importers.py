@@ -179,12 +179,7 @@ class ImporterEPRGeneral(aspecd.io.Importer):
                 first."""))
         info_data = self._import_infofile((self.source + ".info"))
         param_data = self.special_importer.import_metadata
-        for file_part in param_data:
-            info_data.update(file_part)
-        metadata_mapper = aspecd.metadata.MetadataMapper()
-        metadata_mapper.metadata = info_data
-        metadata_mapper.mappings = []
-        return metadata_mapper.metadata
+        return [info_data, param_data]
 
     def _find_format(self):
         """Determine the format of the given filename by checking
