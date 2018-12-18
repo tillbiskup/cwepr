@@ -3,9 +3,10 @@
 
 import aspecd
 import aspecd.metadata
-
+from aspecd.metadata import MetadataMapper
 
 import cwepr.importers as importers
+import cwepr.metadata
 
 
 class Dataset(aspecd.dataset.Dataset):
@@ -20,6 +21,7 @@ class Dataset(aspecd.dataset.Dataset):
     def __init__(self):
         super().__init__()
         self.metadata_modifications = list()
+        self.metadata = cwepr.metadata.DatasetMetadata()
 
     def import_from_file(self, filename, set_format=None):
         """Import data and metadata for a given filename.
@@ -48,22 +50,59 @@ class Dataset(aspecd.dataset.Dataset):
         metadata = self._import_metadata(importer=importer)
         metadata_mapper = aspecd.metadata.MetadataMapper()
         metadata_mapper.metadata = metadata[0]
-        metadata_mapper.mappings = [["GENERAL", "rename_key",
-                                     ["Date start", "date_start"]],
-                                    ["GENERAL", "rename_key",
-                                     ["Date end", "date_end"]],
-                                    ["GENERAL", "rename_key",
-                                     ["Time start", "time_start"]],
-                                    ["GENERAL", "rename_key",
-                                     ["Time end", "date_end"]],
-                                    ["", "rename_key",
-                                     ["GENERAL", "measurement"]],
-                                    ["", "rename_key",
-                                     ["TEMPERATURE", "temperature_control"]],
+        metadata_mapper.mappings = [
+            ["GENERAL", "combine_items", [["Date start", "Time start"],
+                                          "Start", " "]],
+            ["GENERAL", "combine_items", [["Date end", "Time end"],
+                                          "End", " "]],
+            ["", "rename_key", ["GENERAL", "measurement"]],
+            ["", "rename_key", ["TEMPERATURE", "temperature_control"]],
                                     ]
         metadata_mapper.map()
         self.metadata.from_dict(metadata_mapper.metadata)
-        print(self.metadata.to_dict())
+        dsc_data_mapped = self.map_dsc(metadata[1])
+        for data_part in dsc_data_mapped:
+            self.metadata.from_dict(data_part)
+        self.metadata.magnetic_field.calculate_values()
+        self.metadata.magnetic_field.gauss_to_millitesla()
+
+    def map_dsc(self, dsc_data):
+        dsc_mapper = aspecd.metadata.MetadataMapper()
+        mapped_data = []
+        for n in range(len(dsc_data)):
+            dsc_mapper.metadata = dsc_data[n]
+            if n == 0:
+                mapped_data.append(self.map_descriptor(dsc_mapper))
+            if n == 1:
+                mapped_data.append(self.map_standard(dsc_mapper))
+            if n == 2:
+                mapped_data.append(self.map_device(dsc_mapper))
+        return mapped_data
+
+    @staticmethod
+    def map_descriptor(mapper):
+        mapper.mappings = [
+            ["Data Ranges and Resolutions:", "rename_key", ["XPTS", "step_count"]],
+            ["Data Ranges and Resolutions:", "rename_key", ["XMIN", "field_min"]],
+            ["Data Ranges and Resolutions:", "rename_key", ["XWID", "field_width"]],
+            ["", "rename_key", ["Data Ranges and Resolutions:", "magnetic_field"]]
+                            ]
+        mapper.map()
+        return mapper.metadata
+
+    @staticmethod
+    def map_standard(mapper):
+        return mapper.metadata
+
+    @staticmethod
+    def map_device(mapper):
+        mapper.mappings = [
+            ["mwBridge, 1.0", "rename_key", ["PowerAtten", "attenuation"]],
+            ["", "rename_key", ["mwBridge, 1.0", "bridge"]],
+            ["", "rename_key", ["signalChannel, 1.0", "experiment"]]
+                            ]
+        mapper.map()
+        return mapper.metadata
 
     @staticmethod
     def _import_metadata(importer=None):

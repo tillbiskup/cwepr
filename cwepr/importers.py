@@ -178,7 +178,7 @@ class ImporterEPRGeneral(aspecd.io.Importer):
                 probably happened due to not importing experimental data
                 first."""))
         info_data = self._import_infofile((self.source + ".info"))
-        param_data = self.special_importer.import_metadata
+        param_data = self.special_importer.import_metadata()
         return [info_data, param_data]
 
     def _find_format(self):
@@ -257,8 +257,15 @@ class ImporterBES3T(aspecd.io.Importer):
         file_param = open(self.source+".DSC")
         raw_param_data = file_param.read()
         dsc_file_parser = ParserDSC()
-        processed_param_data = dsc_file_parser.parse_dsc(raw_param_data)
+        parsed_param_data = dsc_file_parser.parse_dsc(raw_param_data)
+        processed_param_data = self.add_units(parsed_param_data)
         return processed_param_data
+
+    @staticmethod
+    def add_units(parsed_dsc_data):
+        parsed_dsc_data[0]["Data Ranges and Resolutions:"]["XMIN"] += " Gs"
+        parsed_dsc_data[0]["Data Ranges and Resolutions:"]["XWID"] += " Gs"
+        return parsed_dsc_data
 
     @staticmethod
     def _are_values_plausible(array):
