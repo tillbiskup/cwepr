@@ -31,7 +31,9 @@ class NotEnoughValuesError(Error):
 
 
 class UnequalUnitsError(Error):
-    """
+    """Exception raised when two physical quantities
+    that shall be added or subtracted do not have the
+    same unit.
 
     Attributes
     ----------
@@ -50,8 +52,33 @@ class DatasetMetadata(aspecd.metadata.DatasetMetadata):
 
      Attributes
     ----------
+    experiment: :obj:'cwepr.metadata.Experiment'
+        Metadata object containing information such as the type of
+        the experiment performed.
+
+    spectrometer: :obj:'cwepr.metadata.Spectrometer'
+        Metadata object containing information on the spectrometer
+        used.
+
+    magnetic_field: :obj:'cwepr.metadata.BFieldData'
+        Metadata object containing information on the magnetic
+        field applied in the experiment.
+
+    bridge: :obj:'cwepr.metadata.Brige'
+        Metadata object containing information on the microwave
+        bridge used.
+
+    signal_channel: :obj:'cwepr.metadata.SignalChannel'
+        Metadata object containing information on the signal
+        channel applied.
+
+    probehead: :obj:'cwepr.metadata.Probehead'
+        Metadata object containing information on the probehead
+        used in the experiment.
+
     modifications : 'list'
-        List of all modifications performed on the metadata.
+        List of all modifications performed on the metadata,
+        e.g, overrides.
 
     """
     def __init__(self):
@@ -82,6 +109,22 @@ class BFieldData(aspecd.metadata.Metadata):
         self.power_supply = ""
 
     def can_calculate(self):
+        """Checks if enough different pieces of information
+        are provided to calculate all information concerning
+        the field sector and sweeping steps.
+
+        .. note:: Currently, the possibility of calculating the
+        sector width from the with and the number of steps is not
+        accounted for.
+
+        Raises
+        ----------
+        NotEnoughValuesError :
+            Raised,  when not enough different pieces of
+            information are provided to determine the other
+            variables.
+
+        """
         sector_def = False
         sector_par = 0
         step_def = False
@@ -108,6 +151,20 @@ class BFieldData(aspecd.metadata.Metadata):
         return True
 
     def calculate_values(self):
+        """Calculate the different values concerning the sector and
+        sweeping steps of the magnetic field.
+
+        .. note:: Currently, the possibility of calculating the
+        sector width from the with and the number of steps is not
+        accounted for.
+
+        Raises
+        ----------
+        UnequalUnitsError :
+            Raised, when two physical quantities shall be added or
+            subtracted that have unequal units.
+
+        """
         if self.can_calculate():
             self.step_count = int(self.step_count)
             if self.field_width.value == 0.:
@@ -128,12 +185,14 @@ class BFieldData(aspecd.metadata.Metadata):
             if self.step_count == 0:
                 if self.field_width.unit != self.step_width.unit:
                     raise UnequalUnitsError("Quantities with different units provided.")
-                self.step_count = self.field_width.value - self.step_width.value + 1
+                self.step_count = int(round((self.field_width.value / self.step_width.value), 0)) + 1
             if self.step_width.value == 0.:
                 self.step_width.value = self.field_width.value / (self.step_count - 1)
                 self.step_width.unit = self.field_max.unit
 
     def gauss_to_millitesla(self):
+        """Transforms magnetic field parameters provided in gauss to
+        millitesla."""
         for quantity in [self.field_min, self.field_max, self.field_width, self.step_width]:
             quantity.value /= 10
             quantity.unit = "mT"
@@ -187,7 +246,7 @@ class SignalChannel(aspecd.metadata.Metadata):
         self.modulation_amplitude = aspecd.metadata.PhysicalQuantity()
         self.receiver_gain = aspecd.metadata.PhysicalQuantity()
         self.conversion_time = aspecd.metadata.PhysicalQuantity()
-        self.time_constant = ""
+        self.time_constant = "" #aspecd.metadata.PhysicalQuantity()
         self.phase = aspecd.metadata.PhysicalQuantity()
 
 

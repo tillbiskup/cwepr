@@ -1,9 +1,10 @@
 """Dataset (Container for experimental data and respective metadata)"""
 
 
+import collections as col
+
 import aspecd
 import aspecd.metadata
-from aspecd.metadata import MetadataMapper
 
 import cwepr.importers as importers
 import cwepr.metadata
@@ -20,7 +21,6 @@ class Dataset(aspecd.dataset.Dataset):
     """
     def __init__(self):
         super().__init__()
-        self.metadata_modifications = list()
         self.metadata = cwepr.metadata.DatasetMetadata()
 
     def import_from_file(self, filename, set_format=None):
@@ -63,24 +63,88 @@ class Dataset(aspecd.dataset.Dataset):
         dsc_data_mapped = self.map_dsc(metadata[1])
         for data_part in dsc_data_mapped:
             self.metadata.from_dict(data_part)
+            self.check_for_override(metadata_mapper.metadata, data_part)
         self.metadata.magnetic_field.calculate_values()
         self.metadata.magnetic_field.gauss_to_millitesla()
 
+    def check_for_override(self, data1, data2, name=""):
+        """Compare the keys in the info file dict with those in
+        each part of the dsc file to find overrides.
+        Any matching keys are considered to be overriden and
+        a respective note is added to
+        :attr:'cwepr.metadata.DatasetMetadata.modifications'.
+
+        The method cascades through nested dicts returning a
+        'path' of the potential overrides.
+        E.g., when the key 'a' in the sub dict 'b' is found in
+        both dicts the path will be '/b/a'.
+
+         Parameters
+         ----------
+         data1 : 'dict'
+             Original data.
+
+         data2: 'dict'
+             Data that is added to the original dict.
+
+        name: 'str'
+            Used in the cascade to keep track of the path.
+
+        """
+        toplevel = False
+        for entry in list(data1.keys()):
+            data1[entry.lower()] = data1.pop(entry)
+        for entry in data1.keys():
+            if type(data1[entry]) == col.OrderedDict:
+                toplevel = True
+        for entry in data1.keys():
+            if entry in data2.keys():
+                if toplevel:
+                    if name.split("/")[-1] != entry:
+                        name = ""
+                    name = name + "/" + entry
+                    self.check_for_override(data1[entry], data2[entry], name=name)
+                else:
+                    self.metadata.modifications.append(
+                        "Possible override of [" + name + "/" + entry + "].")
+
     def map_dsc(self, dsc_data):
+        """Prepare data from dsc file and include it in the
+        metadata.
+
+        Parameters
+        ----------
+        dsc_data: 'list'
+            List containing all three parts of a dsc file as dicts.
+
+        Returns
+        ----------
+            mapped_data: 'list'
+            data with the necessary modifications applied to allow
+            for addition to the metadata.
+
+        """
         dsc_mapper = aspecd.metadata.MetadataMapper()
         mapped_data = []
         for n in range(len(dsc_data)):
             dsc_mapper.metadata = dsc_data[n]
             if n == 0:
                 mapped_data.append(self.map_descriptor(dsc_mapper))
-            if n == 1:
-                mapped_data.append(self.map_standard(dsc_mapper))
             if n == 2:
                 mapped_data.append(self.map_device(dsc_mapper))
         return mapped_data
 
     @staticmethod
     def map_descriptor(mapper):
+        """Prepare part one of the dsc file data for mapping on the
+        metadata.
+
+         Parameters
+         ----------
+         mapper : :obj:'aspecd.metadata.MetadataMapper'
+             metadata mapper containing the respective first part of the
+             dsc file as metadata.
+        """
         mapper.mappings = [
             ["Data Ranges and Resolutions:", "rename_key", ["XPTS", "step_count"]],
             ["Data Ranges and Resolutions:", "rename_key", ["XMIN", "field_min"]],
@@ -91,11 +155,16 @@ class Dataset(aspecd.dataset.Dataset):
         return mapper.metadata
 
     @staticmethod
-    def map_standard(mapper):
-        return mapper.metadata
-
-    @staticmethod
     def map_device(mapper):
+        """Prepare part three of the dsc file data for mapping on the
+        metadata.
+
+         Parameters
+         ----------
+         mapper : :obj:'aspecd.metadata.MetadataMapper'
+             metadata mapper containing the respective third part of the
+             dsc file as metadata.
+        """
         mapper.mappings = [
             ["mwBridge, 1.0", "rename_key", ["PowerAtten", "attenuation"]],
             ["", "rename_key", ["mwBridge, 1.0", "bridge"]],
