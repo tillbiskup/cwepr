@@ -150,7 +150,7 @@ class ImporterEPRGeneral(aspecd.io.Importer):
                 is not supported: """+self.set_format))
         self.special_importer = self.importers_for_formats[
             self.set_format](source=self.source)
-        return self.special_importer.import_into(self.dataset)
+        self.special_importer.import_into(self.dataset)
 
     def import_metadata(self):
         """Import metadata from user made info file and device
@@ -242,7 +242,7 @@ class ImporterBES3T(aspecd.io.Importer):
         raw_data = np.fromfile(complete_filename)
         if not self._are_values_plausible(raw_data):
             raw_data = raw_data.byteswap()
-        return raw_data
+        self.dataset.data.data = raw_data
 
     def import_metadata(self):
         """Import parameter file in BES3T format and

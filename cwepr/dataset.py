@@ -2,6 +2,8 @@
 
 
 import collections as col
+import copy
+import numpy as np
 
 import aspecd
 import aspecd.metadata
@@ -22,6 +24,7 @@ class Dataset(aspecd.dataset.Dataset):
     def __init__(self):
         super().__init__()
         self.metadata = cwepr.metadata.DatasetMetadata()
+        self.b0 = 0
 
     def import_from_file(self, filename, set_format=None):
         """Import data and metadata for a given filename.
@@ -46,7 +49,7 @@ class Dataset(aspecd.dataset.Dataset):
 
         importer = importers.ImporterEPRGeneral(source=filename,
                                                 set_format=set_format)
-        self.data = super().import_from(importer=importer)
+        super().import_from(importer=importer)
         metadata = self._import_metadata(importer=importer)
         metadata_mapper = aspecd.metadata.MetadataMapper()
         metadata_mapper.metadata = metadata[0]
@@ -79,13 +82,13 @@ class Dataset(aspecd.dataset.Dataset):
         E.g., when the key 'a' in the sub dict 'b' is found in
         both dicts the path will be '/b/a'.
 
-         Parameters
-         ----------
-         data1 : 'dict'
-             Original data.
+        Parameters
+        ----------
+        data1 : 'dict'
+            Original data.
 
-         data2: 'dict'
-             Data that is added to the original dict.
+        data2: 'dict'
+            Data that is added to the original dict.
 
         name: 'str'
             Used in the cascade to keep track of the path.
@@ -106,7 +109,7 @@ class Dataset(aspecd.dataset.Dataset):
                     self.check_for_override(data1[entry], data2[entry], name=name)
                 else:
                     self.metadata.modifications.append(
-                        "Possible override of [" + name + "/" + entry + "].")
+                        "Possible override @ [" + name + "/" + entry + "].")
 
     def map_dsc(self, dsc_data):
         """Prepare data from dsc file and include it in the
@@ -194,4 +197,19 @@ class Dataset(aspecd.dataset.Dataset):
         if not importer:
             raise aspecd.dataset.MissingImporterError("No importer provided")
         return importer.import_metadata()
+
+    def fill_axes(self):
+        field_points = []
+        for n in range(self.metadata.magnetic_field.step_count):
+            field_points.append(self.metadata.magnetic_field.field_min.value +
+                                self.metadata.magnetic_field.step_width.value * n)
+        field_data = np.array(field_points)
+        intensity_data = np.array(copy.deepcopy(self.data.data))
+        complete_data = np.array([field_data, intensity_data])
+        self.data.data = complete_data
+        #for n in range(self.metadata.magnetic_field.step_count):
+            #print((str(self.data.data[0, n]) + " / " + str(self.data.data[1, n])))
+
+    def set_b0(self, b0):
+        self.b0 = b0
 
