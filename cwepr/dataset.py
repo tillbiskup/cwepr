@@ -210,6 +210,4 @@ class Dataset(aspecd.dataset.Dataset):
         #for n in range(self.metadata.magnetic_field.step_count):
             #print((str(self.data.data[0, n]) + " / " + str(self.data.data[1, n])))
 
-    def set_b0(self, b0):
-        self.b0 = b0
 

@@ -101,7 +101,7 @@ class ExperimentTypeError(Error):
         self.message = message
 
 
-class ImporterEPRGeneral(aspecd.io.Importer):
+class ImporterEPRGeneral(aspecd.io.DatasetImporter):
     """Importer super class that determines the correct
     specialized importer for a format.
 
@@ -221,7 +221,7 @@ class ImporterEPRGeneral(aspecd.io.Importer):
         return infofile_data
 
 
-class ImporterBES3T(aspecd.io.Importer):
+class ImporterBES3T(aspecd.io.DatasetImporter):
     """Specialized Importer for the BES3T format."""
 
     def __init__(self, source=None):

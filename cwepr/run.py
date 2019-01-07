@@ -15,9 +15,8 @@ dts_standard.import_from_file((path+"/Messdaten/LiLiF-20180628"))
 dts_standard.fill_axes()
 
 get_B0_step = cwepr.analysis.FieldCorrectionValueFinding()
-dts_standard.analyse(get_B0_step)
-delta_b0 = dts_standard.b0  #get_B0_step.results["Delta_B0"]
+get_B0_analysis = dts_standard.analyse(get_B0_step)
+delta_b0 = get_B0_analysis.results["Delta_B0"]
 
 correct = cwepr.processing.FieldCorrection(delta_b0)
 dts.process(correct)
-
