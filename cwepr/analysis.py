@@ -1,4 +1,6 @@
 import numpy as np
+from math import ceil
+from copy import deepcopy
 
 
 import aspecd.analysis
@@ -33,4 +35,31 @@ class FieldCorrectionValueFinding(aspecd.analysis.AnalysisStep):
         calcd_field = self.VALUE_H*self.nu_value/self.VALUE_G_LILIF/self.VALUE_MuB
         delta_b0 = calcd_field - experimental_field
         self.results["Delta_B0"] = delta_b0
+
+
+class BaselineFitting(aspecd.analysis.AnalysisStep):
+    def __init__(self, order, percentage=10):
+        super().__init__()
+        self.parameters["order"] = order
+        self.parameters["percentage"] = percentage
+
+    def _perform_task(self):
+        self.results["Fit_Coeffs"] = self._find_polynome_by_fit()
+
+    def _find_polynome_by_fit(self):
+        number_of_points = len(self.dataset.data.data[0, :])
+        points_per_side = ceil(number_of_points*self.parameters["percentage"]/100.0)
+        dataset_copy = deepcopy(self.dataset.data.data)
+        data_list = dataset_copy.tolist()
+        left_part_x = data_list[0][:points_per_side+1]
+        left_part_y = data_list[1][:points_per_side + 1]
+        right_part_x = data_list[0][number_of_points-points_per_side-1:]
+        right_part_y = data_list[1][number_of_points-points_per_side-1:]
+        points_to_use_x = left_part_x
+        points_to_use_x.extend(right_part_x)
+        points_to_use_y = left_part_y
+        points_to_use_y.extend(right_part_y)
+        coefficients = np.polyfit(np.asarray(points_to_use_x), np.asarray(points_to_use_y), self.parameters["order"])
+        return coefficients
+
 
