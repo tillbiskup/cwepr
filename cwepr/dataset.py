@@ -24,7 +24,6 @@ class Dataset(aspecd.dataset.Dataset):
     def __init__(self):
         super().__init__()
         self.metadata = cwepr.metadata.DatasetMetadata()
-        self.b0 = 0
 
     def import_from_file(self, filename, set_format=None):
         """Import data and metadata for a given filename.

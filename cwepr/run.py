@@ -35,6 +35,13 @@ get_baseline_polynome_step = cwepr.analysis.BaselineFitting(3)
 get_baseline_polynome_analysis = dts.analyse(get_baseline_polynome_step)
 polynome_coeffs3 = get_baseline_polynome_analysis.results["Fit_Coeffs"]
 
-plotter = cwepr.plotting.PlotterForTesting(polynome_coeffs0, polynome_coeffs1, polynome_coeffs3)
-plotter.parameters["data"] = dts.data.data
+plotter = cwepr.plotting.BaselineControlPlotter(dts.data.data, [polynome_coeffs0, polynome_coeffs1, polynome_coeffs3])
 dts.plot(plotter)
+
+correct_baseline_step = cwepr.processing.BaselineCorrection(polynome_coeffs1)
+dts.process(correct_baseline_step)
+
+plotter = cwepr.plotting.SimpleSpectrumPlotter(dts.data.data)
+dts.plot(plotter)
+
+
