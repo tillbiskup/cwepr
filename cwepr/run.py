@@ -41,7 +41,26 @@ dts.plot(plotter)
 correct_baseline_step = cwepr.processing.BaselineCorrection(polynome_coeffs1)
 dts.process(correct_baseline_step)
 
-plotter = cwepr.plotting.SimpleSpectrumPlotter(dts.data.data)
+plotter = cwepr.plotting.SimpleSpectrumPlotter()
+dts.plot(plotter)
+
+integrate_step1 = cwepr.analysis.IntegrationIndefinite()
+integration = dts.analyse(integrate_step1)
+integrate_values1 = integration.results["integral_values"]
+
+integrate_step2 = cwepr.analysis.IntegrationIndefinite(y=integrate_values1)
+integration = dts.analyse(integrate_step2)
+integrate_values2 = integration.results["integral_values"]
+
+verif = cwepr.analysis.IntegrationVerification(integrate_values1)
+dts.analyse(verif)
+
+final_integrate_step = cwepr.analysis.IntegrationDefinite(integrate_values1)
+final_integrate = dts.analyse(final_integrate_step)
+final_integral = final_integrate.results["integral"]
+print(final_integral)
+
+plotter = cwepr.plotting.SpectrumAndIntegralPlotter(integral_1=integrate_values1, integral_2=integrate_values2)
 dts.plot(plotter)
 
 

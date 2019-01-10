@@ -112,3 +112,4 @@ class BaselineCorrection(aspecd.processing.ProcessingStep):
         for n in range(len(list(self.dataset.data.data[1, :]))):
             self.dataset.data.data[1, n] -= values_to_subtract[n]
 
+

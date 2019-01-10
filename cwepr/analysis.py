@@ -1,4 +1,5 @@
 import numpy as np
+from scipy import integrate
 from math import ceil
 from copy import deepcopy
 
@@ -121,5 +122,95 @@ class BaselineFitting(aspecd.analysis.AnalysisStep):
         points_to_use = left_part
         points_to_use.extend(right_part)
         return points_to_use
+
+
+class IntegrationIndefinite(aspecd.analysis.AnalysisStep):
+    """Makes an indefinite integration, yielding a new array of y
+    values of the integrated function.
+
+    Attributes
+    ----------
+    y: 'list'
+    y values to use for the integration. If this is omitted the y values
+    of the dataset are used.
+    """
+    def __init__(self, y=None):
+        super().__init__()
+        self.y = y
+
+    def _perform_task(self):
+        """Perform the actual integration using trapezoidal integration
+        functionality from scipy. The keyword argument initial=0 is used
+        to yield a list of length identical to the original one.
+        """
+        x = self.dataset.data.data[0, :]
+        if self.y is None:
+            y = self.dataset.data.data[1, :]
+        else:
+            y = self.y
+
+        integral_values = integrate.cumtrapz(y, x, initial=0)
+        self.results["integral_values"] = integral_values
+
+
+class IntegrationDefinite(aspecd.analysis.AnalysisStep):
+    """Makes a definite integration and calculated the area under the curve.
+
+    Attributes
+    ----------
+    y: 'list'
+    y values to use for the integration.
+    """
+    def __init__(self, y):
+        super().__init__()
+        self.y = y
+
+    def _perform_task(self):
+        """Performs the actual integration. The x values
+        from the dataset are used."""
+        x = self.dataset.data.data[0, :]
+        y = self.y
+
+        integral = np.trapz(y, x)
+        self.results["integral"] = integral
+
+
+class IntegrationVerification(aspecd.analysis.AnalysisStep):
+    """Verifies, if the spectrum was correctly preprocessed. If so,
+    the integral of the first integration of the spectrum on the rightmost part
+    is supposed to be zero.
+
+    Attributes
+    ----------
+    y: 'list'
+    y values to use for the integration
+
+    percentage: 'int'
+    Percentage of the spectrum to consider
+
+    threshold: 'float'
+    Threshold for the integral. If the integral determined is smaller
+    the preprocessing is considered to have been successful.
+    """
+    def __init__(self, y, percentage=15, threshold=0.001):
+        super().__init__()
+        self.y = y
+        self.percentage = percentage
+        self.threshold = threshold
+
+    def _perform_task(self):
+        """Performs the actual integration on a certain percentage of the points
+        from the right part of the spectrum and compares them to the threshold.
+
+        The result is a boolean: Is the integral lower than the threshold?
+        """
+        number_of_points = ceil(len(self.y)*self.percentage/100.0)
+        points_y = self.y[len(self.y) - number_of_points - 1:]
+        points_x = self.dataset.data.data[0, len(self.y) - number_of_points - 1:]
+        integral = np.trapz(points_y, points_x)
+        self.results["integral_okay"] = (integral < self.threshold)
+
+
+
 
 
