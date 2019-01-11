@@ -1,10 +1,65 @@
 import numpy as np
+from math import fabs
 from scipy import integrate
 from math import ceil
 from copy import deepcopy
 
 
 import aspecd.analysis
+
+
+class Error(Exception):
+    """Base class for exceptions in this module."""
+
+    pass
+
+
+class WrongOrderError(Error):
+    """Exception raised when the x values given for the commonspace
+    determination are not in increasing Order.
+
+    Attributes
+    ----------
+    message : `str`
+        explanation of the error
+
+    """
+
+    def __init__(self, message=''):
+        super().__init__()
+        self.message = message
+
+
+class NotEnoughDatasetsError(Error):
+    """Exception raised when less than two datasets are given for
+    the commonspace determination.
+
+    Attributes
+    ----------
+    message : `str`
+        explanation of the error
+
+    """
+
+    def __init__(self, message=''):
+        super().__init__()
+        self.message = message
+
+
+class NoCommonspaceError(Error):
+    """Exception raised when less than two datasets are given for
+    the commonspace determination.
+
+    Attributes
+    ----------
+    message : `str`
+        explanation of the error
+
+    """
+
+    def __init__(self, message=''):
+        super().__init__()
+        self.message = message
 
 
 class FieldCorrectionValueFinding(aspecd.analysis.AnalysisStep):
@@ -211,6 +266,90 @@ class IntegrationVerification(aspecd.analysis.AnalysisStep):
         self.results["integral_okay"] = (integral < self.threshold)
 
 
+class CommonspaceAndDelimiters(aspecd.analysis.AnalysisStep):
+    def __init__(self, datasets, threshold=0.05):
+        super().__init__()
+        self.datasets = datasets
+        self.threshold = threshold
+        self.minimum = None
+        self.maximum = None
+        self.minimal_width = None
+        self.start_points = list()
+        self.end_points = list()
 
+    def _perform_task(self):
+        if len(self.datasets) < 2:
+            raise NotEnoughDatasetsError("Number of datasets( " + str(len(self.datasets)) + ") is too low!")
+        self._acquire_data()
+        self._check_commonspace_for_all()
+        self.results["delimiters"] = self._find_all_delimiter_points()
 
+    def _acquire_data(self):
+        for dataset in self.datasets:
+            x = dataset.data.data[0, :]
+            if x[-1] < x[0]:
+                dataset_name = dataset.metadata.measurement.filename
+                raise WrongOrderError("Dataset " + dataset_name + " has x values in the wrong order.")
 
+        for dataset in self.datasets:
+            x = dataset.data.data[0, :]
+            self.start_points.append(x[0])
+            self.end_points.append(x[-1])
+            if self.minimum is None or x[0] < self.minimum:
+                self.minimum = x[0]
+            if self.maximum is None or x[-1] > self.maximum:
+                self.maximum = x[-1]
+            if self.minimal_width is None or (x[-1]-x[0]) < self.minimal_width:
+                self.minimal_width = x[-1]-x[0]
+
+    def check_commonspace_for_two(self, index1, index2):
+        width1 = self.end_points[index1] - self.start_points[index1]
+        width2 = self.end_points[index2] - self.start_points[index2]
+        width_delta = fabs(width1-width2)
+        if (fabs(self.start_points[index1]-self.start_points[index2]) > (
+                width_delta + self.threshold*(min(width1, width2)))) or (
+            fabs(self.end_points[index1] - self.end_points[index2]) > (
+                width_delta + self.threshold * (min(width1, width2)))):
+            name1 = self.datasets[index1].metadata.measurement.filename
+            name2 = self.datasets[index1].metadata.measurement.filename
+            raise NoCommonspaceError("Datasets " + name1 + " and " + name2 +
+                                     "have not enough commonspace.")
+
+    def _check_commonspace_for_all(self):
+        for n in range(len(self.datasets)):
+            for m in range(len(self.datasets)):
+                if n != m:
+                    self.check_commonspace_for_two(n, m)
+
+    def _find_all_delimiter_points(self):
+        self.start_points.sort()
+        self.end_points.sort()
+        self._eliminate_close_delimiters(self.start_points)
+        self._eliminate_close_delimiters(self.end_points)
+        delimiter_points = self.start_points
+        delimiter_points.extend(self.end_points)
+        points_close_to_edge = list()
+        for n in range(len(delimiter_points)):
+            if (fabs(delimiter_points[n] - self.minimum) < 0.03*self.minimal_width) or (
+                    fabs(delimiter_points[n] - self.maximum) < 0.03 * self.minimal_width):
+                points_close_to_edge.append(n)
+        points_close_to_edge.reverse()
+        for n in range(len(points_close_to_edge)):
+            del(delimiter_points[n])
+        return delimiter_points
+
+    def _eliminate_close_delimiters(self, points):
+        close_points = list()
+        while True:
+            for n in range(len(points)-1):
+                if fabs(points[n]-points[n+1]) < 0.03*self.minimal_width:
+                    close_points.append([n, n+1])
+            if close_points == list():
+                return
+            else:
+                close_points.reverse()
+                for pair in close_points:
+                    center = fabs(pair[0]-pair[1])/2.0
+                    del(points[pair[1]])
+                    points[pair[0]] = center
+                close_points = list()

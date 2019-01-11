@@ -78,7 +78,7 @@ class FrequencyCorrection(aspecd.processing.ProcessingStep):
         g_value: 'float'
         Transformed value.
         """
-        g_value = self.VALUE_H*self.parameters["nu_given"]/self.VALUE_MuB/value
+        g_value = self.VALUE_H*self.parameters["nu_given"].value/self.VALUE_MuB/value
         return g_value
 
     def _transform_to_b(self, value):
@@ -94,7 +94,7 @@ class FrequencyCorrection(aspecd.processing.ProcessingStep):
         b_value: 'float'
         Transformed value.
         """
-        b_value = self.VALUE_H * self.parameters["nu_target"] / self.VALUE_MuB / value
+        b_value = self.VALUE_H * self.parameters["nu_target"].value / self.VALUE_MuB / value
         return b_value
 
 

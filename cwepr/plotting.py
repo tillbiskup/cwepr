@@ -158,7 +158,7 @@ class SimpleSpectrumPlotter(aspecd.plotting.SinglePlotter):
 
         Parameters
         ----------
-        name: 'float'
+        thickness: 'float'
         Thickness of the zero line; default: 0.5
         """
         self.settings["zero_thickness"] = thickness
@@ -178,7 +178,7 @@ class SimpleSpectrumPlotter(aspecd.plotting.SinglePlotter):
 
         Parameters
         ----------
-        name: 'bool'
+        do_fit: 'bool'
         """
         self.settings["fit_axis"] = do_fit
 
@@ -253,7 +253,7 @@ class SpectrumAndIntegralPlotter(SimpleSpectrumPlotter):
     ----------
     integral_1: 'list'
     y values of the first integration
-    intefral_2: 'list'
+    integral_2: 'list'
     y values of the second integration
 
     Raises
@@ -344,3 +344,191 @@ class SpectrumAndIntegralPlotter(SimpleSpectrumPlotter):
             ppl.plot(x, self.parameters["integral_1"], label=self.settings["integral1_name"], color=self.settings["integral1_color"])
         if self.parameters["integral_2"] is not None:
             ppl.plot(x, self.parameters["integral_2"], label=self.settings["integral2_name"], color=self.settings["integral2_color"])
+
+
+class Multiplotter(aspecd.plotting.SinglePlotter):
+    def __init__(self, datasets, integrals=None):
+        super().__init__()
+        self.description = "Plotter for multiple cwepr datasets."
+        self.datasets = datasets
+        self.integrals = integrals
+        if self.integrals is None:
+            self.integrals = list()
+        self.settings = dict()
+        self._set_defaults()
+
+    def _set_defaults(self):
+        """Create default values for all settings of the plot."""
+        self.set_title("Spectrum")
+        self.set_x_axis_name("Field")
+        self.set_y_axis_name("Intensity Change")
+        self.set_draw_zeroline(True)
+        self.set_zeroline_thickness(0.5)
+        self.set_zeroline_color("black")
+        self.set_fit_axis_to_spectrum(True)
+        color_library = ["tab:blue", "tab:red", "tab:green", "tab:cyan", "tab:magenta", "tab:yellow"]
+        self.set_curve_colors(color_library[:len(self.datasets)])
+        curve_names = list()
+        for n in range(len(self.datasets)):
+            name = "Curve " + str(n)
+            curve_names.append(name)
+        self.set_curve_names(curve_names)
+        self.set_show_integrals(True)
+
+    def set_curve_names(self, names):
+        """Sets the names for the different curves.
+
+        Parameters
+        ----------
+        names: 'list'
+        List of 'str' containing the names.
+        """
+        self.settings["names"] = names
+
+    def set_curve_colors(self, colors):
+        """Sets the colors for the different curves.
+
+        Parameters
+        ----------
+        colors: 'list'
+        List of 'str' and or RGBA containing the colors.
+        """
+        self.settings["colors"] = colors
+
+    def set_title(self, title):
+        """Sets the title of the plot.
+
+        Parameters
+        ----------
+        title: 'str'
+        The title to use.
+        """
+        self.settings["title"] = title
+
+    def set_x_axis_name(self, name):
+        """Sets the label of the x axis.
+
+        Parameters
+        ----------
+        name: 'str'
+        The name to use.
+        """
+        self.settings["x_name"] = name
+
+    def set_y_axis_name(self, name):
+        """Sets the label of the y axis.
+
+        Parameters
+        ----------
+        name: 'str'
+        The name to use.
+        """
+        self.settings["y_name"] = name
+
+    def set_draw_zeroline(self, do_draw):
+        """Set whether the zero line should be drawn.
+
+        Parameters
+        ----------
+        do_draw: 'bool'
+        """
+        self.settings["draw_zero"] = do_draw
+
+    def set_zeroline_thickness(self, thickness):
+        """Sets thickness of the zero line.
+
+        Parameters
+        ----------
+        thickness: 'float'
+        Thickness of the zero line; default: 0.5
+        """
+        self.settings["zero_thickness"] = thickness
+
+    def set_zeroline_color(self, color):
+        """Sets the color of the zero line.
+
+        Parameters
+        ----------
+        color: 'str' or RGBA tuple
+        The color to use.
+        """
+        self.settings["zero_color"] = color
+
+    def set_fit_axis_to_spectrum(self, do_fit):
+        """Whether the x axis limits should be fitted to width of the spectrum.
+
+        Parameters
+        ----------
+        do_fit: 'bool'
+        """
+        self.settings["fit_axis"] = do_fit
+
+    def set_show_integrals(self, do_show):
+        """Whether the integrals should be shown in the legend if provided.
+
+        Parameters
+        ----------
+        do_show: 'bool'
+        """
+        self.settings["show_integrals"] = do_show
+
+    def _create_plot(self):
+        """Draw and display the plot."""
+        x_axes = list()
+        self._make_labels()
+        for n in range(len(self.datasets)):
+            x = self.datasets[n].data.data[0, :]
+            y = self.datasets[n].data.data[1, :]
+            x_axes.append(x)
+            self._plot_lines(x, y, n)
+        x_axis_limits = self.get_x_axis_limits(x_axes)
+        if self.settings["draw_zero"]:
+            zeroline_values = np.linspace(x_axis_limits[0], x_axis_limits[1], num=1500)
+            ppl.plot(zeroline_values, 0*zeroline_values, lw=self.settings["zero_thickness"], color=self.settings["zero_color"])
+        self._make_axis_limits(x_axis_limits)
+        ppl.legend()
+        ppl.show()
+
+    @staticmethod
+    def get_x_axis_limits(x_axes):
+        minimum = None
+        maximum = None
+        for axis in x_axes:
+            if minimum is None or axis[0] < minimum:
+                minimum = axis[0]
+            if maximum is None or axis[-1] < maximum:
+                maximum = axis[-1]
+        return [minimum, maximum]
+
+    def _make_labels(self):
+        """Create the title as well as the labels for the axes."""
+        ppl.title(self.settings["title"])
+        ppl.xlabel(self.settings["x_name"])
+        ppl.ylabel(self.settings["y_name"])
+
+    def _plot_lines(self, x, y, n):
+        """Draw the spectrum curve.
+
+        Parameters
+        ----------
+        x: 'list'
+        x values for plotting
+        y: 'list'
+        y values for plotting
+        """
+        curve_name = self.settings["names"][n]
+        if len(self.integrals) > 0 and self.settings["show_integrals"]:
+            curve_name += "; Integral: "
+            curve_name += str(round(self.integrals[n], 6))
+        ppl.plot(x, y, label=curve_name, color=self.settings["colors"][n])
+
+    def _make_axis_limits(self, x):
+        """Set the limits of the x axis.
+
+        Parameters
+        ----------
+        x: 'list'
+        x values to plot. These are necessary for determining the correct limits.
+        """
+        if self.settings["fit_axis"]:
+            self.axes.set_xlim(x[0], x[1])
