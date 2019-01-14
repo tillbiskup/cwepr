@@ -233,7 +233,7 @@ class IntegrationDefinite(aspecd.analysis.AnalysisStep):
 class IntegrationVerification(aspecd.analysis.AnalysisStep):
     """Verifies, if the spectrum was correctly preprocessed. If so,
     the integral of the first integration of the spectrum on the rightmost part
-    is supposed to be zero.
+    is supposed to be approximately zero.
 
     Attributes
     ----------
@@ -353,3 +353,5 @@ class CommonspaceAndDelimiters(aspecd.analysis.AnalysisStep):
                     del(points[pair[1]])
                     points[pair[0]] = center
                 close_points = list()
+
+

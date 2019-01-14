@@ -596,3 +596,11 @@ class ParserDSC:
         elif len(current_subpart) != 0:
             subdivisions[current_subpart[0][9:]] = current_subpart[1:]
         return subdivisions
+
+
+class ExporterASCII(aspecd.io.DatasetExporter):
+    def __init__(self):
+        super().__init__()
+
+    def _export(self):
+        np.savetxt("Dataset", self.dataset.data.data, delimiter=",")

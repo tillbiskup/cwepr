@@ -113,3 +113,24 @@ class BaselineCorrection(aspecd.processing.ProcessingStep):
             self.dataset.data.data[1, n] -= values_to_subtract[n]
 
 
+class SpectrumSubtract(aspecd.processing.ProcessingStep):
+    def __init__(self, scnd_dataset):
+        super().__init__()
+        self.scnd_dataset = scnd_dataset
+
+    def _perform_task(self):
+        self.subtract()
+
+    def interpolate(self):
+        x = self.dataset.data.data[0, :]
+        xp = self.scnd_dataset.data.data[0, :]
+        fp = self.scnd_dataset.data.data[1, :]
+        interpolated_values = np.interp(x, xp, fp)
+        return interpolated_values
+
+    def subtract(self):
+        y_interp = self.interpolate()
+        for n in range(len(self.dataset.data.data[0, :])):
+            self.dataset.data.data[1, n] -= y_interp[n]
+
+

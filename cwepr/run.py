@@ -3,6 +3,7 @@ import cwepr.dataset
 import cwepr.analysis
 import cwepr.processing
 import cwepr.plotting
+import cwepr.importers
 
 
 path = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
@@ -95,7 +96,7 @@ freq_correction_step = cwepr.processing.FrequencyCorrection(nu_given, nu_target)
 dts_v2.process(freq_correction_step)
 
 #Baseline Correction
-get_baseline_polynome_step = cwepr.analysis.BaselineFitting(3)
+get_baseline_polynome_step = cwepr.analysis.BaselineFitting(1)
 get_baseline_polynome_analysis = dts_v1.analyse(get_baseline_polynome_step)
 polynome_coeffs3 = get_baseline_polynome_analysis.results["Fit_Coeffs"]
 correct_baseline_step = cwepr.processing.BaselineCorrection(polynome_coeffs1)
@@ -133,6 +134,31 @@ multiplotter = cwepr.plotting.Multiplotter([dts_v1, dts_v2], integrals=[fi1, fi2
 dts_v1.plot(multiplotter)
 
 
+#Substract 2nd from 1st, then integrate + plot
+subtract_step = cwepr.processing.SpectrumSubtract(dts_v1)
+sub_values = dts_v2.process(subtract_step)
 
+plotter_diff = cwepr.plotting.SimpleSpectrumPlotter()
+dts_v2.plot(plotter_diff)
 
+integrate_step3 = cwepr.analysis.IntegrationIndefinite()
+integration = dts_v2.analyse(integrate_step3)
+integrate_values3 = integration.results["integral_values"]
 
+integrate_step4 = cwepr.analysis.IntegrationIndefinite(y=integrate_values3)
+integration = dts_v2.analyse(integrate_step4)
+integrate_values4 = integration.results["integral_values"]
+
+verif = cwepr.analysis.IntegrationVerification(integrate_values3)
+dts_v2.analyse(verif)
+
+final_integrate_step2 = cwepr.analysis.IntegrationDefinite(integrate_values3)
+final_integrate2 = dts_v2.analyse(final_integrate_step2)
+final_integral2 = final_integrate2.results["integral"]
+print(final_integral2)
+
+plotter2 = cwepr.plotting.SpectrumAndIntegralPlotter(integral_1=integrate_values3, integral_2=integrate_values4)
+dts_v2.plot(plotter2)
+
+exporter = cwepr.importers.ExporterASCII()
+exporter.export_from(dts_v2)
