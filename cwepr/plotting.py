@@ -346,7 +346,7 @@ class SpectrumAndIntegralPlotter(SimpleSpectrumPlotter):
             ppl.plot(x, self.parameters["integral_2"], label=self.settings["integral2_name"], color=self.settings["integral2_color"])
 
 
-class Multiplotter(aspecd.plotting.SinglePlotter):
+class Multiplotter(aspecd.plotting.MultiPlotter):
     def __init__(self, datasets, integrals=None):
         super().__init__()
         self.description = "Plotter for multiple cwepr datasets."

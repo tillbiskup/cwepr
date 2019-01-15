@@ -6,6 +6,7 @@ import cwepr.plotting
 import cwepr.importers
 
 
+
 path = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 
 #Test-Spektrum 1
@@ -131,7 +132,8 @@ print(delimiters)
 
 #Plot
 multiplotter = cwepr.plotting.Multiplotter([dts_v1, dts_v2], integrals=[fi1, fi2])
-dts_v1.plot(multiplotter)
+multiplotter.plot()
+#dts_v1.plot(multiplotter)
 
 
 #Substract 2nd from 1st, then integrate + plot

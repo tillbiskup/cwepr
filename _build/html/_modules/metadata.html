@@ -1,0 +1,361 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>metadata &#8212; cwepr  documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for metadata</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Metadata</span>
+
+<span class="sd">Supplementary data for a dataset, i.e. everything that is not</span>
+<span class="sd">part of the literal experimental results, such as identifier,</span>
+<span class="sd">date of the experiment...&quot;&quot;&quot;</span>
+
+
+<span class="kn">import</span> <span class="nn">aspecd.metadata</span>
+
+
+<div class="viewcode-block" id="Error"><a class="viewcode-back" href="../index.html#metadata.Error">[docs]</a><span class="k">class</span> <span class="nc">Error</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Base class for exceptions in this module.&quot;&quot;&quot;</span>
+
+    <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="NotEnoughValuesError"><a class="viewcode-back" href="../index.html#metadata.NotEnoughValuesError">[docs]</a><span class="k">class</span> <span class="nc">NotEnoughValuesError</span><span class="p">(</span><span class="n">Error</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Exception raised when not enough different values</span>
+<span class="sd">    are provided to calculate all other values.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    message : `str`</span>
+<span class="sd">        explanation of the error</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">message</span> <span class="o">=</span> <span class="n">message</span></div>
+
+
+<div class="viewcode-block" id="UnequalUnitsError"><a class="viewcode-back" href="../index.html#metadata.UnequalUnitsError">[docs]</a><span class="k">class</span> <span class="nc">UnequalUnitsError</span><span class="p">(</span><span class="n">Error</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Exception raised when two physical quantities</span>
+<span class="sd">    that shall be added or subtracted do not have the</span>
+<span class="sd">    same unit.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    message : `str`</span>
+<span class="sd">        explanation of the error</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">message</span> <span class="o">=</span> <span class="n">message</span></div>
+
+
+<div class="viewcode-block" id="DatasetMetadata"><a class="viewcode-back" href="../index.html#metadata.DatasetMetadata">[docs]</a><span class="k">class</span> <span class="nc">DatasetMetadata</span><span class="p">(</span><span class="n">aspecd</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">DatasetMetadata</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Set of all metadata for a dataset object.</span>
+
+<span class="sd">     Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    experiment: :obj:&#39;cwepr.metadata.Experiment&#39;</span>
+<span class="sd">        Metadata object containing information such as the type of</span>
+<span class="sd">        the experiment performed.</span>
+
+<span class="sd">    spectrometer: :obj:&#39;cwepr.metadata.Spectrometer&#39;</span>
+<span class="sd">        Metadata object containing information on the spectrometer</span>
+<span class="sd">        used.</span>
+
+<span class="sd">    magnetic_field: :obj:&#39;cwepr.metadata.BFieldData&#39;</span>
+<span class="sd">        Metadata object containing information on the magnetic</span>
+<span class="sd">        field applied in the experiment.</span>
+
+<span class="sd">    bridge: :obj:&#39;cwepr.metadata.Brige&#39;</span>
+<span class="sd">        Metadata object containing information on the microwave</span>
+<span class="sd">        bridge used.</span>
+
+<span class="sd">    signal_channel: :obj:&#39;cwepr.metadata.SignalChannel&#39;</span>
+<span class="sd">        Metadata object containing information on the signal</span>
+<span class="sd">        channel applied.</span>
+
+<span class="sd">    probehead: :obj:&#39;cwepr.metadata.Probehead&#39;</span>
+<span class="sd">        Metadata object containing information on the probehead</span>
+<span class="sd">        used in the experiment.</span>
+
+<span class="sd">    modifications : &#39;list&#39;</span>
+<span class="sd">        List of all modifications performed on the metadata,</span>
+<span class="sd">        e.g, overrides.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">experiment</span> <span class="o">=</span> <span class="n">Experiment</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">spectrometer</span> <span class="o">=</span> <span class="n">SpectrometerInfo</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">magnetic_field</span> <span class="o">=</span> <span class="n">BFieldData</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bridge</span> <span class="o">=</span> <span class="n">BridgeInfo</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">signal_channel</span> <span class="o">=</span> <span class="n">SignalChannel</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">probehead</span> <span class="o">=</span> <span class="n">Probehead</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">modifications</span> <span class="o">=</span> <span class="p">[]</span></div>
+
+
+<span class="k">class</span> <span class="nc">BFieldData</span><span class="p">(</span><span class="n">aspecd</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">Metadata</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dict_</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">dict_</span><span class="o">=</span><span class="n">dict_</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">field_min</span> <span class="o">=</span> <span class="n">aspecd</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">PhysicalQuantity</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">field_max</span> <span class="o">=</span> <span class="n">aspecd</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">PhysicalQuantity</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">field_width</span> <span class="o">=</span> <span class="n">aspecd</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">PhysicalQuantity</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">step_width</span> <span class="o">=</span> <span class="n">aspecd</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">PhysicalQuantity</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">step_count</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">field_probe_type</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">field_probe_model</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sequence</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">controller</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">power_supply</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">can_calculate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Checks if enough different pieces of information</span>
+<span class="sd">        are provided to calculate all information concerning</span>
+<span class="sd">        the field sector and sweeping steps.</span>
+
+<span class="sd">        .. note:: Currently, the possibility of calculating the</span>
+<span class="sd">        sector width from the with and the number of steps is not</span>
+<span class="sd">        accounted for.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ----------</span>
+<span class="sd">        NotEnoughValuesError :</span>
+<span class="sd">            Raised,  when not enough different pieces of</span>
+<span class="sd">            information are provided to determine the other</span>
+<span class="sd">            variables.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">sector_def</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">sector_par</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">step_def</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">step_par</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">field_min</span><span class="o">.</span><span class="n">value</span> <span class="o">!=</span> <span class="mf">0.</span><span class="p">:</span>
+            <span class="n">sector_def</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="n">sector_par</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">field_max</span><span class="o">.</span><span class="n">value</span> <span class="o">!=</span> <span class="mf">0.</span><span class="p">:</span>
+            <span class="n">sector_def</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="n">sector_par</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">field_width</span><span class="o">.</span><span class="n">value</span> <span class="o">!=</span> <span class="mf">0.</span><span class="p">:</span>
+            <span class="n">sector_par</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">step_par</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">step_width</span><span class="o">.</span><span class="n">value</span> <span class="o">!=</span> <span class="mf">0.</span><span class="p">:</span>
+            <span class="n">step_def</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="n">step_par</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">step_count</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">step_def</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="n">step_par</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">sector_def</span><span class="p">)</span> <span class="ow">or</span> <span class="n">sector_par</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">NotEnoughValuesError</span><span class="p">(</span><span class="s2">&quot;Sector not determined.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">step_def</span><span class="p">)</span> <span class="ow">or</span> <span class="n">step_par</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">NotEnoughValuesError</span><span class="p">(</span><span class="s2">&quot;Steps not determined.&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">True</span>
+
+    <span class="k">def</span> <span class="nf">calculate_values</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Calculate the different values concerning the sector and</span>
+<span class="sd">        sweeping steps of the magnetic field.</span>
+
+<span class="sd">        .. note:: Currently, the possibility of calculating the</span>
+<span class="sd">        sector width from the with and the number of steps is not</span>
+<span class="sd">        accounted for.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ----------</span>
+<span class="sd">        UnequalUnitsError :</span>
+<span class="sd">            Raised, when two physical quantities shall be added or</span>
+<span class="sd">            subtracted that have unequal units.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">can_calculate</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">step_count</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">step_count</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">field_width</span><span class="o">.</span><span class="n">value</span> <span class="o">==</span> <span class="mf">0.</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">field_max</span><span class="o">.</span><span class="n">unit</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">field_min</span><span class="o">.</span><span class="n">unit</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">UnequalUnitsError</span><span class="p">(</span><span class="s2">&quot;Quantities with different units provided.&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">field_width</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">field_max</span><span class="o">.</span><span class="n">value</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">field_min</span><span class="o">.</span><span class="n">value</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">field_width</span><span class="o">.</span><span class="n">unit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">field_max</span><span class="o">.</span><span class="n">unit</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">field_max</span><span class="o">.</span><span class="n">value</span> <span class="o">==</span> <span class="mf">0.</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">field_width</span><span class="o">.</span><span class="n">unit</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">field_min</span><span class="o">.</span><span class="n">unit</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">UnequalUnitsError</span><span class="p">(</span><span class="s2">&quot;Quantities with different units provided.&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">field_max</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">field_min</span><span class="o">.</span><span class="n">value</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">field_width</span><span class="o">.</span><span class="n">value</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">field_max</span><span class="o">.</span><span class="n">unit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">field_min</span><span class="o">.</span><span class="n">unit</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">field_min</span><span class="o">.</span><span class="n">value</span> <span class="o">==</span> <span class="mf">0.</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">field_max</span><span class="o">.</span><span class="n">unit</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">field_width</span><span class="o">.</span><span class="n">unit</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">UnequalUnitsError</span><span class="p">(</span><span class="s2">&quot;Quantities with different units provided.&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">field_min</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">field_max</span><span class="o">.</span><span class="n">value</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">field_width</span><span class="o">.</span><span class="n">value</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">field_min</span><span class="o">.</span><span class="n">unit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">field_max</span><span class="o">.</span><span class="n">unit</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">step_count</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">field_width</span><span class="o">.</span><span class="n">unit</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">step_width</span><span class="o">.</span><span class="n">unit</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">UnequalUnitsError</span><span class="p">(</span><span class="s2">&quot;Quantities with different units provided.&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">step_count</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">field_width</span><span class="o">.</span><span class="n">value</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">step_width</span><span class="o">.</span><span class="n">value</span><span class="p">),</span> <span class="mi">0</span><span class="p">))</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">step_width</span><span class="o">.</span><span class="n">value</span> <span class="o">==</span> <span class="mf">0.</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">step_width</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">field_width</span><span class="o">.</span><span class="n">value</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">step_count</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">step_width</span><span class="o">.</span><span class="n">unit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">field_max</span><span class="o">.</span><span class="n">unit</span>
+
+    <span class="k">def</span> <span class="nf">gauss_to_millitesla</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Transforms magnetic field parameters provided in gauss to</span>
+<span class="sd">        millitesla.&quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">quantity</span> <span class="ow">in</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">field_min</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">field_max</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">field_width</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">step_width</span><span class="p">]:</span>
+            <span class="n">quantity</span><span class="o">.</span><span class="n">value</span> <span class="o">/=</span> <span class="mi">10</span>
+            <span class="n">quantity</span><span class="o">.</span><span class="n">unit</span> <span class="o">=</span> <span class="s2">&quot;mT&quot;</span>
+
+
+<span class="k">class</span> <span class="nc">Experiment</span><span class="p">(</span><span class="n">aspecd</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">Metadata</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">runs</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">variable_parameter</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">increment</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">harmonic</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+
+
+<span class="k">class</span> <span class="nc">SpectrometerInfo</span><span class="p">(</span><span class="n">aspecd</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">Metadata</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">software</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+
+
+<span class="k">class</span> <span class="nc">BridgeInfo</span><span class="p">(</span><span class="n">aspecd</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">Metadata</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">controller</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">attenuation</span> <span class="o">=</span> <span class="n">aspecd</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">PhysicalQuantity</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">power</span> <span class="o">=</span> <span class="n">aspecd</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">PhysicalQuantity</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">detection</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">frequency_counter</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mw_frequency</span> <span class="o">=</span> <span class="n">aspecd</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">PhysicalQuantity</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">q_value</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+
+
+<span class="k">class</span> <span class="nc">SignalChannel</span><span class="p">(</span><span class="n">aspecd</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">Metadata</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">modulation_amplifier</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">accumulations</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">modulation_frequency</span> <span class="o">=</span> <span class="n">aspecd</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">PhysicalQuantity</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">modulation_amplitude</span> <span class="o">=</span> <span class="n">aspecd</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">PhysicalQuantity</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">receiver_gain</span> <span class="o">=</span> <span class="n">aspecd</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">PhysicalQuantity</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conversion_time</span> <span class="o">=</span> <span class="n">aspecd</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">PhysicalQuantity</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">time_constant</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span> <span class="c1">#aspecd.metadata.PhysicalQuantity()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">phase</span> <span class="o">=</span> <span class="n">aspecd</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">PhysicalQuantity</span><span class="p">()</span>
+
+
+<span class="k">class</span> <span class="nc">Probehead</span><span class="p">(</span><span class="n">aspecd</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">Metadata</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">coupling</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">cwepr</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Pascal Kirchner.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
