@@ -11,6 +11,7 @@ Welcome! This is the documentation for the cwEPR Python package.
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
+   api/index.rst
 
 
 

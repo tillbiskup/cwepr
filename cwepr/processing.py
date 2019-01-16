@@ -61,9 +61,11 @@ class FrequencyCorrection(aspecd.processing.ProcessingStep):
 
     def _perform_task(self):
         for n in range(len(self.dataset.data.data[0, :])):
-            self.dataset.data.data[0, n] = self._transform_to_g(self.dataset.data.data[0, n])
+            self.dataset.data.data[0, n] = self._transform_to_g(
+                self.dataset.data.data[0, n])
         for n in range(len(self.dataset.data.data[0, :])):
-            self.dataset.data.data[0, n] = self._transform_to_b(self.dataset.data.data[0, n])
+            self.dataset.data.data[0, n] = self._transform_to_b(
+                self.dataset.data.data[0, n])
 
     def _transform_to_g(self, value):
         """Transforms a field (B) axis value to a g axis value.
@@ -78,7 +80,8 @@ class FrequencyCorrection(aspecd.processing.ProcessingStep):
         g_value: 'float'
         Transformed value.
         """
-        g_value = self.VALUE_H*self.parameters["nu_given"].value/self.VALUE_MuB/value
+        g_value = \
+            self.VALUE_H*self.parameters["nu_given"].value/self.VALUE_MuB/value
         return g_value
 
     def _transform_to_b(self, value):
@@ -94,7 +97,9 @@ class FrequencyCorrection(aspecd.processing.ProcessingStep):
         b_value: 'float'
         Transformed value.
         """
-        b_value = self.VALUE_H * self.parameters["nu_target"].value / self.VALUE_MuB / value
+        b_value = \
+            self.VALUE_H * self.parameters["nu_target"].value \
+            / self.VALUE_MuB / value
         return b_value
 
 
@@ -108,7 +113,8 @@ class BaselineCorrection(aspecd.processing.ProcessingStep):
 
     def _perform_task(self):
         x = self.dataset.data.data[0, :]
-        values_to_subtract = np.polyval(np.poly1d(self.parameters["coeffs"]), x)
+        values_to_subtract = np.polyval(
+            np.poly1d(self.parameters["coeffs"]), x)
         for n in range(len(list(self.dataset.data.data[1, :]))):
             self.dataset.data.data[1, n] -= values_to_subtract[n]
 

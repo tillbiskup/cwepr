@@ -105,7 +105,8 @@ class Dataset(aspecd.dataset.Dataset):
                     if name.split("/")[-1] != entry:
                         name = ""
                     name = name + "/" + entry
-                    self.check_for_override(data1[entry], data2[entry], name=name)
+                    self.check_for_override(data1[entry], data2[entry],
+                                            name=name)
                 else:
                     self.metadata.modifications.append(
                         "Possible override @ [" + name + "/" + entry + "].")
@@ -148,11 +149,15 @@ class Dataset(aspecd.dataset.Dataset):
              dsc file as metadata.
         """
         mapper.mappings = [
-            ["Data Ranges and Resolutions:", "rename_key", ["XPTS", "step_count"]],
-            ["Data Ranges and Resolutions:", "rename_key", ["XMIN", "field_min"]],
-            ["Data Ranges and Resolutions:", "rename_key", ["XWID", "field_width"]],
-            ["", "rename_key", ["Data Ranges and Resolutions:", "magnetic_field"]]
-                            ]
+            ["Data Ranges and Resolutions:", "rename_key",
+             ["XPTS", "step_count"]],
+            ["Data Ranges and Resolutions:", "rename_key",
+             ["XMIN", "field_min"]],
+            ["Data Ranges and Resolutions:", "rename_key",
+             ["XWID", "field_width"]],
+            ["", "rename_key",
+             ["Data Ranges and Resolutions:", "magnetic_field"]]
+                          ]
         mapper.map()
         return mapper.metadata
 
@@ -201,12 +206,12 @@ class Dataset(aspecd.dataset.Dataset):
         field_points = []
         for n in range(self.metadata.magnetic_field.step_count):
             field_points.append(self.metadata.magnetic_field.field_min.value +
-                                self.metadata.magnetic_field.step_width.value * n)
+                                self.metadata.magnetic_field.step_width.value
+                                * n)
         field_data = np.array(field_points)
         intensity_data = np.array(copy.deepcopy(self.data.data))
         complete_data = np.array([field_data, intensity_data])
         self.data.data = complete_data
-        #for n in range(self.metadata.magnetic_field.step_count):
-            #print((str(self.data.data[0, n]) + " / " + str(self.data.data[1, n])))
+
 
 

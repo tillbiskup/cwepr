@@ -67,11 +67,23 @@ class FieldCorrectionValueFinding(aspecd.analysis.AnalysisStep):
 
     ------
     References for the constants
-    g(Lilif) = 2.002293 +- 0.000002
+
+    g value for Li:LiF::
+
+        g(LiLiF) = 2.002293 +- 0.000002
+
     Reference: Rev. Sci. Instrum. 1989, 60, 2949-2952.
-    Mu(B) = 9.27401*10**(-24)
+
+    Bohr magneton::
+
+        mu_B = 9.27401*10**(-24)
+
     Reference: Rev. Mod. Phys. 2016, 88, ?.
-    h = 6.62607*10**(-34)
+
+    Planck constant::
+
+        h = 6.62607*10**(-34)
+
     Reference: Rev. Mod. Phys. 2016, 88, ?.
     ------
 
@@ -110,8 +122,11 @@ class FieldCorrectionValueFinding(aspecd.analysis.AnalysisStep):
         """
         index_max = np.argmax(self.dataset.data.data[1, :])
         index_min = np.argmin(self.dataset.data.data[1, :])
-        experimental_field = (self.dataset.data.data[0, index_max] - self.dataset.data.data[0, index_min])/2.0
-        calcd_field = self.VALUE_H*self.nu_value/self.VALUE_G_LILIF/self.VALUE_MuB
+        experimental_field = (
+            self.dataset.data.data[0, index_max] -
+            self.dataset.data.data[0, index_min])/2.0
+        calcd_field = \
+            self.VALUE_H*self.nu_value/self.VALUE_G_LILIF/self.VALUE_MuB
         delta_b0 = calcd_field - experimental_field
         return delta_b0
 
@@ -145,12 +160,17 @@ class BaselineFitting(aspecd.analysis.AnalysisStep):
         and uses a numpy polynomial fit on these points.
         """
         number_of_points = len(self.dataset.data.data[0, :])
-        points_per_side = ceil(number_of_points*self.parameters["percentage"]/100.0)
+        points_per_side = \
+            ceil(number_of_points*self.parameters["percentage"]/100.0)
         dataset_copy = deepcopy(self.dataset.data.data)
         data_list = dataset_copy.tolist()
-        points_to_use_x = self._get_points_to_use(data_list[0], points_per_side)
-        points_to_use_y = self._get_points_to_use(data_list[1], points_per_side)
-        coefficients = np.polyfit(np.asarray(points_to_use_x), np.asarray(points_to_use_y), self.parameters["order"])
+        points_to_use_x = \
+            self._get_points_to_use(data_list[0], points_per_side)
+        points_to_use_y = \
+            self._get_points_to_use(data_list[1], points_per_side)
+        coefficients = np.polyfit(
+            np.asarray(points_to_use_x), np.asarray(points_to_use_y),
+            self.parameters["order"])
         return coefficients
 
     @staticmethod
@@ -254,14 +274,16 @@ class IntegrationVerification(aspecd.analysis.AnalysisStep):
         self.threshold = threshold
 
     def _perform_task(self):
-        """Performs the actual integration on a certain percentage of the points
-        from the right part of the spectrum and compares them to the threshold.
+        """Performs the actual integration on a certain percentage of the
+        points from the right part of the spectrum and compares them to the
+        threshold.
 
         The result is a boolean: Is the integral lower than the threshold?
         """
         number_of_points = ceil(len(self.y)*self.percentage/100.0)
         points_y = self.y[len(self.y) - number_of_points - 1:]
-        points_x = self.dataset.data.data[0, len(self.y) - number_of_points - 1:]
+        points_x = \
+            self.dataset.data.data[0, len(self.y) - number_of_points - 1:]
         integral = np.trapz(points_y, points_x)
         self.results["integral_okay"] = (integral < self.threshold)
 
@@ -279,7 +301,9 @@ class CommonspaceAndDelimiters(aspecd.analysis.AnalysisStep):
 
     def _perform_task(self):
         if len(self.datasets) < 2:
-            raise NotEnoughDatasetsError("Number of datasets( " + str(len(self.datasets)) + ") is too low!")
+            raise NotEnoughDatasetsError(
+                "Number of datasets( " + str(len(self.datasets)) +
+                ") is too low!")
         self._acquire_data()
         self._check_commonspace_for_all()
         self.results["delimiters"] = self._find_all_delimiter_points()
@@ -289,7 +313,8 @@ class CommonspaceAndDelimiters(aspecd.analysis.AnalysisStep):
             x = dataset.data.data[0, :]
             if x[-1] < x[0]:
                 dataset_name = dataset.metadata.measurement.filename
-                raise WrongOrderError("Dataset " + dataset_name + " has x values in the wrong order.")
+                raise WrongOrderError("Dataset " + dataset_name +
+                                      " has x values in the wrong order.")
 
         for dataset in self.datasets:
             x = dataset.data.data[0, :]
@@ -330,8 +355,10 @@ class CommonspaceAndDelimiters(aspecd.analysis.AnalysisStep):
         delimiter_points.extend(self.end_points)
         points_close_to_edge = list()
         for n in range(len(delimiter_points)):
-            if (fabs(delimiter_points[n] - self.minimum) < 0.03*self.minimal_width) or (
-                    fabs(delimiter_points[n] - self.maximum) < 0.03 * self.minimal_width):
+            if (fabs(delimiter_points[n] - self.minimum) <
+                0.03*self.minimal_width) or (
+                    fabs(delimiter_points[n] - self.maximum) <
+                    0.03 * self.minimal_width):
                 points_close_to_edge.append(n)
         points_close_to_edge.reverse()
         for n in range(len(points_close_to_edge)):

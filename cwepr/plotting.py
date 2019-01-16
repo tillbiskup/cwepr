@@ -62,7 +62,8 @@ class BaselineControlPlotter(aspecd.plotting.SinglePlotter):
 
         ppl.plot(x, y, label="Spectrum")
         for coeffs in coeffs_list:
-            ppl.plot(x, np.polyval(np.poly1d(coeffs), x), label=str(len(coeffs)-1))
+            ppl.plot(x, np.polyval(np.poly1d(coeffs), x),
+                     label=str(len(coeffs)-1))
 
         ppl.legend()
         ppl.show()
@@ -224,23 +225,27 @@ class SimpleSpectrumPlotter(aspecd.plotting.SinglePlotter):
         y values for plotting
         """
         if self.settings["draw_zero"]:
-            ppl.plot(x, 0*x, lw=self.settings["zero_thickness"], color=self.settings["zero_color"])
-        ppl.plot(x, y, label=self.settings["curve_name"], color=self.settings["color"])
+            ppl.plot(x, 0*x, lw=self.settings["zero_thickness"],
+                     color=self.settings["zero_color"])
+        ppl.plot(x, y, label=self.settings["curve_name"],
+                 color=self.settings["color"])
 
     def _make_axis_limits(self, x):
         """Set the limits of the x axis.
 
-        The limits are first fitted to the width of the spectrum (if necessary),
-        then override with user specified values if applicable.
+        The limits are first fitted to the width of the spectrum
+        (if necessary),then override with user specified values if applicable.
 
         Parameters
         ----------
         x: 'list'
-        x values to plot. These are necessary for determining the correct limits.
+        x values to plot. These are necessary for determining the
+        correct limits.
         """
         if self.settings["fit_axis"]:
             self.axes.set_xlim(x[0], x[-1])
-        self.axes.set_xlim(self.settings["limit_left"], self.settings["limit_right"])
+        self.axes.set_xlim(self.settings["limit_left"],
+                           self.settings["limit_right"])
 
 
 class SpectrumAndIntegralPlotter(SimpleSpectrumPlotter):
@@ -336,14 +341,22 @@ class SpectrumAndIntegralPlotter(SimpleSpectrumPlotter):
         is omitted.
         """
         if self.settings["draw_zero"]:
-            ppl.plot(x, 0*x, lw=self.settings["zero_thickness"], color=self.settings["zero_color"])
-        ppl.plot(x, y, label=self.settings["curve_name"], color=self.settings["color"])
-        if self.parameters["integral_1"] is None and self.parameters["integral_2"] is None:
-            raise NoIntegralDataProvidedError("Neither first nor second integration data points have been provided for integral plotting.")
+            ppl.plot(x, 0*x, lw=self.settings["zero_thickness"],
+                     color=self.settings["zero_color"])
+        ppl.plot(x, y, label=self.settings["curve_name"],
+                 color=self.settings["color"])
+        if (self.parameters["integral_1"] is None and
+                self.parameters["integral_2"] is None):
+            raise NoIntegralDataProvidedError(""""Neither first nor second 
+integration data points have been provided for integral plotting.""")
         if self.parameters["integral_1"] is not None:
-            ppl.plot(x, self.parameters["integral_1"], label=self.settings["integral1_name"], color=self.settings["integral1_color"])
+            ppl.plot(x, self.parameters["integral_1"],
+                     label=self.settings["integral1_name"],
+                     color=self.settings["integral1_color"])
         if self.parameters["integral_2"] is not None:
-            ppl.plot(x, self.parameters["integral_2"], label=self.settings["integral2_name"], color=self.settings["integral2_color"])
+            ppl.plot(x, self.parameters["integral_2"],
+                     label=self.settings["integral2_name"],
+                     color=self.settings["integral2_color"])
 
 
 class Multiplotter(aspecd.plotting.MultiPlotter):
@@ -366,7 +379,8 @@ class Multiplotter(aspecd.plotting.MultiPlotter):
         self.set_zeroline_thickness(0.5)
         self.set_zeroline_color("black")
         self.set_fit_axis_to_spectrum(True)
-        color_library = ["tab:blue", "tab:red", "tab:green", "tab:cyan", "tab:magenta", "tab:yellow"]
+        color_library = ["tab:blue", "tab:red", "tab:green", "tab:cyan",
+                         "tab:magenta", "tab:yellow"]
         self.set_curve_colors(color_library[:len(self.datasets)])
         curve_names = list()
         for n in range(len(self.datasets)):
@@ -483,8 +497,11 @@ class Multiplotter(aspecd.plotting.MultiPlotter):
             self._plot_lines(x, y, n)
         x_axis_limits = self.get_x_axis_limits(x_axes)
         if self.settings["draw_zero"]:
-            zeroline_values = np.linspace(x_axis_limits[0], x_axis_limits[1], num=1500)
-            ppl.plot(zeroline_values, 0*zeroline_values, lw=self.settings["zero_thickness"], color=self.settings["zero_color"])
+            zeroline_values = np.linspace(x_axis_limits[0],
+                                          x_axis_limits[1], num=1500)
+            ppl.plot(zeroline_values, 0*zeroline_values,
+                     lw=self.settings["zero_thickness"],
+                     color=self.settings["zero_color"])
         self._make_axis_limits(x_axis_limits)
         ppl.legend()
         ppl.show()
@@ -528,7 +545,8 @@ class Multiplotter(aspecd.plotting.MultiPlotter):
         Parameters
         ----------
         x: 'list'
-        x values to plot. These are necessary for determining the correct limits.
+        x values to plot. These are necessary for determining the
+        correct limits.
         """
         if self.settings["fit_axis"]:
             self.axes.set_xlim(x[0], x[1])

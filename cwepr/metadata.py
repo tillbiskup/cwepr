@@ -169,31 +169,41 @@ class BFieldData(aspecd.metadata.Metadata):
             self.step_count = int(self.step_count)
             if self.field_width.value == 0.:
                 if self.field_max.unit != self.field_min.unit:
-                    raise UnequalUnitsError("Quantities with different units provided.")
-                self.field_width.value = self.field_max.value - self.field_min.value
+                    raise UnequalUnitsError(
+                        "Quantities with different units provided.")
+                self.field_width.value = self.field_max.value - \
+                                         self.field_min.value
                 self.field_width.unit = self.field_max.unit
             if self.field_max.value == 0.:
                 if self.field_width.unit != self.field_min.unit:
-                    raise UnequalUnitsError("Quantities with different units provided.")
-                self.field_max.value = self.field_min.value + self.field_width.value
+                    raise UnequalUnitsError(
+                        "Quantities with different units provided.")
+                self.field_max.value = self.field_min.value + \
+                                       self.field_width.value
                 self.field_max.unit = self.field_min.unit
             if self.field_min.value == 0.:
                 if self.field_max.unit != self.field_width.unit:
-                    raise UnequalUnitsError("Quantities with different units provided.")
-                self.field_min.value = self.field_max.value - self.field_width.value
+                    raise UnequalUnitsError(
+                        "Quantities with different units provided.")
+                self.field_min.value = self.field_max.value - \
+                                       self.field_width.value
                 self.field_min.unit = self.field_max.unit
             if self.step_count == 0:
                 if self.field_width.unit != self.step_width.unit:
-                    raise UnequalUnitsError("Quantities with different units provided.")
-                self.step_count = int(round((self.field_width.value / self.step_width.value), 0)) + 1
+                    raise UnequalUnitsError(
+                        "Quantities with different units provided.")
+                self.step_count = int(round((self.field_width.value /
+                                             self.step_width.value), 0)) + 1
             if self.step_width.value == 0.:
-                self.step_width.value = self.field_width.value / (self.step_count - 1)
+                self.step_width.value = self.field_width.value / \
+                                        (self.step_count - 1)
                 self.step_width.unit = self.field_max.unit
 
     def gauss_to_millitesla(self):
         """Transforms magnetic field parameters provided in gauss to
         millitesla."""
-        for quantity in [self.field_min, self.field_max, self.field_width, self.step_width]:
+        for quantity in [self.field_min, self.field_max,
+                         self.field_width, self.step_width]:
             quantity.value /= 10
             quantity.unit = "mT"
 
