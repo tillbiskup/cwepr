@@ -1,9 +1,14 @@
-import numpy as np
-from math import fabs
-from scipy import integrate
-from math import ceil
-from copy import deepcopy
+"""Module containing all analysis steps
 
+An analysis step is everything that operates on a dataset and yields a
+result largely independent of this dataset. E.g., integrdation or determination
+of a field correction value.
+"""
+
+import numpy as np
+from math import fabs, ceil
+from copy import deepcopy
+from scipy import integrate
 
 import aspecd.analysis
 
@@ -78,20 +83,20 @@ class FieldCorrectionValueFinding(aspecd.analysis.AnalysisStep):
 
         mu_B = 9.27401*10**(-24)
 
-    Reference: Rev. Mod. Phys. 2016, 88, ?.
+    Reference: Rev. Mod. Phys. 2016, 88, 035009.
 
     Planck constant::
 
         h = 6.62607*10**(-34)
 
-    Reference: Rev. Mod. Phys. 2016, 88, ?.
+    Reference: Rev. Mod. Phys. 2016, 88, 035009.
     ------
 
     Parameters
     ----------
     nu_value: 'float'
-    Frequency value of the measurement used to calculate the expected
-    field value.
+        Frequency value of the measurement used to calculate the expected
+        field value.
     """
     VALUE_G_LILIF = 2.002293
     VALUE_MuB = 9.27401*10**(-24)
@@ -118,7 +123,7 @@ class FieldCorrectionValueFinding(aspecd.analysis.AnalysisStep):
         Returns
         -------
         delta_b0: 'float'
-        Field correction value
+            Field correction value
         """
         index_max = np.argmax(self.dataset.data.data[1, :])
         index_min = np.argmin(self.dataset.data.data[1, :])
@@ -137,12 +142,12 @@ class BaselineFitting(aspecd.analysis.AnalysisStep):
     Attributes
     ----------
     order: 'int'
-    Order of the polynomial to create
+        Order of the polynomial to create
 
     percentage: 'int'
-    Percentage of the spectrum to consider as baseline on
-    EACH SIDE of the spectrum. I.e. 10% means 10% left and
-    10 % right.
+        Percentage of the spectrum to consider as baseline on
+        EACH SIDE of the spectrum. I.e. 10% means 10% left and
+        10 % right.
     """
     def __init__(self, order, percentage=10):
         super().__init__()
@@ -181,16 +186,16 @@ class BaselineFitting(aspecd.analysis.AnalysisStep):
         Parameters
         ----------
         data: 'list'
-        List from which points should be used on each side.
+            List from which points should be used on each side.
 
         points_per_side: 'int'
-        How many points from each end of the list should be used.
+            How many points from each end of the list should be used.
 
         Returns
         -------
         points_to_use: 'list'
-        List only containing the correct number of points from each side
-        and not the points in between.
+            List only containing the correct number of points from each side
+            and not the points in between.
         """
         left_part = data[:points_per_side+1]
         right_part = data[len(data) - points_per_side - 1:]
@@ -206,8 +211,8 @@ class IntegrationIndefinite(aspecd.analysis.AnalysisStep):
     Attributes
     ----------
     y: 'list'
-    y values to use for the integration. If this is omitted the y values
-    of the dataset are used.
+        y values to use for the integration. If this is omitted the y values
+        of the dataset are used.
     """
     def __init__(self, y=None):
         super().__init__()
@@ -229,12 +234,12 @@ class IntegrationIndefinite(aspecd.analysis.AnalysisStep):
 
 
 class IntegrationDefinite(aspecd.analysis.AnalysisStep):
-    """Makes a definite integration and calculated the area under the curve.
+    """Makes a definite integration and calculates the area under the curve.
 
     Attributes
     ----------
     y: 'list'
-    y values to use for the integration.
+        y values to use for the integration.
     """
     def __init__(self, y):
         super().__init__()
@@ -251,21 +256,23 @@ class IntegrationDefinite(aspecd.analysis.AnalysisStep):
 
 
 class IntegrationVerification(aspecd.analysis.AnalysisStep):
-    """Verifies, if the spectrum was correctly preprocessed. If so,
-    the integral of the first integration of the spectrum on the rightmost part
-    is supposed to be approximately zero.
+    """Verifies, if the spectrum was correctly preprocessed.
+
+    In the case of a correct preprocessing, the curve after the first
+    integration should be close to zero on the rightmost part of the spectrum,
+    i.e. the area under this curve should also be close to zero.
 
     Attributes
     ----------
     y: 'list'
-    y values to use for the integration
+        y values to use for the integration
 
     percentage: 'int'
-    Percentage of the spectrum to consider
+        Percentage of the spectrum to consider
 
     threshold: 'float'
-    Threshold for the integral. If the integral determined is smaller
-    the preprocessing is considered to have been successful.
+        Threshold for the integral. If the integral determined is smaller
+        the preprocessing is considered to have been successful.
     """
     def __init__(self, y, percentage=15, threshold=0.001):
         super().__init__()
@@ -289,6 +296,55 @@ class IntegrationVerification(aspecd.analysis.AnalysisStep):
 
 
 class CommonspaceAndDelimiters(aspecd.analysis.AnalysisStep):
+    """Analysis step for determine how much common definition range
+    some given spectra have.
+
+    If the common range is inferior to a certain value, an exception is raised.
+    This can be transformed to a warning on a higher level application. In this
+    respect the analysis determines if a large enough common space exists. This
+    is the case if no exception is raised.
+
+    Additionally the analysis finds the edges of common ranges and returns them
+    which can be used to display them in a plot.
+
+    Attributes
+    ----------
+    datasets: 'list'
+        List of datasets to consider in the determination.
+
+    threshold: 'float'
+        Distance used for determining whether or not the common
+        definition range of two spectra is large enough (vide infra).
+
+    minimum: 'float'
+        Leftmost end of all spectra determined in the routine.
+
+    maximum: 'float'
+        Rightmost end of all spectra determined in the routine.
+
+    minimal_width: 'float'
+        Smallest width of all spectra determined in the routine.
+
+    start_points: 'list'
+        List of the left ends of all spectra determined in the routine.
+
+    end_points: 'list'
+        List of the right ends of all spectra determined in the routine.
+
+    Raises
+    ------
+    NotEnoughDatasetsError
+        Exception raised when less than two datasets are provided.
+
+    WrongOrderError
+        Exception raised when any given x axis does not start with the
+        smallest and end with the highest value (determined by comparison
+        of the first and last value).
+
+    NoCommonspaceError
+        Exception raised when the size of the common definition range is
+        considered too low (vide supra).
+    """
     def __init__(self, datasets, threshold=0.05):
         super().__init__()
         self.datasets = datasets
@@ -300,6 +356,18 @@ class CommonspaceAndDelimiters(aspecd.analysis.AnalysisStep):
         self.end_points = list()
 
     def _perform_task(self):
+        """To find the common definition ranges first all relevant data points
+        are collected. Subsequently the common ranges are determined and
+        finally the delimiter points between different ranges are
+        determined.
+        These points are returned as result to possibly display them in a plot
+        using multiple spectra.
+
+        Raises
+        ------
+        NotEnoughDatasetsError
+            Exception raised when less than two datasets are provided.
+        """
         if len(self.datasets) < 2:
             raise NotEnoughDatasetsError(
                 "Number of datasets( " + str(len(self.datasets)) +
@@ -309,6 +377,15 @@ class CommonspaceAndDelimiters(aspecd.analysis.AnalysisStep):
         self.results["delimiters"] = self._find_all_delimiter_points()
 
     def _acquire_data(self):
+        """All relevant data (see class attributes) are collected.
+
+        Raises
+        ------
+        WrongOrderError
+            Exception raised when any given x axis does not start with the
+            smallest and end with the highest value (determined by comparison
+            of the first and last value).
+        """
         for dataset in self.datasets:
             x = dataset.data.data[0, :]
             if x[-1] < x[0]:
@@ -328,6 +405,31 @@ class CommonspaceAndDelimiters(aspecd.analysis.AnalysisStep):
                 self.minimal_width = x[-1]-x[0]
 
     def check_commonspace_for_two(self, index1, index2):
+        """Compares the definition ranges of two datasets.
+
+        Determines whether or not the common definition range of two specta
+        is considered large enough. This is determined by measuring the
+        distance between the start and end points of the spectra x axis.
+        Two factors considered are the difference in length between the axes
+        as well as the user provided threshold value.
+
+        The maximum distance allowed on either end is
+            length_difference + threshold*smaller width
+
+        Attributes
+        ----------
+        index1: 'int'
+            Index of one dataset used in the comparison. The index is given
+            for the instance's list of datasets.
+        index2: 'int'
+            Index of the second dataset used in the comparison.
+
+        Raises
+        ------
+        NoCommonspaceError
+            Exception raised when the size of the common definition range is
+            considered too low (vide supra).
+        """
         width1 = self.end_points[index1] - self.start_points[index1]
         width2 = self.end_points[index2] - self.start_points[index2]
         width_delta = fabs(width1-width2)
@@ -341,12 +443,26 @@ class CommonspaceAndDelimiters(aspecd.analysis.AnalysisStep):
                                      "have not enough commonspace.")
 
     def _check_commonspace_for_all(self):
+        """Checks the common defintion range for any combination of two
+        different spectra.
+
+        .. Todo:: Avoid calculating every combination twice.
+        """
         for n in range(len(self.datasets)):
             for m in range(len(self.datasets)):
                 if n != m:
                     self.check_commonspace_for_two(n, m)
 
     def _find_all_delimiter_points(self):
+        """Find points where a spectrum starts or ends.
+
+        Points very close to the actual edges of the whole definition range
+        are not considered. Different points that are rather close to each
+        other are combined.
+
+        This method is used to provide points to display edges of common
+        ranges inside a plot.
+        """
         self.start_points.sort()
         self.end_points.sort()
         self._eliminate_close_delimiters(self.start_points)
@@ -366,6 +482,13 @@ class CommonspaceAndDelimiters(aspecd.analysis.AnalysisStep):
         return delimiter_points
 
     def _eliminate_close_delimiters(self, points):
+        """Combine points close to each other.
+
+        Close means less than:
+            0.03*smallest width of all spectra
+
+        This threshold is currently rather arbitrary.
+        """
         close_points = list()
         while True:
             for n in range(len(points)-1):
@@ -380,5 +503,3 @@ class CommonspaceAndDelimiters(aspecd.analysis.AnalysisStep):
                     del(points[pair[1]])
                     points[pair[0]] = center
                 close_points = list()
-
-

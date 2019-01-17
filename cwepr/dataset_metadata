@@ -38,4 +38,4 @@ signal_channel:
   time_constant: N/A
   phase: {unit: deg, dimension: '', name: '', value: 0.0}
 probehead: {type: HQ, model: Bruker 4119HS-W1, coupling: critical}
-metadata_modifications: ['Possible override @ [/bridge/attenuation].']
+metadata_modifications: [Possible override @ /bridge/attenuation.]

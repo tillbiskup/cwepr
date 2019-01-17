@@ -209,7 +209,9 @@ class BFieldData(aspecd.metadata.Metadata):
 
 
 class Experiment(aspecd.metadata.Metadata):
-    """"""
+    """This metadata class contains general information on what type of
+    experiment was performed.
+    """
 
     def __init__(self):
         super().__init__()
@@ -221,7 +223,9 @@ class Experiment(aspecd.metadata.Metadata):
 
 
 class SpectrometerInfo(aspecd.metadata.Metadata):
-    """"""
+    """This metadata class contains information on what type of spectrometer
+    was used.
+    """
 
     def __init__(self):
         super().__init__()
@@ -230,7 +234,9 @@ class SpectrometerInfo(aspecd.metadata.Metadata):
 
 
 class BridgeInfo(aspecd.metadata.Metadata):
-    """"""
+    """This metadata class contains information on the microwave bridge
+    employed.
+    """
 
     def __init__(self):
         super().__init__()
@@ -245,7 +251,14 @@ class BridgeInfo(aspecd.metadata.Metadata):
 
 
 class SignalChannel(aspecd.metadata.Metadata):
-    """"""
+    """This metadata class contains information on the signal channel
+    employed.
+
+    ..Todo :: Currently aspecd crashes when the creation of an instance
+        :class: aspecd.metadata.PhysicalQuantity is attempted from an empty
+        parameter field. Find a workaround or make the supervisor of aspecd
+        find one.
+    """
 
     def __init__(self):
         super().__init__()
@@ -261,7 +274,8 @@ class SignalChannel(aspecd.metadata.Metadata):
 
 
 class Probehead(aspecd.metadata.Metadata):
-    """"""
+    """This metadata class contains information on the probe head employed.
+    """
 
     def __init__(self):
         super().__init__()
