@@ -1,6 +1,6 @@
 """Importers (Preparing raw data for processing)
 
-This importer is used for raw data provided in the Bruker BES3T data format.
+Currently, the only specialized importer works for the Bruker BES3T format.
 """
 
 
@@ -12,6 +12,7 @@ import collections as col
 import aspecd.io
 import aspecd.infofile
 import aspecd.metadata
+import aspecd.utils
 
 
 class Error(Exception):
@@ -107,7 +108,7 @@ class ImporterEPRGeneral(aspecd.io.DatasetImporter):
 
      Attributes
     ----------
-    setformat
+    data_format
         The format of the data to import. Is set manually or
         determined automatically.
     importers_for_formats
@@ -125,9 +126,9 @@ class ImporterEPRGeneral(aspecd.io.DatasetImporter):
     """
     supported_formats = {"BES3T": [".DTA", ".DSC"]}
 
-    def __init__(self, set_format=None, source=None):
+    def __init__(self, data_format=None, source=None):
         super().__init__(source=source)
-        self.set_format = set_format
+        self.data_format = data_format
         self.importers_for_formats = {"BES3T": ImporterBES3T}
         self.special_importer = None
 
@@ -142,21 +143,19 @@ class ImporterEPRGeneral(aspecd.io.DatasetImporter):
             Raised if a format is set but does not match any of
             the supported formats
             """
-        if self.set_format is None:
-            self.set_format = self._find_format()
+        if self.data_format is None:
+            self.data_format = self._find_format()
         else:
-            if self.set_format not in self.importers_for_formats.keys():
+            if self.data_format not in self.importers_for_formats.keys():
                 raise UnsupportedDataFormatError(("""The following format 
-                is not supported: """+self.set_format))
+                is not supported: """+self.data_format))
         self.special_importer = self.importers_for_formats[
-            self.set_format](source=self.source)
+            self.data_format](source=self.source)
         self.special_importer.import_into(self.dataset)
 
     def import_metadata(self):
         """Import metadata from user made info file and device
         parameter file.
-
-        .. todo:: Process/Map the data.
 
         Raises
         ------
@@ -186,11 +185,14 @@ class ImporterEPRGeneral(aspecd.io.DatasetImporter):
         if a data and metadata file matching any supported
         format are present.
 
+        Determination is performed by checking if files with the correct name
+        and extension are present.
+
         Raises
         ------
         NoMatchingFilePairError
             Raised if no pair of files matching any one supported
-            format can be found. Currently only Bruker BES3T
+            format can be found. Currently only Bruker BES3T format
             is supported.
 
         """
@@ -208,9 +210,6 @@ class ImporterEPRGeneral(aspecd.io.DatasetImporter):
     def _import_infofile(filename):
         """Import and parse user made info file using the method
         provided by ASpecD.
-
-        The data is checked for plausibility; if values are
-        too large or too small the byte order is changed.
 
         Returns
         ------
@@ -263,6 +262,18 @@ class ImporterBES3T(aspecd.io.DatasetImporter):
 
     @staticmethod
     def add_units(parsed_dsc_data):
+        """Adds the units to the data values concerning the field.
+
+        Parameters
+         ---------
+         parsed_dsc_data: 'dict'
+         Original data.
+
+
+        Returns
+        -------
+        Data with units added.
+        """
         parsed_dsc_data[0]["Data Ranges and Resolutions:"]["XMIN"] += " Gs"
         parsed_dsc_data[0]["Data Ranges and Resolutions:"]["XWID"] += " Gs"
         return parsed_dsc_data
@@ -290,6 +301,7 @@ class ImporterBES3T(aspecd.io.DatasetImporter):
 class ParserDSC:
     """Parser for a *.DSC parameter file belonging to the BES3T
     format."""
+
     def parse_dsc(self, file_content):
         """Main method for parsing a *.DSC file into its
         three parts and each of the three parts into a dictionary
@@ -326,6 +338,8 @@ class ParserDSC:
         """Make a dictionary containing all information
         at the same level, not divided by headlines and sub-headlines
         for easier mapping
+
+        .. Todo:: Find out, if this method is actually used.
 
         Parameters
         ------
@@ -378,7 +392,7 @@ class ParserDSC:
 
     @staticmethod
     def _subdivide_part1(part1):
-        """Preprocess the first part ("Descriptor Information")
+        """Pre process the first part ("Descriptor Information")
          of a *.DSC file.
 
         The crude string is split into subdivisions; the delimiter
@@ -389,7 +403,7 @@ class ParserDSC:
         Each subdivision is then transformed into a dict entry
         with the headline, stripped of the first two characters
         (*\t) as key and the remaining information as value.
-        Lines containing an asterisk only, are removed.
+        Lines containing an asterisk only are removed.
 
         Parameters
         ------
@@ -558,8 +572,8 @@ class ParserDSC:
         """Pre process the third part ("Device Specific Layer")
          of a *.DSC file.
 
-        The crude string is split into subdivisions, which are
-        begun with a headline containing the fragment ".DVC"
+        The crude string is split into subdivisions, which start
+        with a headline containing the fragment ".DVC"
 
         Each subdivision is then transformed into a dict entry
         with the headline, stripped of the first eight characters
@@ -599,8 +613,57 @@ class ParserDSC:
 
 
 class ExporterASCII(aspecd.io.DatasetExporter):
+    """Exports the complete dataset to an ASCII file. At the same time,
+    the respective metadata is exported into a YAML file using the
+    functionality provided by aspecd.
+
+    .. Todo:: Move exporter to it's own module.
+
+    """
     def __init__(self):
         super().__init__()
 
     def _export(self):
+        """Export the dataset's numeric data and metadata."""
         np.savetxt("Dataset", self.dataset.data.data, delimiter=",")
+        file_writer = aspecd.utils.Yaml()
+        metadata = self._get_and_prepare_metadata()
+        file_writer.dict = metadata
+        file_writer.write_to(filename="dataset_metadata")
+
+    def _get_and_prepare_metadata(self):
+        """Transforms the metadata to a dict and subsequently eliminates
+        all instances of numpy.array by transforming them into lists
+        (vide infra).
+
+        Returns
+        -------
+        metadata_prepared: 'dict'
+        transformed metadata
+        """
+        metadata = self.dataset.metadata.to_dict()
+        metadata_prepared = self._remove_arrays(metadata)
+        return metadata_prepared
+
+    def _remove_arrays(self, dictionary):
+        """Removes instances of numpy.array from a given dict that might
+        interfere with the YAML functionality used for the export.
+
+        This is a cascading method that also works on nested dicts.
+
+        Parameters
+        ----------
+        dictionary: 'dict'
+        Dictionary to relieve of arrays.
+
+        Returns
+        -------
+        dictionary: 'dict'
+        Dictionary relieved of arrays.
+        """
+        for k, v in dictionary.items():
+            if type(v) == dict:
+                dictionary[k] = self._remove_arrays(v)
+            if type(v) == np.array:
+                dictionary[k].to_list()
+        return dictionary

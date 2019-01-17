@@ -89,7 +89,7 @@ class DatasetMetadata(aspecd.metadata.DatasetMetadata):
         self.bridge = BridgeInfo()
         self.signal_channel = SignalChannel()
         self.probehead = Probehead()
-        self.modifications = []
+        self.metadata_modifications = []
 
 
 class BFieldData(aspecd.metadata.Metadata):
