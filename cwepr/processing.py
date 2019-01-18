@@ -217,6 +217,3 @@ class PhaseCorrection(aspecd.processing.ProcessingStep):
         data_imag = np.exp(-1j*self.parameters["phaseangle_value"])*data_imag
         data_real = np.real(data_imag)
         self.dataset.data.data = data_real
-
-
-
