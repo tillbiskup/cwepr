@@ -5,6 +5,7 @@ a independent result. E.g., Field Correction or Baseline correction.
 """
 
 import numpy as np
+from scipy import signal
 
 import aspecd.processing
 
@@ -184,3 +185,38 @@ class SpectrumSubtract(aspecd.processing.ProcessingStep):
         y_interp = self.interpolate()
         for n in range(len(self.dataset.data.data[0, :])):
             self.dataset.data.data[1, n] -= y_interp[n]
+
+
+class PhaseCorrection(aspecd.processing.ProcessingStep):
+    """Processing step for phase correction.
+
+    The functionality is suitable for automatic phase correction, no
+    parameters need to be provided manually.
+    """
+    def __init__(self):
+        super().__init__()
+
+    def _perform_task(self):
+        """Perform the actual phase correction. The phase angle is
+        acquired from the dataset's metadata and transformed to radians
+        if necessary.
+        The phase correction is then applied and the corrected data inserted
+        into the dataset.
+        """
+        phaseangle_raw = self.dataset.metadata.signal_channel.phase
+        self.parameters["phaseangle_value"] = phaseangle_raw.value
+        self.parameters["phaseangle_unit"] = phaseangle_raw.unit
+        if self.parameters["phaseangle_unit"] == "deg":
+            self.parameters[
+                "phaseangle_value"] = (
+                        np.pi * self.parameters["phaseangle_value"]) / 180
+            self.parameters["phaseangle_unit"] = "rad"
+
+        data = self.dataset.data.data
+        data_imag = signal.hilbert(data)
+        data_imag = np.exp(-1j*self.parameters["phaseangle_value"])*data_imag
+        data_real = np.real(data_imag)
+        self.dataset.data.data = data_real
+
+
+

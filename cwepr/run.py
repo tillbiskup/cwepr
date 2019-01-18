@@ -39,13 +39,16 @@ get_baseline_polynome_analysis = dts.analyse(get_baseline_polynome_step)
 polynome_coeffs3 = get_baseline_polynome_analysis.results["Fit_Coeffs"]
 
 plotter = cwepr.plotting.BaselineControlPlotter(dts.data.data, [polynome_coeffs0, polynome_coeffs1, polynome_coeffs3])
-#dts.plot(plotter)
+dts.plot(plotter)
 
 correct_baseline_step = cwepr.processing.BaselineCorrection(polynome_coeffs1)
 dts.process(correct_baseline_step)
 
+phase_step = cwepr.processing.PhaseCorrection()
+dts.process(phase_step)
+
 plotter = cwepr.plotting.SimpleSpectrumPlotter()
-#dts.plot(plotter)
+dts.plot(plotter)
 
 integrate_step1 = cwepr.analysis.IntegrationIndefinite()
 integration = dts.analyse(integrate_step1)
@@ -141,7 +144,7 @@ subtract_step = cwepr.processing.SpectrumSubtract(dts_v1)
 sub_values = dts_v2.process(subtract_step)
 
 plotter_diff = cwepr.plotting.SimpleSpectrumPlotter()
-dts_v2.plot(plotter_diff)
+#dts_v2.plot(plotter_diff)
 
 integrate_step3 = cwepr.analysis.IntegrationIndefinite()
 integration = dts_v2.analyse(integrate_step3)
@@ -160,7 +163,7 @@ final_integral2 = final_integrate2.results["integral"]
 print(final_integral2)
 
 plotter2 = cwepr.plotting.SpectrumAndIntegralPlotter(integral_1=integrate_values3, integral_2=integrate_values4)
-dts_v2.plot(plotter2)
+#dts_v2.plot(plotter2)
 
 exporter = cwepr.importers.ExporterASCII()
 exporter.export_from(dts_v2)
