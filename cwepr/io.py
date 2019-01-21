@@ -612,6 +612,26 @@ class ParserDSC:
         return subdivisions
 
 
+class ImporterGenericEPR(aspecd.io.DatasetImporter):
+    def __init__(self):
+        super().__init__()
+
+
+class ImporterEMX(ImporterGenericEPR):
+    def __init__(self):
+        super().__init__()
+
+
+class ImporterESP(ImporterGenericEPR):
+    def __init__(self):
+        super().__init__()
+
+
+class ImporterFactoryEPR(aspecd.io.DatasetImporterFactory):
+    def __init__(self):
+        super().__init__()
+
+
 class ExporterASCII(aspecd.io.DatasetExporter):
     """Exports the complete dataset to an ASCII file. At the same time,
     the respective metadata is exported into a YAML file using the
