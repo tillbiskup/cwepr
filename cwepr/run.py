@@ -3,7 +3,7 @@ import cwepr.dataset
 import cwepr.analysis
 import cwepr.processing
 import cwepr.plotting
-import cwepr.importers
+import cwepr.io
 
 
 
@@ -165,5 +165,5 @@ print(final_integral2)
 plotter2 = cwepr.plotting.SpectrumAndIntegralPlotter(integral_1=integrate_values3, integral_2=integrate_values4)
 #dts_v2.plot(plotter2)
 
-exporter = cwepr.importers.ExporterASCII()
+exporter = cwepr.io.ExporterASCII()
 exporter.export_from(dts_v2)

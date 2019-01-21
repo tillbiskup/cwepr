@@ -616,9 +616,6 @@ class ExporterASCII(aspecd.io.DatasetExporter):
     """Exports the complete dataset to an ASCII file. At the same time,
     the respective metadata is exported into a YAML file using the
     functionality provided by aspecd.
-
-    .. Todo:: Move exporter to it's own module.
-
     """
     def __init__(self):
         super().__init__()

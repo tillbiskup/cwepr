@@ -217,3 +217,37 @@ class PhaseCorrection(aspecd.processing.ProcessingStep):
         data_imag = np.exp(-1j*self.parameters["phaseangle_value"])*data_imag
         data_real = np.real(data_imag)
         self.dataset.data.data = data_real
+
+
+class NormalizeMaximum(aspecd.processing.ProcessingStep):
+    """Normalizes a spectrum concerning the height of the maximum.
+
+    Should only be used on an integrated spectrum.
+    """
+    def __init__(self):
+        super().__init__()
+
+    def _perform_task(self):
+        maximum = max(self.dataset.data.data[0, :])
+        for n in range(len(self.dataset.data.data[0, :])):
+            self.dataset.data.data[0, n] /= maximum
+
+
+class NormalizeArea(aspecd.processing.ProcessingStep):
+    """Normalizes a spectrum concerning the area under the curve.
+
+    Should only be used on an integrated spectrum.
+
+    Parameters
+    ----------
+    integral: 'float'
+        Area under the curve.
+    """
+    def __init__(self, integral):
+        super().__init__()
+        self.parameters["integral"] = integral
+
+    def _perform_task(self):
+        for n in range(len(self.dataset.data.data[0, :])):
+            self.dataset.data.data[0, n] /= self.parameters["integral"]
+
