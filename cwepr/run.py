@@ -67,7 +67,7 @@ final_integral = final_integrate.results["integral"]
 print(final_integral)
 
 plotter = cwepr.plotting.SpectrumAndIntegralPlotter(integral_1=integrate_values1, integral_2=integrate_values2)
-#dts.plot(plotter)
+dts.plot(plotter)
 
 #Test Vergleich von Spektren
 
@@ -135,7 +135,7 @@ print(delimiters)
 
 #Plot
 multiplotter = cwepr.plotting.Multiplotter([dts_v1, dts_v2], integrals=[fi1, fi2])
-multiplotter.plot()
+#multiplotter.plot()
 #dts_v1.plot(multiplotter)
 
 

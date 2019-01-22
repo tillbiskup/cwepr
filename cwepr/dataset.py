@@ -35,7 +35,7 @@ class Dataset(aspecd.dataset.Dataset):
         super().__init__()
         self.metadata = cwepr.metadata.DatasetMetadata()
 
-    def import_from_file(self, filename, data_format=None):
+    def import_from_file(self, filename):
         """Import data and metadata for a given filename.
 
         The appropriate importer automatically checks whether
@@ -45,14 +45,10 @@ class Dataset(aspecd.dataset.Dataset):
          ----------
          filename : 'str'
              Path including the filename but not the extension.
-
-         data_format: 'str'
-             Format of the data and metadata. If none is set the
-             importer tries to automatically determine the format.
          """
 
-        importer = importers.ImporterEPRGeneral(source=filename,
-                                                data_format=data_format)
+        importer_factory = cwepr.io.ImporterFactoryEPR()
+        importer = importer_factory.get_importer(source=filename)
         super().import_from(importer=importer)
         metadata = self._import_metadata(importer=importer)
         self._map_metadata_and_check_for_overrides(metadata)
@@ -64,20 +60,21 @@ class Dataset(aspecd.dataset.Dataset):
 
     def _map_metadata_and_check_for_overrides(self, metadata):
         """Modifies names of metadata information as necessary, combines
-        data from the INFO file and the DSC file and checks for possible
-        overrides.
+        data from the INFO file and the automatic parameter file and checks
+        for possible overrides.
 
         Parameters
         ---------
         metadata: 'list'
-            Loaded metadata to use.
+            Loaded metadata to use. First entry: from infofile;
+            Second entry automatic parameter file.
         """
         metadata_mapper = aspecd.metadata.MetadataMapper()
         metadata_mapper.metadata = metadata[0]
         metadata_mapper.mappings = self.mappings
         metadata_mapper.map()
         self.metadata.from_dict(metadata_mapper.metadata)
-        dsc_data_mapped = self._map_dsc(metadata[1])
+        dsc_data_mapped = metadata[1]
         for data_part in dsc_data_mapped:
             self.metadata.from_dict(data_part)
             self._check_for_override(metadata_mapper.metadata, data_part)
@@ -124,75 +121,6 @@ class Dataset(aspecd.dataset.Dataset):
                 else:
                     self.metadata.metadata_modifications.append(
                         "Possible override @ " + name + "/" + entry + ".")
-
-    def _map_dsc(self, dsc_data):
-        """Prepare data from dsc file and include it in the
-        metadata.
-
-        Parameters
-        ----------
-        dsc_data: 'list'
-            List containing all three parts of a dsc file as dicts.
-
-        Returns
-        ----------
-        mapped_data: 'list'
-            data with the necessary modifications applied to allow
-            for addition to the metadata.
-
-        """
-        dsc_mapper = aspecd.metadata.MetadataMapper()
-        mapped_data = []
-        for n in range(len(dsc_data)):
-            dsc_mapper.metadata = dsc_data[n]
-            if n == 0:
-                mapped_data.append(self._map_descriptor(dsc_mapper))
-            if n == 2:
-                mapped_data.append(self._map_device(dsc_mapper))
-        return mapped_data
-
-    @staticmethod
-    def _map_descriptor(mapper):
-        """Prepare part one of the dsc file data for adding to the
-        metadata.
-
-         Parameters
-         ----------
-         mapper : :obj:'aspecd.metadata.MetadataMapper'
-             metadata mapper containing the respective first part of the
-             dsc file as metadata.
-        """
-        mapper.mappings = [
-            ["Data Ranges and Resolutions:", "rename_key",
-             ["XPTS", "step_count"]],
-            ["Data Ranges and Resolutions:", "rename_key",
-             ["XMIN", "field_min"]],
-            ["Data Ranges and Resolutions:", "rename_key",
-             ["XWID", "field_width"]],
-            ["", "rename_key",
-             ["Data Ranges and Resolutions:", "magnetic_field"]]
-                          ]
-        mapper.map()
-        return mapper.metadata
-
-    @staticmethod
-    def _map_device(mapper):
-        """Prepare part three of the dsc file data for adding to the
-        metadata.
-
-         Parameters
-         ----------
-         mapper : :obj:'aspecd.metadata.MetadataMapper'
-             metadata mapper containing the respective third part of the
-             dsc file as metadata.
-        """
-        mapper.mappings = [
-            ["mwBridge, 1.0", "rename_key", ["PowerAtten", "attenuation"]],
-            ["", "rename_key", ["mwBridge, 1.0", "bridge"]],
-            ["", "rename_key", ["signalChannel, 1.0", "experiment"]]
-                            ]
-        mapper.map()
-        return mapper.metadata
 
     @staticmethod
     def _import_metadata(importer=None):

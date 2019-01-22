@@ -126,34 +126,13 @@ class ImporterEPRGeneral(aspecd.io.DatasetImporter):
         can be found. Currently only Bruker BES3T is supported.
 
     """
-    supported_formats = {"BES3T": [".DTA", ".DSC"]}
+    supported_formats = {"BES3T": [".DTA", ".DSC"], "Other": [".spc", ".par"]}
 
     def __init__(self, data_format=None, source=None):
         super().__init__(source=source)
         self.data_format = data_format
-        self.importers_for_formats = {"BES3T": ImporterBES3T}
-        self.special_importer = None
-
-    def _import(self):
-        """Call the correct importer for the data format set.
-        If no format is set, it is automatically determined
-        from the given filename.
-
-        Raises
-        ------
-        UnsupportedDataFormatError
-            Raised if a format is set but does not match any of
-            the supported formats
-            """
-        if self.data_format is None:
-            self.data_format = self._find_format()
-        else:
-            if self.data_format not in self.importers_for_formats.keys():
-                raise UnsupportedDataFormatError(("""The following format 
-                is not supported: """+self.data_format))
-        self.special_importer = self.importers_for_formats[
-            self.data_format](source=self.source)
-        self.special_importer.import_into(self.dataset)
+        self.importers_for_formats = {"BES3T": ImporterBES3T,
+                                      "Other": ImporterEMXandESP}
 
     def import_metadata(self):
         """Import metadata from user made info file and device
@@ -173,40 +152,8 @@ class ImporterEPRGeneral(aspecd.io.DatasetImporter):
         """
         if not os.path.isfile((self.source + ".info")):
             raise MissingInfoFileError("No info file provided")
-        if not self.special_importer:
-            raise ImportMetadataOnlyError(("""No format specific importer"
-                was available as metadata import was attempted. This 
-                probably happened due to not importing experimental data
-                first."""))
         info_data = self._import_infofile((self.source + ".info"))
-        param_data = self.special_importer.import_metadata()
-        return [info_data, param_data]
-
-    def _find_format(self):
-        """Determine the format of the given filename by checking
-        if a data and metadata file matching any supported
-        format are present.
-
-        Determination is performed by checking if files with the correct name
-        and extension are present.
-
-        Raises
-        ------
-        NoMatchingFilePairError
-            Raised if no pair of files matching any one supported
-            format can be found. Currently only Bruker BES3T format
-            is supported.
-
-        """
-
-        for k, v in self.supported_formats.items():
-            if os.path.isfile((self.source+v[0])) and os.path.isfile(
-                (self.source+v[1])
-            ):
-                return k
-        else:
-            raise NoMatchingFilePairError("""No file pair matching a single
-            format was found for path: """+self.source)
+        return info_data
 
     @staticmethod
     def _import_infofile(filename):
@@ -222,7 +169,7 @@ class ImporterEPRGeneral(aspecd.io.DatasetImporter):
         return infofile_data
 
 
-class ImporterBES3T(aspecd.io.DatasetImporter):
+class ImporterBES3T(ImporterEPRGeneral):
     """Specialized Importer for the BES3T format."""
 
     def __init__(self, source=None):
@@ -254,12 +201,12 @@ class ImporterBES3T(aspecd.io.DatasetImporter):
         processed_param_data: 'dict'
         Parsed data from the source parameter file.
         """
-
+        info_data = super().import_metadata()
         file_param = open(self.source+".DSC")
         raw_param_data = file_param.read()
         dsc_file_parser = ParserDSC()
         parsed_param_data = dsc_file_parser.parse_dsc(raw_param_data)
-        return parsed_param_data
+        return [info_data, parsed_param_data]
 
 
 class ParserDSC:
@@ -296,7 +243,8 @@ class ParserDSC:
             delimiter_width=19
         ))
         three_parts_processed = self.add_units(three_parts_processed)
-        return three_parts_processed
+        data_mapped = self._map_dsc(three_parts_processed)
+        return data_mapped
 
     @staticmethod
     def add_units(parsed_dsc_data):
@@ -594,15 +542,185 @@ class ParserDSC:
             subdivisions[current_subpart[0][9:]] = current_subpart[1:]
         return subdivisions
 
+    def _map_dsc(self, dsc_data):
+        """Prepare data from dsc file and include it in the
+        metadata.
 
-class ImporterEMXandESP(aspecd.io.DatasetImporter):
+        Parameters
+        ----------
+        dsc_data: 'list'
+            List containing all three parts of a dsc file as dicts.
+
+        Returns
+        ----------
+        mapped_data: 'list'
+            data with the necessary modifications applied to allow
+            for addition to the metadata.
+
+        """
+        dsc_mapper = aspecd.metadata.MetadataMapper()
+        mapped_data = []
+        for n in range(len(dsc_data)):
+            dsc_mapper.metadata = dsc_data[n]
+            if n == 0:
+                mapped_data.append(self._map_descriptor(dsc_mapper))
+            if n == 2:
+                mapped_data.append(self._map_device(dsc_mapper))
+        return mapped_data
+
+    @staticmethod
+    def _map_descriptor(mapper):
+        """Prepare part one of the dsc file data for adding to the
+        metadata.
+
+         Parameters
+         ----------
+         mapper : :obj:'aspecd.metadata.MetadataMapper'
+             metadata mapper containing the respective first part of the
+             dsc file as metadata.
+        """
+        mapper.mappings = [
+            ["Data Ranges and Resolutions:", "rename_key",
+             ["XPTS", "step_count"]],
+            ["Data Ranges and Resolutions:", "rename_key",
+             ["XMIN", "field_min"]],
+            ["Data Ranges and Resolutions:", "rename_key",
+             ["XWID", "field_width"]],
+            ["", "rename_key",
+             ["Data Ranges and Resolutions:", "magnetic_field"]]
+                          ]
+        mapper.map()
+        return mapper.metadata
+
+    @staticmethod
+    def _map_device(mapper):
+        """Prepare part three of the dsc file data for adding to the
+        metadata.
+
+         Parameters
+         ----------
+         mapper : :obj:'aspecd.metadata.MetadataMapper'
+             metadata mapper containing the respective third part of the
+             dsc file as metadata.
+        """
+        mapper.mappings = [
+            ["mwBridge, 1.0", "rename_key", ["PowerAtten", "attenuation"]],
+            ["", "rename_key", ["mwBridge, 1.0", "bridge"]],
+            ["", "rename_key", ["signalChannel, 1.0", "experiment"]]
+                            ]
+        mapper.map()
+        return mapper.metadata
+
+
+class ImporterEMXandESP(ImporterEPRGeneral):
+    """Specialized Importer for the BES3T format."""
+
+    def __init__(self, source=None):
+        super().__init__(source=source)
+
+    def _import(self):
+        """Import data file in BES3T format.
+
+        The data is checked for plausibility; if values are
+        too large or too small the byte order is changed.
+
+        Returns
+        ------
+        raw_data: 'numpy.array'
+        Raw numerical data in processable form.
+        """
+        complete_filename = self.source + ".spc"
+        datatype = np.dtype('<f')
+        raw_data = np.fromfile(complete_filename, datatype)
+        if not are_values_plausible(raw_data):
+            datatype = np.dtype('>i4')
+            raw_data = np.fromfile(complete_filename, datatype)
+        self.dataset.data.data = raw_data
+
+    def import_metadata(self):
+        """Import parameter file in BES3T format and
+        user created info file.
+
+        Returns
+        ------
+        processed_param_data: 'dict'
+        Parsed data from the source parameter file.
+        """
+        info_data = super().import_metadata()
+        file_param = open(self.source + ".par")
+        raw_param_data = file_param.read()
+        par_file_parser = ParserPAR()
+        parsed_param_data = par_file_parser.parse_par(raw_param_data)
+        return [info_data, parsed_param_data]
+
+
+class ParserPAR:
     def __init__(self):
-        super().__init__()
+        pass
+
+    def parse_par(self, file_content):
+        """Main method for parsing a *.par into a dictionary.
+
+        Parameters
+        ------
+        file_content: 'str'
+        Content of a complete *.par file.
+
+        Returns
+        ------
+        file_content: 'list'
+        """
+        return file_content
 
 
 class ImporterFactoryEPR(aspecd.io.DatasetImporterFactory):
+    supported_formats = {"BES3T": [".DTA", ".DSC"]}
+
     def __init__(self):
         super().__init__()
+        self.importers_for_formats = {"BES3T": ImporterBES3T}
+
+    def _get_importer(self, source):
+        """Call the correct importer for the data format set.
+        If no format is set, it is automatically determined
+        from the given filename.
+
+        Raises
+        ------
+        UnsupportedDataFormatError
+            Raised if a format is set but does not match any of
+            the supported formats
+            """
+        self.data_format = self._find_format(source)
+        special_importer = self.importers_for_formats[
+            self.data_format](source=source)
+        return special_importer
+
+    def _find_format(self, source):
+        """Determine the format of the given filename by checking
+        if a data and metadata file matching any supported
+        format are present.
+
+        Determination is performed by checking if files with the correct name
+        and extension are present.
+
+        Raises
+        ------
+        NoMatchingFilePairError
+            Raised if no pair of files matching any one supported
+            format can be found. Currently only Bruker BES3T format
+            is supported.
+
+        """
+
+        for k, v in self.supported_formats.items():
+            if os.path.isfile((source+v[0])) and os.path.isfile(
+                (source+v[1])
+            ):
+                return k
+        else:
+            raise NoMatchingFilePairError("""No file pair matching a single
+            format was found for path: """+source)
 
 
 class ExporterASCII(aspecd.io.DatasetExporter):
