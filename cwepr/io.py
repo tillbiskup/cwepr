@@ -14,6 +14,8 @@ import aspecd.infofile
 import aspecd.metadata
 import aspecd.utils
 
+from cwepr.utils import are_values_plausible
+
 
 class Error(Exception):
     """Base class for exceptions in this module."""
@@ -239,7 +241,7 @@ class ImporterBES3T(aspecd.io.DatasetImporter):
         """
         complete_filename = self.source+".DTA"
         raw_data = np.fromfile(complete_filename)
-        if not self._are_values_plausible(raw_data):
+        if not are_values_plausible(raw_data):
             raw_data = raw_data.byteswap()
         self.dataset.data.data = raw_data
 
@@ -257,45 +259,7 @@ class ImporterBES3T(aspecd.io.DatasetImporter):
         raw_param_data = file_param.read()
         dsc_file_parser = ParserDSC()
         parsed_param_data = dsc_file_parser.parse_dsc(raw_param_data)
-        processed_param_data = self.add_units(parsed_param_data)
-        return processed_param_data
-
-    @staticmethod
-    def add_units(parsed_dsc_data):
-        """Adds the units to the data values concerning the field.
-
-        Parameters
-         ---------
-         parsed_dsc_data: 'dict'
-         Original data.
-
-
-        Returns
-        -------
-        Data with units added.
-        """
-        parsed_dsc_data[0]["Data Ranges and Resolutions:"]["XMIN"] += " Gs"
-        parsed_dsc_data[0]["Data Ranges and Resolutions:"]["XWID"] += " Gs"
-        return parsed_dsc_data
-
-    @staticmethod
-    def _are_values_plausible(array):
-        """Check whether the values imported are plausible, i.e.
-        not extremely high or low.
-
-        Note: In case of a wrong byteorder the values observed can
-        reach 10**300 and higher. The threshold of what is considered
-        plausible is, so far, rather arbitrary.
-
-        Parameters
-        ------
-        array: 'numpy.array'
-        Array to check the values of.
-        """
-        for v in array:
-            if v > 10**4 or v < 10**-10:
-                return False
-        return True
+        return parsed_param_data
 
 
 class ParserDSC:
@@ -331,7 +295,26 @@ class ParserDSC:
             self._subdivide_part3(three_parts[2]), " ",
             delimiter_width=19
         ))
+        three_parts_processed = self.add_units(three_parts_processed)
         return three_parts_processed
+
+    @staticmethod
+    def add_units(parsed_dsc_data):
+        """Adds the units to the data values concerning the field.
+
+        Parameters
+         ---------
+         parsed_dsc_data: 'dict'
+         Original data.
+
+
+        Returns
+        -------
+        Data with units added.
+        """
+        parsed_dsc_data[0]["Data Ranges and Resolutions:"]["XMIN"] += " Gs"
+        parsed_dsc_data[0]["Data Ranges and Resolutions:"]["XWID"] += " Gs"
+        return parsed_dsc_data
 
     @staticmethod
     def _make_dict_without_structure(processed_file):
@@ -612,17 +595,7 @@ class ParserDSC:
         return subdivisions
 
 
-class ImporterGenericEPR(aspecd.io.DatasetImporter):
-    def __init__(self):
-        super().__init__()
-
-
-class ImporterEMX(ImporterGenericEPR):
-    def __init__(self):
-        super().__init__()
-
-
-class ImporterESP(ImporterGenericEPR):
+class ImporterEMXandESP(aspecd.io.DatasetImporter):
     def __init__(self):
         super().__init__()
 

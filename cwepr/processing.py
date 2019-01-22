@@ -219,8 +219,8 @@ class PhaseCorrection(aspecd.processing.ProcessingStep):
         self.dataset.data.data = data_real
 
 
-class NormalizeMaximum(aspecd.processing.ProcessingStep):
-    """Normalizes a spectrum concerning the height of the maximum.
+class NormaliseMaximum(aspecd.processing.ProcessingStep):
+    """Normalises a spectrum concerning the height of the maximum.
 
     Should only be used on an integrated spectrum.
     """
@@ -233,8 +233,8 @@ class NormalizeMaximum(aspecd.processing.ProcessingStep):
             self.dataset.data.data[0, n] /= maximum
 
 
-class NormalizeArea(aspecd.processing.ProcessingStep):
-    """Normalizes a spectrum concerning the area under the curve.
+class NormaliseArea(aspecd.processing.ProcessingStep):
+    """Normalises a spectrum concerning the area under the curve.
 
     Should only be used on an integrated spectrum.
 
