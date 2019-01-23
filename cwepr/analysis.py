@@ -15,7 +15,6 @@ import aspecd.analysis
 
 class Error(Exception):
     """Base class for exceptions in this module."""
-
     pass
 
 
@@ -29,7 +28,6 @@ class WrongOrderError(Error):
         explanation of the error
 
     """
-
     def __init__(self, message=''):
         super().__init__()
         self.message = message
@@ -41,11 +39,9 @@ class NotEnoughDatasetsError(Error):
 
     Attributes
     ----------
-    message : `str`
+    message : :class:`str`
         explanation of the error
-
     """
-
     def __init__(self, message=''):
         super().__init__()
         self.message = message
@@ -57,7 +53,7 @@ class NoCommonspaceError(Error):
 
     Attributes
     ----------
-    message : `str`
+    message : :class:`str`
         explanation of the error
 
     """
@@ -94,7 +90,7 @@ class FieldCorrectionValueFinding(aspecd.analysis.AnalysisStep):
 
     Parameters
     ----------
-    nu_value: 'float'
+    nu_value: :class:'float'
         Frequency value of the measurement used to calculate the expected
         field value.
     """
@@ -122,7 +118,7 @@ class FieldCorrectionValueFinding(aspecd.analysis.AnalysisStep):
 
         Returns
         -------
-        delta_b0: 'float'
+        delta_b0: :class:'float'
             Field correction value
         """
         index_max = np.argmax(self.dataset.data.data[1, :])
@@ -141,10 +137,10 @@ class BaselineFitting(aspecd.analysis.AnalysisStep):
 
     Attributes
     ----------
-    order: 'int'
+    order: :class:'int'
         Order of the polynomial to create
 
-    percentage: 'int'
+    percentage: :class:'int'
         Percentage of the spectrum to consider as baseline on
         EACH SIDE of the spectrum. I.e. 10% means 10% left and
         10 % right.
@@ -185,15 +181,15 @@ class BaselineFitting(aspecd.analysis.AnalysisStep):
 
         Parameters
         ----------
-        data: 'list'
+        data: :class:'list'
             List from which points should be used on each side.
 
-        points_per_side: 'int'
+        points_per_side: :class:'int'
             How many points from each end of the list should be used.
 
         Returns
         -------
-        points_to_use: 'list'
+        points_to_use: :class:'list'
             List only containing the correct number of points from each side
             and not the points in between.
         """
@@ -210,7 +206,7 @@ class IntegrationIndefinite(aspecd.analysis.AnalysisStep):
 
     Attributes
     ----------
-    y: 'list'
+    y: :class:'list'
         y values to use for the integration. If this is omitted the y values
         of the dataset are used.
     """
@@ -238,7 +234,7 @@ class IntegrationDefinite(aspecd.analysis.AnalysisStep):
 
     Attributes
     ----------
-    y: 'list'
+    y: :class:'list'
         y values to use for the integration.
     """
     def __init__(self, y):
@@ -264,13 +260,13 @@ class IntegrationVerification(aspecd.analysis.AnalysisStep):
 
     Attributes
     ----------
-    y: 'list'
+    y: :class:'list'
         y values to use for the integration
 
-    percentage: 'int'
+    percentage: :class:'int'
         Percentage of the spectrum to consider
 
-    threshold: 'float'
+    threshold: :class:'float'
         Threshold for the integral. If the integral determined is smaller
         the preprocessing is considered to have been successful.
     """
@@ -309,26 +305,26 @@ class CommonspaceAndDelimiters(aspecd.analysis.AnalysisStep):
 
     Attributes
     ----------
-    datasets: 'list'
+    datasets: :class:'list'
         List of datasets to consider in the determination.
 
-    threshold: 'float'
+    threshold: :class:'float'
         Distance used for determining whether or not the common
         definition range of two spectra is large enough (vide infra).
 
-    minimum: 'float'
+    minimum: :class:'float'
         Leftmost end of all spectra determined in the routine.
 
-    maximum: 'float'
+    maximum: :class:'float'
         Rightmost end of all spectra determined in the routine.
 
-    minimal_width: 'float'
+    minimal_width: :class:'float'
         Smallest width of all spectra determined in the routine.
 
-    start_points: 'list'
+    start_points: :class:'list'
         List of the left ends of all spectra determined in the routine.
 
-    end_points: 'list'
+    end_points: :class:'list'
         List of the right ends of all spectra determined in the routine.
 
     Raises
@@ -418,10 +414,10 @@ class CommonspaceAndDelimiters(aspecd.analysis.AnalysisStep):
 
         Attributes
         ----------
-        index1: 'int'
+        index1: :class:'int'
             Index of one dataset used in the comparison. The index is given
             for the instance's list of datasets.
-        index2: 'int'
+        index2: :class:'int'
             Index of the second dataset used in the comparison.
 
         Raises

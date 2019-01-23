@@ -13,7 +13,7 @@ def are_values_plausible(array):
 
     Parameters
     ------
-    array: 'numpy.array'
+    array: :class:'numpy.array'
     Array to check the values of.
     """
     for v in array:

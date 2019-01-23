@@ -16,7 +16,7 @@ class FieldCorrection(aspecd.processing.ProcessingStep):
 
     Parameters
     ----------
-    correction_value: 'float'
+    correction_value: :class:'float'
     The previously determined correction value.
     """
     def __init__(self, correction_value):
@@ -61,10 +61,10 @@ class FrequencyCorrection(aspecd.processing.ProcessingStep):
 
     Attributes
     ----------
-    nu_given: 'float'
+    nu_given: :class:'float'
     Given frequency of the data present.
 
-    nu_target: 'float'
+    nu_target: :class:'float'
     Frequency that the data should be converted to.
 
     """
@@ -95,12 +95,12 @@ class FrequencyCorrection(aspecd.processing.ProcessingStep):
 
         Parameters
         ----------
-         value: 'float'
+         value: :class:'float'
          B value to transform.
 
         Returns
         -------
-        g_value: 'float'
+        g_value: :class:'float'
         Transformed value.
         """
         g_value = \
@@ -112,12 +112,12 @@ class FrequencyCorrection(aspecd.processing.ProcessingStep):
 
         Parameters
         ----------
-        value: 'float'
+        value: :class:'float'
         g value to transform.
 
         Returns
         -------
-        b_value: 'float'
+        b_value: :class:'float'
         Transformed value.
         """
         b_value = \
@@ -132,7 +132,7 @@ class BaselineCorrection(aspecd.processing.ProcessingStep):
 
     Attributes
     ----------
-    coeffs: 'list'
+    coeffs: :class:'list'
         List of the polynomial coefficients of the polynomial to subtract.
     """
 
@@ -156,7 +156,7 @@ class SpectrumSubtract(aspecd.processing.ProcessingStep):
 
     Attributes
     ----------
-    scnd_dataset: 'cwepr.dataset.Dataset'
+    scnd_dataset: :class:'cwepr.dataset.Dataset'
         Dataset containing the spectrum that should be subtracted.
     """
     def __init__(self, scnd_dataset):
@@ -171,7 +171,6 @@ class SpectrumSubtract(aspecd.processing.ProcessingStep):
     def interpolate(self):
         """Interpolates the spectrum that should be subtracted from the
         other one on the x values of this other spectrum.
-
         """
         x = self.dataset.data.data[0, :]
         xp = self.scnd_dataset.data.data[0, :]
@@ -181,7 +180,8 @@ class SpectrumSubtract(aspecd.processing.ProcessingStep):
 
     def subtract(self):
         """The actual subtraction. The second spectrum (the one gets subtracted
-        is first interpolated on the x values of the other one."""
+        is first interpolated on the x values of the other one.
+        """
         y_interp = self.interpolate()
         for n in range(len(self.dataset.data.data[0, :])):
             self.dataset.data.data[1, n] -= y_interp[n]
@@ -240,7 +240,7 @@ class NormaliseArea(aspecd.processing.ProcessingStep):
 
     Parameters
     ----------
-    integral: 'float'
+    integral: :class:'float'
         Area under the curve.
     """
     def __init__(self, integral):
@@ -250,4 +250,3 @@ class NormaliseArea(aspecd.processing.ProcessingStep):
     def _perform_task(self):
         for n in range(len(self.dataset.data.data[0, :])):
             self.dataset.data.data[0, n] /= self.parameters["integral"]
-

@@ -19,7 +19,7 @@ class NoIntegralDataProvidedError(Error):
 
     Attributes
     ----------
-    message : `str`
+    message : :class:`str`
         explanation of the error
 
     """
@@ -35,13 +35,13 @@ class BaselineControlPlotter(aspecd.plotting.SinglePlotter):
 
     Attributes
     ----------
-    coeffs: 'list'
+    coeffs: :class:'list'
     List containing any number of other lists each containing
     a set of polynomial coefficients for a polynomial that might
     be used for the baseline correction. The order of the coefficients
     is considered to highest to lowest as returned by :meth: numpy.polyfit.
 
-    data: 'numpy.array'
+    data: :class:'numpy.array'
         Array containing the x (field) and y (intensity) values of the
         spectrum that shall be visualized with the polynomials
     """
@@ -77,7 +77,7 @@ class SimpleSpectrumPlotter(aspecd.plotting.SinglePlotter):
 
     Attributes
     ----------
-    settings: 'dict'
+    settings: :class:'dict'
         Values used for customization.
     """
     def __init__(self):
@@ -103,7 +103,7 @@ class SimpleSpectrumPlotter(aspecd.plotting.SinglePlotter):
 
         Parameters
         ----------
-        color: 'str' or RGBA tuple
+        color: :class:'str' or RGBA tuple
             The color to use.
         """
         self.settings["color"] = color
@@ -113,7 +113,7 @@ class SimpleSpectrumPlotter(aspecd.plotting.SinglePlotter):
 
         Parameters
         ----------
-        title: 'str'
+        title: :class:'str'
             The title to use.
         """
         self.settings["title"] = title
@@ -123,7 +123,7 @@ class SimpleSpectrumPlotter(aspecd.plotting.SinglePlotter):
 
         Parameters
         ----------
-        name: 'str'
+        name: :class:'str'
             The name to use.
         """
         self.settings["x_name"] = name
@@ -133,7 +133,7 @@ class SimpleSpectrumPlotter(aspecd.plotting.SinglePlotter):
 
         Parameters
         ----------
-        name: 'str'
+        name: :class:'str'
             The name to use.
         """
         self.settings["y_name"] = name
@@ -144,7 +144,7 @@ class SimpleSpectrumPlotter(aspecd.plotting.SinglePlotter):
 
         Parameters
         ----------
-        name: 'str'
+        name: :class:'str'
             The name to use.
         """
         self.settings["curve_name"] = name
@@ -154,7 +154,7 @@ class SimpleSpectrumPlotter(aspecd.plotting.SinglePlotter):
 
         Parameters
         ----------
-        do_draw: 'bool'
+        do_draw: :class:'bool'
             Should the zero line be drawn?
         """
         self.settings["draw_zero"] = do_draw
@@ -164,7 +164,7 @@ class SimpleSpectrumPlotter(aspecd.plotting.SinglePlotter):
 
         Parameters
         ----------
-        thickness: 'float'
+        thickness: :class:'float'
             Thickness of the zero line; default: 0.5
         """
         self.settings["zero_thickness"] = thickness
@@ -174,7 +174,7 @@ class SimpleSpectrumPlotter(aspecd.plotting.SinglePlotter):
 
         Parameters
         ----------
-        color: 'str' or RGBA tuple
+        color: :class:'str' or RGBA tuple
             The color to use.
         """
         self.settings["zero_color"] = color
@@ -184,7 +184,7 @@ class SimpleSpectrumPlotter(aspecd.plotting.SinglePlotter):
 
         Parameters
         ----------
-        do_fit: 'bool'
+        do_fit: :class:'bool'
             Should the width of the plot fit the width of the curve?
         """
         self.settings["fit_axis"] = do_fit
@@ -196,9 +196,9 @@ class SimpleSpectrumPlotter(aspecd.plotting.SinglePlotter):
 
         Parameters
         ----------
-        left: 'float'
+        left: :class:'float'
             Left limit in units of the x axis.
-        right: 'float'
+        right: :class:'float'
             Right limit in units of the x axis.
         """
         self.settings["limit_left"] = left
@@ -229,9 +229,9 @@ class SimpleSpectrumPlotter(aspecd.plotting.SinglePlotter):
 
         Parameters
         ----------
-        x: 'list'
+        x: :class:'list'
             x values for plotting
-        y: 'list'
+        y: :class:'list'
             y values for plotting
         """
         if self.settings["draw_zero"]:
@@ -249,7 +249,7 @@ class SimpleSpectrumPlotter(aspecd.plotting.SinglePlotter):
 
         Parameters
         ----------
-        x: 'list'
+        x: :class:'list'
             x values to plot. These are necessary for determining the
             correct limits.
         """
@@ -267,9 +267,9 @@ class SpectrumAndIntegralPlotter(SimpleSpectrumPlotter):
 
     Attributes
     ----------
-    integral_1: 'list'
+    integral_1: :class:'list'
         y values of the first integration
-    integral_2: 'list'
+    integral_2: :class:'list'
         y values of the second integration
 
     Raises
@@ -297,7 +297,7 @@ class SpectrumAndIntegralPlotter(SimpleSpectrumPlotter):
 
         Parameters
         ----------
-        color: 'str' or RGBA tuple
+        color: :class:'str' or RGBA tuple
             The color to use.
         """
         self.settings["integral1_color"] = color
@@ -308,7 +308,7 @@ class SpectrumAndIntegralPlotter(SimpleSpectrumPlotter):
 
         Parameters
         ----------
-        name: 'str'
+        name: :class:'str'
             The name to use.
         """
         self.settings["integral1_name"] = name
@@ -318,7 +318,7 @@ class SpectrumAndIntegralPlotter(SimpleSpectrumPlotter):
 
         Parameters
         ----------
-        color: 'str' or RGBA tuple
+        color: :class:'str' or RGBA tuple
             The color to use.
         """
         self.settings["integral2_color"] = color
@@ -329,7 +329,7 @@ class SpectrumAndIntegralPlotter(SimpleSpectrumPlotter):
 
         Parameters
         ----------
-        name: 'str'
+        name: :class:'str'
             The name to use.
         """
         self.settings["integral2_name"] = name
@@ -341,9 +341,9 @@ class SpectrumAndIntegralPlotter(SimpleSpectrumPlotter):
 
         Parameters
         ----------
-        x: 'list'
+        x: :class:'list'
             x values for plotting
-        y: 'list'
+        y: :class:'list'
             y values for plotting
 
         Raises
@@ -375,9 +375,9 @@ class Multiplotter(aspecd.plotting.MultiPlotter):
 
     Attributes
     ----------
-    datasets: 'list'
+    datasets: :class:'list'
         List of datasets to plot.
-    integrals: 'list'
+    integrals: :class:'list'
         List of the numeric of the integrals to be indicated in the legend.
         Can be omitted.
     """
@@ -415,7 +415,7 @@ class Multiplotter(aspecd.plotting.MultiPlotter):
 
         Parameters
         ----------
-        names: 'list'
+        names: :class:'list'
             List of 'str' containing the names.
         """
         self.settings["names"] = names
@@ -425,7 +425,7 @@ class Multiplotter(aspecd.plotting.MultiPlotter):
 
         Parameters
         ----------
-        colors: 'list'
+        colors: :class:'list'
             List of 'str' and or RGBA containing the colors.
         """
         self.settings["colors"] = colors
@@ -435,7 +435,7 @@ class Multiplotter(aspecd.plotting.MultiPlotter):
 
         Parameters
         ----------
-        title: 'str'
+        title: :class:'str'
             The title to use.
         """
         self.settings["title"] = title
@@ -445,7 +445,7 @@ class Multiplotter(aspecd.plotting.MultiPlotter):
 
         Parameters
         ----------
-        name: 'str'
+        name: :class:'str'
             The name to use.
         """
         self.settings["x_name"] = name
@@ -455,7 +455,7 @@ class Multiplotter(aspecd.plotting.MultiPlotter):
 
         Parameters
         ----------
-        name: 'str'
+        name: :class:'str'
             The name to use.
         """
         self.settings["y_name"] = name
@@ -465,7 +465,7 @@ class Multiplotter(aspecd.plotting.MultiPlotter):
 
         Parameters
         ----------
-        do_draw: 'bool'
+        do_draw: :class:'bool'
             Should the zero line be drawn?
         """
         self.settings["draw_zero"] = do_draw
@@ -475,7 +475,7 @@ class Multiplotter(aspecd.plotting.MultiPlotter):
 
         Parameters
         ----------
-        thickness: 'float'
+        thickness: :class:'float'
             Thickness of the zero line; default: 0.5
         """
         self.settings["zero_thickness"] = thickness
@@ -485,7 +485,7 @@ class Multiplotter(aspecd.plotting.MultiPlotter):
 
         Parameters
         ----------
-        color: 'str' or RGBA tuple
+        color: :class:'str' or RGBA tuple
             The color to use.
         """
         self.settings["zero_color"] = color
@@ -496,7 +496,7 @@ class Multiplotter(aspecd.plotting.MultiPlotter):
 
         Parameters
         ----------
-        do_fit: 'bool'
+        do_fit: :class:'bool'
             Should the width of the plot fit the width of the curve?
         """
         self.settings["fit_axis"] = do_fit
@@ -506,7 +506,7 @@ class Multiplotter(aspecd.plotting.MultiPlotter):
 
         Parameters
         ----------
-        do_show: 'bool'
+        do_show: :class:'bool'
             Should the integrals be indicated?
         """
         self.settings["show_integrals"] = do_show
@@ -556,9 +556,9 @@ class Multiplotter(aspecd.plotting.MultiPlotter):
 
         Parameters
         ----------
-        x: 'list'
+        x: :class:'list'
             x values for plotting
-        y: 'list'
+        y: :class:'list'
             y values for plotting
         """
         curve_name = self.settings["names"][n]
@@ -572,7 +572,7 @@ class Multiplotter(aspecd.plotting.MultiPlotter):
 
         Parameters
         ----------
-        x: 'list'
+        x: :class:'list'
             x values to plot. These are necessary for determining the
             correct limits.
         """

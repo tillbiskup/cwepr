@@ -10,7 +10,6 @@ import aspecd.metadata
 
 class Error(Exception):
     """Base class for exceptions in this module."""
-
     pass
 
 
@@ -24,7 +23,6 @@ class NotEnoughValuesError(Error):
         explanation of the error
 
     """
-
     def __init__(self, message=''):
         super().__init__()
         self.message = message
@@ -41,7 +39,6 @@ class UnequalUnitsError(Error):
         explanation of the error
 
     """
-
     def __init__(self, message=''):
         super().__init__()
         self.message = message
@@ -76,7 +73,7 @@ class DatasetMetadata(aspecd.metadata.DatasetMetadata):
         Metadata object containing information on the probehead
         used in the experiment.
 
-    modifications : 'list'
+    modifications : :class:'list'
         List of all modifications performed on the metadata,
         e.g, overrides.
 
@@ -93,8 +90,9 @@ class DatasetMetadata(aspecd.metadata.DatasetMetadata):
 
 
 class BFieldData(aspecd.metadata.Metadata):
-    """"""
-
+    """This metadata class contains all variables concerning the magnetic
+    field.
+    """
     def __init__(self, dict_=None):
         super().__init__(dict_=dict_)
         self.field_min = aspecd.metadata.PhysicalQuantity()
@@ -163,7 +161,6 @@ class BFieldData(aspecd.metadata.Metadata):
         UnequalUnitsError :
             Raised, when two physical quantities shall be added or
             subtracted that have unequal units.
-
         """
         if self.can_calculate():
             self.step_count = int(self.step_count)
@@ -212,7 +209,6 @@ class Experiment(aspecd.metadata.Metadata):
     """This metadata class contains general information on what type of
     experiment was performed.
     """
-
     def __init__(self):
         super().__init__()
         self.type = ""
@@ -226,7 +222,6 @@ class SpectrometerInfo(aspecd.metadata.Metadata):
     """This metadata class contains information on what type of spectrometer
     was used.
     """
-
     def __init__(self):
         super().__init__()
         self.model = ""
@@ -237,7 +232,6 @@ class BridgeInfo(aspecd.metadata.Metadata):
     """This metadata class contains information on the microwave bridge
     employed.
     """
-
     def __init__(self):
         super().__init__()
         self.model = ""
@@ -254,12 +248,11 @@ class SignalChannel(aspecd.metadata.Metadata):
     """This metadata class contains information on the signal channel
     employed.
 
-    ..Todo :: Currently aspecd crashes when the creation of an instance
+    .. Todo:: Currently aspecd crashes when the creation of an instance
         :class: aspecd.metadata.PhysicalQuantity is attempted from an empty
         parameter field. Find a workaround or make the supervisor of aspecd
         find one.
     """
-
     def __init__(self):
         super().__init__()
         self.model = ""
@@ -276,7 +269,6 @@ class SignalChannel(aspecd.metadata.Metadata):
 class Probehead(aspecd.metadata.Metadata):
     """This metadata class contains information on the probe head employed.
     """
-
     def __init__(self):
         super().__init__()
         self.type = ""

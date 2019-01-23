@@ -19,7 +19,6 @@ class Dataset(aspecd.dataset.Dataset):
     reproducibility of data and is possible by saving all information
     available for one set of measurement data in a single instance of
     this class.
-
     """
 
     mappings = [
@@ -43,7 +42,7 @@ class Dataset(aspecd.dataset.Dataset):
 
          Parameters
          ----------
-         filename : 'str'
+         filename : :class:'str'
              Path including the filename but not the extension.
          """
 
@@ -55,19 +54,22 @@ class Dataset(aspecd.dataset.Dataset):
         self._modify_field_values()
 
     def _modify_field_values(self):
+        """Fills in all variables concerning the magnetic field and transforms
+        them from gauss to millitesla.
+        """
         self.metadata.magnetic_field.calculate_values()
         self.metadata.magnetic_field.gauss_to_millitesla()
 
     def _map_metadata_and_check_for_overrides(self, metadata):
         """Modifies names of metadata information as necessary, combines
-        data from the INFO file and the automatic parameter file and checks
+        data from the INFO file and the spectrometer parameter file and checks
         for possible overrides.
 
         Parameters
         ---------
-        metadata: 'list'
+        metadata: :class:'list'
             Loaded metadata to use. First entry: from infofile;
-            Second entry automatic parameter file.
+            Second entry: from spectrometer parameter file.
         """
         metadata_mapper = aspecd.metadata.MetadataMapper()
         metadata_mapper.metadata = metadata[0]
@@ -81,7 +83,7 @@ class Dataset(aspecd.dataset.Dataset):
 
     def _check_for_override(self, data1, data2, name=""):
         """Compare the keys in the info file dict with those in
-        each part of the dsc file to find overrides.
+        each part of the dsc/par file to find overrides.
         Any matching keys are considered to be overriden and
         a respective note is added to
         :attr:'cwepr.metadata.DatasetMetadata.metadata_modifications'.
@@ -93,16 +95,15 @@ class Dataset(aspecd.dataset.Dataset):
 
         Parameters
         ----------
-        data1 : 'dict'
+        data1 : :class:'dict'
             Original data.
 
-        data2: 'dict'
+        data2: :class:'dict'
             Data that is added to the original dict.
 
-        name: 'str'
+        name: :class:'str'
             Used in the cascade to keep track of the path. This should not
             be set to anything other than the default value.
-
         """
         toplevel = False
         for entry in list(data1.keys()):
@@ -131,7 +132,7 @@ class Dataset(aspecd.dataset.Dataset):
 
         Parameters
         ----------
-        importer : 'cwepr.importers.ImporterEPRGeneral'
+        importer : :class:'cwepr.importers.ImporterEPRGeneral'
             Importer instance to use for the import.
 
         Raises
@@ -152,7 +153,6 @@ class Dataset(aspecd.dataset.Dataset):
         in the metadata.
 
         Both sets are combined and transformed into a numpy array.
-
         """
         field_points = []
         for n in range(self.metadata.magnetic_field.step_count):
@@ -163,6 +163,3 @@ class Dataset(aspecd.dataset.Dataset):
         intensity_data = np.array(copy.deepcopy(self.data.data))
         complete_data = np.array([field_data, intensity_data])
         self.data.data = complete_data
-
-
-

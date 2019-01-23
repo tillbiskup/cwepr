@@ -1,12 +1,10 @@
-"""Importers (Preparing raw data for processing)
-
-Currently, the only specialized importer works for the Bruker BES3T format.
-"""
+"""Importers (Preparing raw data for processing)"""
 
 
 import os.path
 import numpy as np
 import collections as col
+import re
 
 
 import aspecd.io
@@ -19,7 +17,6 @@ from cwepr.utils import are_values_plausible
 
 class Error(Exception):
     """Base class for exceptions in this module."""
-
     pass
 
 
@@ -29,11 +26,10 @@ class UnsupportedDataFormatError(Error):
 
     Attributes
     ----------
-    message : `str`
+    message : :class:`str`
         explanation of the error
 
     """
-
     def __init__(self, message=''):
         super().__init__()
         self.message = message
@@ -45,11 +41,9 @@ class NoMatchingFilePairError(Error):
 
     Attributes
     ----------
-    message : `str`
+    message : :class:`str`
         explanation of the error
-
     """
-
     def __init__(self, message=''):
         super().__init__()
         self.message = message
@@ -60,11 +54,9 @@ class MissingInfoFileError(Error):
 
     Attributes
     ----------
-    message : `str`
+    message : :class:`str`
         explanation of the error
-
     """
-
     def __init__(self, message=''):
         super().__init__()
         self.message = message
@@ -77,11 +69,9 @@ class ImportMetadataOnlyError(Error):
 
     Attributes
     ----------
-    message : `str`
+    message : :class:`str`
         explanation of the error
-
     """
-
     def __init__(self, message=''):
         super().__init__()
         self.message = message
@@ -96,9 +86,7 @@ class ExperimentTypeError(Error):
     ----------
     message : `str`
         explanation of the error
-
     """
-
     def __init__(self, message=''):
         super().__init__()
         self.message = message
@@ -123,8 +111,8 @@ class ImporterEPRGeneral(aspecd.io.DatasetImporter):
         supported formats
     NoMatchingFilePairError
         Raised if no pair of files matching any one supported format
-        can be found. Currently only Bruker BES3T is supported.
-
+        can be found. Currently Bruker BES3T, EMX and ESP/ECS formats
+        are supported.
     """
     supported_formats = {"BES3T": [".DTA", ".DSC"], "Other": [".spc", ".par"]}
 
@@ -148,7 +136,6 @@ class ImporterEPRGeneral(aspecd.io.DatasetImporter):
             called without first importing the experimental data,
             because :meth:'_import' creates an instance of a
             format specific importer.
-
         """
         if not os.path.isfile((self.source + ".info")):
             raise MissingInfoFileError("No info file provided")
@@ -162,7 +149,7 @@ class ImporterEPRGeneral(aspecd.io.DatasetImporter):
 
         Returns
         ------
-        infofile_data: 'dict'
+        infofile_data: :class:'dict'
         Parsed data from the info file.
         """
         infofile_data = aspecd.infofile.parse(filename)
@@ -171,7 +158,6 @@ class ImporterEPRGeneral(aspecd.io.DatasetImporter):
 
 class ImporterBES3T(ImporterEPRGeneral):
     """Specialized Importer for the BES3T format."""
-
     def __init__(self, source=None):
         super().__init__(source=source)
 
@@ -183,7 +169,7 @@ class ImporterBES3T(ImporterEPRGeneral):
 
         Returns
         ------
-        raw_data: 'numpy.array'
+        raw_data: :class:'numpy.array'
         Raw numerical data in processable form.
         """
         complete_filename = self.source+".DTA"
@@ -198,7 +184,7 @@ class ImporterBES3T(ImporterEPRGeneral):
 
         Returns
         ------
-        processed_param_data: 'dict'
+        processed_param_data: :class:'dict'
         Parsed data from the source parameter file.
         """
         info_data = super().import_metadata()
@@ -219,12 +205,12 @@ class ParserDSC:
 
         Parameters
         ------
-        file_content: 'str'
+        file_content: :class:'str'
         Content of a complete *.DSC file.
 
         Returns
         ------
-        three_parts_processed: 'list'
+        three_parts_processed: :class:'list'
         The three parts of the file, each represented by a dictionary
         containing pairs of keys (parameter names) and values
         (parameter values) The dictionaries of part one and three are
@@ -251,14 +237,14 @@ class ParserDSC:
         """Adds the units to the data values concerning the field.
 
         Parameters
-         ---------
-         parsed_dsc_data: 'dict'
-         Original data.
-
+        ---------
+        parsed_dsc_data: :class:'dict'
+            Original data.
 
         Returns
         -------
-        Data with units added.
+        parsed_dsc_data: :class:'dict'
+            Data with units added.
         """
         parsed_dsc_data[0]["Data Ranges and Resolutions:"]["XMIN"] += " Gs"
         parsed_dsc_data[0]["Data Ranges and Resolutions:"]["XWID"] += " Gs"
@@ -274,13 +260,13 @@ class ParserDSC:
 
         Parameters
         ------
-        processed_file: 'list'
+        processed_file: :class:'list'
         Content of a complete *.DSC file in processed form, i.e. with
         headlines and sub-headlines.
 
         Returns
         ------
-        dict_without_headlines: 'dict'
+        dict_without_headlines: :class:'dict'
         Dictionary of all key-value pairs belonging to any
         headline or sub-headline, all on the same level. 
         """
@@ -306,12 +292,12 @@ class ParserDSC:
 
         Parameters
         ------
-        file_content: 'str'
+        file_content: :class:'str'
         Content of a complete *.DSC file.
 
         Returns
         ------
-        three_parts: 'list'
+        three_parts: :class:'list'
         The three parts of the file.
         """
         three_parts = list()
@@ -338,12 +324,12 @@ class ParserDSC:
 
         Parameters
         ------
-        part1: 'str'
+        part1: :class:'str'
         Raw first part of a file.
 
         Returns
         ------
-        part1_clean: 'dict'
+        part1_clean: :class:'dict'
         All subdivisions from the file with headlines as keys
         and list of lines as values; lines devoid of information
         removed.
@@ -375,15 +361,15 @@ class ParserDSC:
 
         Parameters
         ------
-        p1p3_split: 'dict'
+        p1p3_split: :class:'dict'
         Preprocessed first or third part of a file, split into
         subdivisions with the headline as key. Subdivisions split into
         lines with lines devoid of information removed.
 
-        delimiter: 'str'
+        delimiter: :class:'str'
         Delimiter separating parameter name and value in one line.
 
-        delimiter_width: 'int'
+        delimiter_width: :class:'int'
         Used to split at a variable number of spaces (could be used
         for other delimiters, too, though). The method will count
         all characters before the first delimiter character and determine
@@ -393,7 +379,7 @@ class ParserDSC:
 
         Returns
         ------
-        p1p3_dict: 'dict'
+        p1p3_dict: :class:'dict'
         Data from the input as pairs of key (subdivision name) and
         value (subdivision info). Each subdivision info is also a dict
         with keys (parameter names) and values (parameter values).
@@ -439,12 +425,12 @@ class ParserDSC:
 
         Parameters
         ------
-        part2: 'str'
+        part2: :class:'str'
         Raw second part of a file.
 
         Returns
         ------
-        entries_clean: 'list'
+        entries_clean: :class:'list'
         All lines from the file part except those devoid of
         information.
         """
@@ -466,7 +452,7 @@ class ParserDSC:
 
         Parameters
         ------
-        part2_split: 'list'
+        part2_split: :class:'list'
         Preprocessed second part of a file, split into lines,
         with lines devoid of information already removed.
 
@@ -479,7 +465,7 @@ class ParserDSC:
 
         Returns
         ------
-        part2_dict: 'dict'
+        part2_dict: :class:'dict'
         Data from the input as pairs of key (parameter name) and
         value (parameter value).
         """
@@ -513,12 +499,12 @@ class ParserDSC:
 
         Parameters
         ------
-        part3: 'str'
+        part3: :class:'str'
         Raw third part of a file.
 
         Returns
         ------
-        subparts_clean: 'dict'
+        subparts_clean: :class:'dict'
         All subdivisions from the file with headlines as keys
         and list of lines as values; lines devoid of information
         removed.
@@ -548,15 +534,14 @@ class ParserDSC:
 
         Parameters
         ----------
-        dsc_data: 'list'
+        dsc_data: :class:'list'
             List containing all three parts of a dsc file as dicts.
 
         Returns
         ----------
-        mapped_data: 'list'
+        mapped_data: :class:'list'
             data with the necessary modifications applied to allow
             for addition to the metadata.
-
         """
         dsc_mapper = aspecd.metadata.MetadataMapper()
         mapped_data = []
@@ -614,7 +599,6 @@ class ParserDSC:
 
 class ImporterEMXandESP(ImporterEPRGeneral):
     """Specialized Importer for the BES3T format."""
-
     def __init__(self, source=None):
         super().__init__(source=source)
 
@@ -626,7 +610,7 @@ class ImporterEMXandESP(ImporterEPRGeneral):
 
         Returns
         ------
-        raw_data: 'numpy.array'
+        raw_data: :class:'numpy.array'
         Raw numerical data in processable form.
         """
         complete_filename = self.source + ".spc"
@@ -643,7 +627,7 @@ class ImporterEMXandESP(ImporterEPRGeneral):
 
         Returns
         ------
-        processed_param_data: 'dict'
+        processed_param_data: :class:'dict'
         Parsed data from the source parameter file.
         """
         info_data = super().import_metadata()
@@ -655,30 +639,91 @@ class ImporterEMXandESP(ImporterEPRGeneral):
 
 
 class ParserPAR:
+    """Parser for *.par parameter file belonging to the EMX and ESP/ECS
+    formats.
+
+    .. Todo:: Add mapping. Possibly with YAML 'recipe'.
+    """
     def __init__(self):
         pass
 
-    def parse_par(self, file_content):
+    @staticmethod
+    def parse_par(file_content):
         """Main method for parsing a *.par into a dictionary.
 
         Parameters
         ------
-        file_content: 'str'
-        Content of a complete *.par file.
+        file_content: :class:'str'
+            Content of a complete *.par file.
 
         Returns
         ------
-        file_content: 'list'
+        content_parsed: :class:'dict'
         """
-        return file_content
+        lines = file_content.split("\n")
+        content_parsed = dict()
+        for line in lines:
+            separating_whitespace = 0
+            start_counting = False
+            for char in line:
+                if char == " ":
+                    separating_whitespace += 1
+                    start_counting = True
+                else:
+                    if start_counting:
+                        break
+            line_content = line.split(" ", separating_whitespace)
+            parts_to_remove = list()
+            for n in range(len(line_content)):
+                if line_content[n] == "":
+                    parts_to_remove.append(n)
+            parts_to_remove.reverse()
+            for n in parts_to_remove:
+                del(line_content[n])
+            content_parsed[line_content[0]] = line_content[1]
+        return content_parsed
+
+    @staticmethod
+    def parse2(file_content):
+        """Alternative method for parsing a *.par file using regular
+        expressions.
+
+        Uses raw string to avoid confusion concerning escape sequences.
+
+        Parameters
+        ------
+        file_content: :class:'str'
+            Content of a complete *.par file.
+
+        Returns
+        ------
+        content_parsed: :class:'dict'
+        """
+        spacing_pattern = r"[\S][\s]+[\S]"
+        exp_object = re.compile(spacing_pattern)
+        lines = file_content.split("\n")
+        content_parsed = dict()
+        for line in lines:
+            matching = re.search(exp_object, line)
+            if matching:
+                end1 = matching.start()+1
+                start2 = matching.end()-1
+                content_parsed[line[:end1]] = line[start2:]
+            else:
+                content_parsed[line] = ""
+        return content_parsed
 
 
 class ImporterFactoryEPR(aspecd.io.DatasetImporterFactory):
-    supported_formats = {"BES3T": [".DTA", ".DSC"]}
+    """This class is an importer factory used to get an instance of an
+    importer for a given filename.
+    """
+    supported_formats = {"BES3T": [".DTA", ".DSC"], "Other": [".spc", ".par"]}
 
     def __init__(self):
         super().__init__()
-        self.importers_for_formats = {"BES3T": ImporterBES3T}
+        self.importers_for_formats = {"BES3T": ImporterBES3T,
+                                      "Other": ImporterEMXandESP}
 
     def _get_importer(self, source):
         """Call the correct importer for the data format set.
@@ -690,7 +735,7 @@ class ImporterFactoryEPR(aspecd.io.DatasetImporterFactory):
         UnsupportedDataFormatError
             Raised if a format is set but does not match any of
             the supported formats
-            """
+        """
         self.data_format = self._find_format(source)
         special_importer = self.importers_for_formats[
             self.data_format](source=source)
@@ -710,9 +755,7 @@ class ImporterFactoryEPR(aspecd.io.DatasetImporterFactory):
             Raised if no pair of files matching any one supported
             format can be found. Currently only Bruker BES3T format
             is supported.
-
         """
-
         for k, v in self.supported_formats.items():
             if os.path.isfile((source+v[0])) and os.path.isfile(
                 (source+v[1])
@@ -746,7 +789,7 @@ class ExporterASCII(aspecd.io.DatasetExporter):
 
         Returns
         -------
-        metadata_prepared: 'dict'
+        metadata_prepared: :class:'dict'
         transformed metadata
         """
         metadata = self.dataset.metadata.to_dict()
@@ -761,12 +804,12 @@ class ExporterASCII(aspecd.io.DatasetExporter):
 
         Parameters
         ----------
-        dictionary: 'dict'
+        dictionary: :class:'dict'
         Dictionary to relieve of arrays.
 
         Returns
         -------
-        dictionary: 'dict'
+        dictionary: :class:'dict'
         Dictionary relieved of arrays.
         """
         for k, v in dictionary.items():
