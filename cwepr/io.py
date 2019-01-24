@@ -717,15 +717,15 @@ class ParserPAR:
         Uses raw string to avoid confusion concerning escape sequences.
 
         Parameters
-        ------
+        ----------
         file_content: :class:'str'
             Content of a complete *.par file.
 
         Returns
-        ------
+        -------
         content_parsed: :class:'dict'
         """
-        spacing_pattern = r"[\S][\s]+[\S]"
+        spacing_pattern = r"[\S]+[\s]+[\S]+"
         exp_object = re.compile(spacing_pattern)
         lines = file_content.split("\n")
         content_parsed = dict()
