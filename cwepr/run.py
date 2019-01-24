@@ -135,7 +135,7 @@ print(delimiters)
 
 #Plot
 multiplotter = cwepr.plotting.Multiplotter([dts_v1, dts_v2], integrals=[fi1, fi2])
-#multiplotter.plot()
+multiplotter.plot()
 #dts_v1.plot(multiplotter)
 
 
@@ -144,7 +144,7 @@ subtract_step = cwepr.processing.SpectrumSubtract(dts_v1)
 sub_values = dts_v2.process(subtract_step)
 
 plotter_diff = cwepr.plotting.SimpleSpectrumPlotter()
-#dts_v2.plot(plotter_diff)
+dts_v2.plot(plotter_diff)
 
 integrate_step3 = cwepr.analysis.IntegrationIndefinite()
 integration = dts_v2.analyse(integrate_step3)
@@ -163,7 +163,7 @@ final_integral2 = final_integrate2.results["integral"]
 print(final_integral2)
 
 plotter2 = cwepr.plotting.SpectrumAndIntegralPlotter(integral_1=integrate_values3, integral_2=integrate_values4)
-#dts_v2.plot(plotter2)
+dts_v2.plot(plotter2)
 
 exporter = cwepr.io.ExporterASCII()
 exporter.export_from(dts_v2)

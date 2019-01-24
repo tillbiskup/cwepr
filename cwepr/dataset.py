@@ -76,8 +76,8 @@ class Dataset(aspecd.dataset.Dataset):
         metadata_mapper.mappings = self.mappings
         metadata_mapper.map()
         self.metadata.from_dict(metadata_mapper.metadata)
-        dsc_data_mapped = metadata[1]
-        for data_part in dsc_data_mapped:
+        param_data_mapped = metadata[1]
+        for data_part in param_data_mapped:
             self.metadata.from_dict(data_part)
             self._check_for_override(metadata_mapper.metadata, data_part)
 

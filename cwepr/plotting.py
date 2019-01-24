@@ -58,10 +58,16 @@ class BaselineControlPlotter(aspecd.plotting.SinglePlotter):
 
         The final diagram is displayed.
         """
+        ppl.rc('text', usetex=True)
+
         data = self.parameters["data"]
         coeffs_list = self.parameters["coeffs_list"]
         x = data[0, :]
         y = data[1, :]
+
+        ppl.title("Baseline Comparison")
+        ppl.xlabel(r"Field \textit{B}\_{0} / mT")
+        ppl.ylabel("Intensity Change and possible baselines")
 
         ppl.plot(x, y, label="Spectrum")
         for coeffs in coeffs_list:
@@ -578,3 +584,45 @@ class Multiplotter(aspecd.plotting.MultiPlotter):
         """
         if self.settings["fit_axis"]:
             self.axes.set_xlim(x[0], x[1])
+
+
+class PlotSaver(aspecd.plotting.Saver):
+    """Saver used to save an image of a given plot.
+    """
+    def __init__(self, filename=None):
+        super().__init__(filename=filename)
+        self.set_defaults()
+
+    def set_format(self, dataformat):
+        """Sets the data format to save to (Default: .png).
+
+        Parameters
+        ----------
+        dataformat: :class:'str'
+            File extension
+        """
+        self.parameters["format"] = dataformat
+
+    def set_res(self, res):
+        """Sets the resolution for the saved image (Default: 300 dpi).
+
+        Parameters
+        ----------
+        res: :class:'str'
+            Resolution (dpi)
+        """
+        self.parameters["res"] = res
+
+    def set_defaults(self):
+        """Sets the default values for data format and resolution.
+        """
+        self.set_format(".png")
+        self.set_res(300)
+
+    def _save_plot(self):
+        """Perform the actual saving of the plot.
+
+        Uses the resolution (in dpi) specified in parameters/size.
+        """
+        self._add_file_extension()
+        self.plotter.figure.savefig(self.filename, dpi=self.parameters["res"])

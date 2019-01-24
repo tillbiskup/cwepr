@@ -250,3 +250,20 @@ class NormaliseArea(aspecd.processing.ProcessingStep):
     def _perform_task(self):
         for n in range(len(self.dataset.data.data[0, :])):
             self.dataset.data.data[0, n] /= self.parameters["integral"]
+
+
+class NormaliseScanNumber(aspecd.processing.ProcessingStep):
+    """Normalises a spectrum concerning the area under the curve.
+
+    This is necessary to make spectra where the intensity of different scans
+    is added comparable to ones where it is averaged.
+    """
+    def __init__(self):
+        super().__init__()
+
+    def _perform_task(self):
+        self.parameters["scannumber"] = \
+            self.dataset.metadata.signal_channel.accumulations
+        for n in range(len(self.dataset.data.data[0, :])):
+            self.dataset.data.data[0, n] /= self.parameters["scannumber"]
+

@@ -112,7 +112,7 @@ class BFieldData(aspecd.metadata.Metadata):
         the field sector and sweeping steps.
 
         .. note:: Currently, the possibility of calculating the
-        sector width from the with and the number of steps is not
+        sector width from the width and the number of steps is not
         accounted for.
 
         Raises

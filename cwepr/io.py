@@ -630,25 +630,51 @@ class ImporterEMXandESP(ImporterEPRGeneral):
         processed_param_data: :class:'dict'
         Parsed data from the source parameter file.
         """
+        headlines = ["experiment", "spectrometer", "magnetic_field",
+                     "bridge", "signal_channel", "probehead", "metadata"]
         info_data = super().import_metadata()
         file_param = open(self.source + ".par")
         raw_param_data = file_param.read()
         par_file_parser = ParserPAR()
-        parsed_param_data = par_file_parser.parse_par(raw_param_data)
+        parsed_param_data = par_file_parser.parse_and_map(raw_param_data)
+        data_with_headlines = dict()
+        for headline in headlines:
+            data_with_headlines[headline] = parsed_param_data
         return [info_data, parsed_param_data]
 
 
 class ParserPAR:
     """Parser for *.par parameter file belonging to the EMX and ESP/ECS
     formats.
-
-    .. Todo:: Add mapping. Possibly with YAML 'recipe'.
     """
     def __init__(self):
         pass
 
+    def parse_and_map(self, file_content):
+        content_parsed = self._parse2(file_content)
+        content_mapped = self._map_par(content_parsed)
+        return content_mapped
+
     @staticmethod
-    def parse_par(file_content):
+    def _map_par(dict_):
+        mapper = aspecd.metadata.MetadataMapper()
+        mapper.metadata = dict_
+        mapper.mappings = [
+            ["", "rename_key", ["JSD", "accumulations"]],
+            ["", "rename_key", ["GST", "field_min"]],
+            ["", "rename_key", ["GSI", "field_width"]],
+            ["", "rename_key", ["MF", "mw_frequency"]],
+            ["", "rename_key", ["MP", "power"]],
+            ["", "rename_key", ["RMA", "modulation_amplitude"]],
+            ["", "rename_key", ["RRG", "receiver_gain"]],
+            ["", "rename_key", ["RCT", "conversion_time"]],
+            ["", "rename_key", ["RTC", "time_constant"]]
+                            ]
+        mapper.map()
+        return mapper.metadata
+
+    @staticmethod
+    def _parse1(file_content):
         """Main method for parsing a *.par into a dictionary.
 
         Parameters
@@ -684,7 +710,7 @@ class ParserPAR:
         return content_parsed
 
     @staticmethod
-    def parse2(file_content):
+    def _parse2(file_content):
         """Alternative method for parsing a *.par file using regular
         expressions.
 
