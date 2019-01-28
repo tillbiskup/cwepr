@@ -96,7 +96,7 @@ class ImporterEPRGeneral(aspecd.io.DatasetImporter):
     """Importer super class that determines the correct
     specialized importer for a format.
 
-     Attributes
+    Attributes
     ----------
     data_format
         The format of the data to import. Is set manually or
@@ -113,6 +113,7 @@ class ImporterEPRGeneral(aspecd.io.DatasetImporter):
         Raised if no pair of files matching any one supported format
         can be found. Currently Bruker BES3T, EMX and ESP/ECS formats
         are supported.
+
     """
     supported_formats = {"BES3T": [".DTA", ".DSC"], "Other": [".spc", ".par"]}
 
@@ -150,7 +151,7 @@ class ImporterEPRGeneral(aspecd.io.DatasetImporter):
         Returns
         ------
         infofile_data: :class:'dict'
-        Parsed data from the info file.
+            Parsed data from the info file.
         """
         infofile_data = aspecd.infofile.parse(filename)
         return infofile_data
@@ -168,9 +169,9 @@ class ImporterBES3T(ImporterEPRGeneral):
         too large or too small the byte order is changed.
 
         Returns
-        ------
+        -------
         raw_data: :class:'numpy.array'
-        Raw numerical data in processable form.
+            Raw numerical data in processable form.
         """
         complete_filename = self.source+".DTA"
         raw_data = np.fromfile(complete_filename)
@@ -183,9 +184,9 @@ class ImporterBES3T(ImporterEPRGeneral):
         user created info file.
 
         Returns
-        ------
+        -------
         processed_param_data: :class:'dict'
-        Parsed data from the source parameter file.
+            Parsed data from the source parameter file.
         """
         info_data = super().import_metadata()
         file_param = open(self.source+".DSC")
@@ -196,25 +197,27 @@ class ImporterBES3T(ImporterEPRGeneral):
 
 
 class ParserDSC:
-    """Parser for a *.DSC parameter file belonging to the BES3T
-    format."""
+    """
+    Parser for a \*.DSC parameter file belonging to the BES3T format.
+    """
 
     def parse_dsc(self, file_content):
-        """Main method for parsing a *.DSC file into its
+        """Main method for parsing a \*.DSC file into its
         three parts and each of the three parts into a dictionary
 
         Parameters
-        ------
-        file_content: :class:'str'
-        Content of a complete *.DSC file.
+        ----------
+        file_content : :class:'str'
+            Content of a complete \*.DSC file.
 
         Returns
-        ------
-        three_parts_processed: :class:'list'
-        The three parts of the file, each represented by a dictionary
-        containing pairs of keys (parameter names) and values
-        (parameter values) The dictionaries of part one and three are
-        additionally subdivided based on headlines.
+        -------
+        three_parts_processed : :class:'list'
+            The three parts of the file, each represented by a dictionary
+            containing pairs of keys (parameter names) and values
+            (parameter values) The dictionaries of part one and three are
+            additionally subdivided based on headlines.
+
         """
         three_parts = self._get_three_parts(file_content)
         three_parts_processed = list()
@@ -237,7 +240,7 @@ class ParserDSC:
         """Adds the units to the data values concerning the field.
 
         Parameters
-        ---------
+        ----------
         parsed_dsc_data: :class:'dict'
             Original data.
 
@@ -256,19 +259,20 @@ class ParserDSC:
         at the same level, not divided by headlines and sub-headlines
         for easier mapping
 
-        .. Todo:: Find out, if this method is actually used.
+        .. todo::
+            Find out, if this method is actually used.
 
         Parameters
-        ------
+        ----------
         processed_file: :class:'list'
-        Content of a complete *.DSC file in processed form, i.e. with
-        headlines and sub-headlines.
+            Content of a complete \*.DSC file in processed form, i.e. with
+            headlines and sub-headlines.
 
         Returns
-        ------
+        -------
         dict_without_headlines: :class:'dict'
-        Dictionary of all key-value pairs belonging to any
-        headline or sub-headline, all on the same level. 
+            Dictionary of all key-value pairs belonging to any
+            headline or sub-headline, all on the same level.
         """
         dict_without_structure = col.OrderedDict()
         for content in processed_file[0].values():
@@ -283,7 +287,7 @@ class ParserDSC:
 
     @staticmethod
     def _get_three_parts(file_content):
-        """Split a *.DSC file into three parts (Descriptor
+        """Split a \*.DSC file into three parts (Descriptor
         Information, Standard Parameter Layer and Device
         Specific Layer).
 
@@ -291,14 +295,14 @@ class ParserDSC:
         start with convenient markers.
 
         Parameters
-        ------
+        ----------
         file_content: :class:'str'
-        Content of a complete *.DSC file.
+            Content of a complete \*.DSC file.
 
         Returns
-        ------
+        -------
         three_parts: :class:'list'
-        The three parts of the file.
+            The three parts of the file.
         """
         three_parts = list()
         first_split = file_content.split("#SPL")
@@ -310,7 +314,7 @@ class ParserDSC:
     @staticmethod
     def _subdivide_part1(part1):
         """Pre process the first part ("Descriptor Information")
-         of a *.DSC file.
+        of a \*.DSC file.
 
         The crude string is split into subdivisions; the delimiter
         employed allows to detect the different headlines made up
@@ -323,16 +327,17 @@ class ParserDSC:
         Lines containing an asterisk only are removed.
 
         Parameters
-        ------
+        ----------
         part1: :class:'str'
-        Raw first part of a file.
+            Raw first part of a file.
 
         Returns
-        ------
+        -------
         part1_clean: :class:'dict'
-        All subdivisions from the file with headlines as keys
-        and list of lines as values; lines devoid of information
-        removed.
+            All subdivisions from the file with headlines as keys
+            and list of lines as values; lines devoid of information
+            removed.
+
         """
         lines = part1.split("\n")
         part1_clean = col.OrderedDict()
@@ -350,39 +355,39 @@ class ParserDSC:
     @staticmethod
     def _create_dict_p1p3(p1p3_split, delimiter, delimiter_width=0):
         """Create a dict from the first part ("Descriptor Information")
-        or third part ("Device Specific Layer") of a *.DSC file.
+        or third part ("Device Specific Layer") of a \*.DSC file.
 
         For every subdivision. lines are split at tabs. The method
         accounts for lines containing only a parameter name with no
         corresponding value.
 
-        Note: The format of part 3 of a *.DSC file does not work with tabs,
+        Note: The format of part 3 of a \*.DSC file does not work with tabs,
         but rather with with a variable number of spaces.
 
         Parameters
-        ------
+        ----------
         p1p3_split: :class:'dict'
-        Preprocessed first or third part of a file, split into
-        subdivisions with the headline as key. Subdivisions split into
-        lines with lines devoid of information removed.
+            Preprocessed first or third part of a file, split into
+            subdivisions with the headline as key. Subdivisions split into
+            lines with lines devoid of information removed.
 
         delimiter: :class:'str'
-        Delimiter separating parameter name and value in one line.
+            Delimiter separating parameter name and value in one line.
 
         delimiter_width: :class:'int'
-        Used to split at a variable number of spaces (could be used
-        for other delimiters, too, though). The method will count
-        all characters before the first delimiter character and determine
-        the number of delimiter characters from the difference to the value
-        of delimiter width. If set to zero a single character
-        delimiter will be applied.
+            Used to split at a variable number of spaces (could be used
+            for other delimiters, too, though). The method will count
+            all characters before the first delimiter character and determine
+            the number of delimiter characters from the difference to the value
+            of delimiter width. If set to zero a single character
+            delimiter will be applied.
 
         Returns
-        ------
+        -------
         p1p3_dict: :class:'dict'
-        Data from the input as pairs of key (subdivision name) and
-        value (subdivision info). Each subdivision info is also a dict
-        with keys (parameter names) and values (parameter values).
+            Data from the input as pairs of key (subdivision name) and
+            value (subdivision info). Each subdivision info is also a dict
+            with keys (parameter names) and values (parameter values).
         """
         p1p3_dict = col.OrderedDict()
         for title, subpart in p1p3_split.items():
@@ -410,7 +415,7 @@ class ParserDSC:
     @staticmethod
     def _subdivide_part2(part2):
         """Pre process the second part ("Standard parameter
-        layer") of a *.DSC file.
+        layer") of a \*.DSC file.
 
         The crude string is split into lines; lines devoid of
         information (e.g. containing only an asterisk) are
@@ -424,15 +429,15 @@ class ParserDSC:
         values by four spaces instead of a tab.
 
         Parameters
-        ------
+        ----------
         part2: :class:'str'
-        Raw second part of a file.
+            Raw second part of a file.
 
         Returns
-        ------
+        -------
         entries_clean: :class:'list'
-        All lines from the file part except those devoid of
-        information.
+            All lines from the file part except those devoid of
+            information.
         """
         entries_param = part2.split("\n")
         entries_clean = list()
@@ -444,17 +449,17 @@ class ParserDSC:
     @staticmethod
     def _create_dict_part2(part2_split):
         """Create a dict from the second part ("Standard parameter
-        layer") of a *.DSC file.
+        layer") of a \*.DSC file.
 
         Lines are split at tabs. The method accounts for lines
         containing only a parameter name with no corresponding
         value.
 
         Parameters
-        ------
+        ----------
         part2_split: :class:'list'
-        Preprocessed second part of a file, split into lines,
-        with lines devoid of information already removed.
+            Preprocessed second part of a file, split into lines,
+            with lines devoid of information already removed.
 
         Raises
         ------
@@ -464,10 +469,10 @@ class ParserDSC:
             not CW.
 
         Returns
-        ------
+        -------
         part2_dict: :class:'dict'
-        Data from the input as pairs of key (parameter name) and
-        value (parameter value).
+            Data from the input as pairs of key (parameter name) and
+            value (parameter value).
         """
         part2_dict = col.OrderedDict()
         for line in part2_split:
@@ -487,7 +492,7 @@ class ParserDSC:
     @staticmethod
     def _subdivide_part3(part3):
         """Pre process the third part ("Device Specific Layer")
-         of a *.DSC file.
+         of a \*.DSC file.
 
         The crude string is split into subdivisions, which start
         with a headline containing the fragment ".DVC"
@@ -498,16 +503,16 @@ class ParserDSC:
         Lines containing asterisks are removed.
 
         Parameters
-        ------
+        ----------
         part3: :class:'str'
-        Raw third part of a file.
+            Raw third part of a file.
 
         Returns
-        ------
+        -------
         subparts_clean: :class:'dict'
-        All subdivisions from the file with headlines as keys
-        and list of lines as values; lines devoid of information
-        removed.
+            All subdivisions from the file with headlines as keys
+            and list of lines as values; lines devoid of information
+            removed.
         """
         lines = part3.split("\n")
         subdivisions = col.OrderedDict()
@@ -538,7 +543,7 @@ class ParserDSC:
             List containing all three parts of a dsc file as dicts.
 
         Returns
-        ----------
+        -------
         mapped_data: :class:'list'
             data with the necessary modifications applied to allow
             for addition to the metadata.
@@ -558,11 +563,11 @@ class ParserDSC:
         """Prepare part one of the dsc file data for adding to the
         metadata.
 
-         Parameters
-         ----------
-         mapper : :obj:'aspecd.metadata.MetadataMapper'
-             metadata mapper containing the respective first part of the
-             dsc file as metadata.
+        Parameters
+        ----------
+        mapper : :obj:'aspecd.metadata.MetadataMapper'
+            metadata mapper containing the respective first part of the
+            dsc file as metadata.
         """
         mapper.mappings = [
             ["Data Ranges and Resolutions:", "rename_key",
@@ -582,11 +587,11 @@ class ParserDSC:
         """Prepare part three of the dsc file data for adding to the
         metadata.
 
-         Parameters
-         ----------
-         mapper : :obj:'aspecd.metadata.MetadataMapper'
-             metadata mapper containing the respective third part of the
-             dsc file as metadata.
+        Parameters
+        ----------
+        mapper : :obj:'aspecd.metadata.MetadataMapper'
+            metadata mapper containing the respective third part of the
+            dsc file as metadata.
         """
         mapper.mappings = [
             ["mwBridge, 1.0", "rename_key", ["PowerAtten", "attenuation"]],
@@ -609,9 +614,9 @@ class ImporterEMXandESP(ImporterEPRGeneral):
         too large or too small the byte order is changed.
 
         Returns
-        ------
+        -------
         raw_data: :class:'numpy.array'
-        Raw numerical data in processable form.
+            Raw numerical data in processable form.
         """
         complete_filename = self.source + ".spc"
         datatype = np.dtype('<f')
@@ -626,9 +631,9 @@ class ImporterEMXandESP(ImporterEPRGeneral):
         user created info file.
 
         Returns
-        ------
+        -------
         processed_param_data: :class:'dict'
-        Parsed data from the source parameter file.
+            Parsed data from the source parameter file.
         """
         headlines = ["experiment", "spectrometer", "magnetic_field",
                      "bridge", "signal_channel", "probehead", "metadata"]
@@ -644,7 +649,7 @@ class ImporterEMXandESP(ImporterEPRGeneral):
 
 
 class ParserPAR:
-    """Parser for *.par parameter file belonging to the EMX and ESP/ECS
+    """Parser for \*.par parameter file belonging to the EMX and ESP/ECS
     formats.
     """
     def __init__(self):
@@ -675,15 +680,15 @@ class ParserPAR:
 
     @staticmethod
     def _parse1(file_content):
-        """Main method for parsing a *.par into a dictionary.
+        """Main method for parsing a \*.par into a dictionary.
 
         Parameters
-        ------
+        ----------
         file_content: :class:'str'
-            Content of a complete *.par file.
+            Content of a complete \*.par file.
 
         Returns
-        ------
+        -------
         content_parsed: :class:'dict'
         """
         lines = file_content.split("\n")
@@ -711,7 +716,7 @@ class ParserPAR:
 
     @staticmethod
     def _parse2(file_content):
-        """Alternative method for parsing a *.par file using regular
+        """Alternative method for parsing a \*.par file using regular
         expressions.
 
         Uses raw string to avoid confusion concerning escape sequences.
@@ -719,7 +724,7 @@ class ParserPAR:
         Parameters
         ----------
         file_content: :class:'str'
-            Content of a complete *.par file.
+            Content of a complete \*.par file.
 
         Returns
         -------
@@ -816,7 +821,7 @@ class ExporterASCII(aspecd.io.DatasetExporter):
         Returns
         -------
         metadata_prepared: :class:'dict'
-        transformed metadata
+            transformed metadata
         """
         metadata = self.dataset.metadata.to_dict()
         metadata_prepared = self._remove_arrays(metadata)
@@ -831,12 +836,12 @@ class ExporterASCII(aspecd.io.DatasetExporter):
         Parameters
         ----------
         dictionary: :class:'dict'
-        Dictionary to relieve of arrays.
+            Dictionary to relieve of arrays.
 
         Returns
         -------
         dictionary: :class:'dict'
-        Dictionary relieved of arrays.
+            Dictionary relieved of arrays.
         """
         for k, v in dictionary.items():
             if type(v) == dict:

@@ -20,10 +20,10 @@ cwepr.dataset module
     :undoc-members:
     :show-inheritance:
 
-cwepr.importers module
-----------------------
+cwepr.io module
+---------------
 
-.. automodule:: cwepr.importers
+.. automodule:: cwepr.io
     :members:
     :undoc-members:
     :show-inheritance:

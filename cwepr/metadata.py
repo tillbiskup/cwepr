@@ -47,7 +47,7 @@ class UnequalUnitsError(Error):
 class DatasetMetadata(aspecd.metadata.DatasetMetadata):
     """Set of all metadata for a dataset object.
 
-     Attributes
+    Attributes
     ----------
     experiment: :obj:'cwepr.metadata.Experiment'
         Metadata object containing information such as the type of
@@ -111,14 +111,15 @@ class BFieldData(aspecd.metadata.Metadata):
         are provided to calculate all information concerning
         the field sector and sweeping steps.
 
-        .. note:: Currently, the possibility of calculating the
-        sector width from the width and the number of steps is not
-        accounted for.
+        .. note::
+            Currently, the possibility of calculating the
+            sector width from the width and the number of steps is not
+            accounted for.
 
         Raises
-        ----------
-        NotEnoughValuesError :
-            Raised,  when not enough different pieces of
+        ------
+        NotEnoughValuesError
+            Raised when not enough different pieces of
             information are provided to determine the other
             variables.
 
@@ -152,12 +153,13 @@ class BFieldData(aspecd.metadata.Metadata):
         """Calculate the different values concerning the sector and
         sweeping steps of the magnetic field.
 
-        .. note:: Currently, the possibility of calculating the
-        sector width from the with and the number of steps is not
-        accounted for.
+        .. note::
+            Currently, the possibility of calculating the
+            sector width from the with and the number of steps is not
+            accounted for.
 
         Raises
-        ----------
+        ------
         UnequalUnitsError :
             Raised, when two physical quantities shall be added or
             subtracted that have unequal units.
@@ -248,8 +250,9 @@ class SignalChannel(aspecd.metadata.Metadata):
     """This metadata class contains information on the signal channel
     employed.
 
-    .. Todo:: Currently aspecd crashes when the creation of an instance
-        :class: aspecd.metadata.PhysicalQuantity is attempted from an empty
+    .. todo::
+        Currently aspecd crashes when the creation of an instance of
+        :class:`aspecd.metadata.PhysicalQuantity` is attempted from an empty
         parameter field. Find a workaround or make the supervisor of aspecd
         find one.
     """

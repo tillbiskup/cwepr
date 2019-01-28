@@ -35,10 +35,10 @@ class FieldCorrection(aspecd.processing.ProcessingStep):
 class FrequencyCorrection(aspecd.processing.ProcessingStep):
     """Converts data of a given frequency to another given
     frequency.
+
     This is used to make spectra comparable.
 
-    ------
-    References for the constants
+    References for the constants:
 
     g value for Li:LiF::
 
@@ -57,7 +57,6 @@ class FrequencyCorrection(aspecd.processing.ProcessingStep):
         h = 6.62607*10**(-34)
 
     Reference: Rev. Mod. Phys. 2016, 88, 035009.
-    ------
 
     Attributes
     ----------

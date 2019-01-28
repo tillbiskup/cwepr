@@ -40,11 +40,11 @@ class Dataset(aspecd.dataset.Dataset):
         The appropriate importer automatically checks whether
         data and metadata files exist, matching a single format
 
-         Parameters
-         ----------
-         filename : :class:'str'
-             Path including the filename but not the extension.
-         """
+        Parameters
+        ----------
+        filename : :class:'str'
+            Path including the filename but not the extension.
+        """
 
         importer_factory = cwepr.io.ImporterFactoryEPR()
         importer = importer_factory.get_importer(source=filename)
@@ -66,7 +66,7 @@ class Dataset(aspecd.dataset.Dataset):
         for possible overrides.
 
         Parameters
-        ---------
+        ----------
         metadata: :class:'list'
             Loaded metadata to use. First entry: from infofile;
             Second entry: from spectrometer parameter file.

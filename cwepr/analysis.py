@@ -66,8 +66,7 @@ class NoCommonspaceError(Error):
 class FieldCorrectionValueFinding(aspecd.analysis.AnalysisStep):
     """Determine correction value for field correction.
 
-    ------
-    References for the constants
+    References for the constants:
 
     g value for Li:LiF::
 
@@ -86,7 +85,6 @@ class FieldCorrectionValueFinding(aspecd.analysis.AnalysisStep):
         h = 6.62607*10**(-34)
 
     Reference: Rev. Mod. Phys. 2016, 88, 035009.
-    ------
 
     Parameters
     ----------
@@ -144,6 +142,7 @@ class BaselineFitting(aspecd.analysis.AnalysisStep):
         Percentage of the spectrum to consider as baseline on
         EACH SIDE of the spectrum. I.e. 10% means 10% left and
         10 % right.
+
     """
     def __init__(self, order, percentage=10):
         super().__init__()
@@ -412,7 +411,7 @@ class CommonspaceAndDelimiters(aspecd.analysis.AnalysisStep):
         The maximum distance allowed on either end is
             length_difference + threshold*smaller width
 
-        Attributes
+        Parameters
         ----------
         index1: :class:'int'
             Index of one dataset used in the comparison. The index is given
@@ -442,7 +441,8 @@ class CommonspaceAndDelimiters(aspecd.analysis.AnalysisStep):
         """Checks the common defintion range for any combination of two
         different spectra.
 
-        .. Todo:: Avoid calculating every combination twice.
+        .. todo::
+            Avoid calculating every combination twice.
         """
         for n in range(len(self.datasets)):
             for m in range(len(self.datasets)):
@@ -499,3 +499,33 @@ class CommonspaceAndDelimiters(aspecd.analysis.AnalysisStep):
                     del(points[pair[1]])
                     points[pair[0]] = center
                 close_points = list()
+
+
+class PeakToPeakLW(aspecd.analysis.AnalysisStep):
+    def __init__(self):
+        super().__init__()
+
+    def _perform_task(self):
+        """Call the function to calculate the line width
+        and set it into the results.
+        """
+        self.results["p2p_lw"] = self.get_p2p_linewidth()
+
+    def get_p2p_linewidth(self):
+        """Calculates the peak-to-peak line width.
+
+        This is done by determining the distance between the maximum and the
+        minimum in the derivative spectrum which should yield acceptable
+        results in a symmetrical signal.
+
+        Returns
+        -------
+        linewidth: :class:'float'
+            line width as determined
+        """
+        index_max = np.argmax(self.dataset.data.data[1, :])
+        index_min = np.argmin(self.dataset.data.data[1, :])
+        linewidth = (
+            self.dataset.data.data[0, index_max] -
+            self.dataset.data.data[0, index_min])
+        return linewidth

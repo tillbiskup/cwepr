@@ -58,7 +58,6 @@ class BaselineControlPlotter(aspecd.plotting.SinglePlotter):
 
         The final diagram is displayed.
         """
-        ppl.rc('text', usetex=True)
 
         data = self.parameters["data"]
         coeffs_list = self.parameters["coeffs_list"]
@@ -66,8 +65,8 @@ class BaselineControlPlotter(aspecd.plotting.SinglePlotter):
         y = data[1, :]
 
         ppl.title("Baseline Comparison")
-        ppl.xlabel(r"Field \textit{B}\_{0} / mT")
-        ppl.ylabel("Intensity Change and possible baselines")
+        ppl.xlabel("$B_0$ / mT")
+        ppl.ylabel("$Intensity\\ Change and possible baselines$")
 
         ppl.plot(x, y, label="Spectrum")
         for coeffs in coeffs_list:
