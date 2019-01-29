@@ -140,7 +140,7 @@ multiplotter.plot()
 
 
 #Substract 2nd from 1st, then integrate + plot
-subtract_step = cwepr.processing.SpectrumSubtract(dts_v1)
+subtract_step = cwepr.processing.SubtractSpectrum(dts_v1)
 sub_values = dts_v2.process(subtract_step)
 
 plotter_diff = cwepr.plotting.SimpleSpectrumPlotter()

@@ -44,7 +44,7 @@ Here, *h* is the Planck constant and :math:`{\mu}_{\textrm{B}}` Bohr’s magneto
 
 Subtracting Spectra
 ===================
-The :class:`cwepr.processing.SpectrumSubtract` routine (:mod:`cwepr.processing` module) allows for subtracting a curve (usually a background spectrum) from a given dataset’s spectrum. The class uses interpolation automatically, though it is advisable to check the axis limits of both curves/spectra prior to subtraction. This is not done automatically, but the cwEPR package contains the routine :class:`cwepr.analysis.CommonspaceAndDelimiters` specifically designed for this purpose that will raise an error if the common axis space is rather small.
+The :class:`cwepr.processing.SubtractSpectrum` routine (:mod:`cwepr.processing` module) allows for subtracting a curve (usually a background spectrum) from a given dataset’s spectrum. The class uses interpolation automatically, though it is advisable to check the axis limits of both curves/spectra prior to subtraction. This is not done automatically, but the cwEPR package contains the routine :class:`cwepr.analysis.CommonspaceAndDelimiters` specifically designed for this purpose that will raise an error if the common axis space is rather small.
 
 Phase Correction
 ================

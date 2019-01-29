@@ -17,7 +17,7 @@ class FieldCorrection(aspecd.processing.ProcessingStep):
     Parameters
     ----------
     correction_value: :class:'float'
-    The previously determined correction value.
+        The previously determined correction value.
     """
     def __init__(self, correction_value):
         super().__init__()
@@ -61,10 +61,10 @@ class FrequencyCorrection(aspecd.processing.ProcessingStep):
     Attributes
     ----------
     nu_given: :class:'float'
-    Given frequency of the data present.
+        Given frequency of the data present.
 
     nu_target: :class:'float'
-    Frequency that the data should be converted to.
+        Frequency that the data should be converted to.
 
     """
     VALUE_G_LILIF = 2.002293
@@ -102,8 +102,8 @@ class FrequencyCorrection(aspecd.processing.ProcessingStep):
         g_value: :class:'float'
         Transformed value.
         """
-        g_value = \
-            self.VALUE_H*self.parameters["nu_given"].value/self.VALUE_MuB/value
+        g_value = self.VALUE_H*self.parameters["nu_given"].value \
+            / self.VALUE_MuB/value
         return g_value
 
     def _transform_to_b(self, value):
@@ -119,8 +119,7 @@ class FrequencyCorrection(aspecd.processing.ProcessingStep):
         b_value: :class:'float'
         Transformed value.
         """
-        b_value = \
-            self.VALUE_H * self.parameters["nu_target"].value \
+        b_value = self.VALUE_H * self.parameters["nu_target"].value \
             / self.VALUE_MuB / value
         return b_value
 
@@ -149,7 +148,7 @@ class BaselineCorrection(aspecd.processing.ProcessingStep):
             self.dataset.data.data[1, n] -= values_to_subtract[n]
 
 
-class SpectrumSubtract(aspecd.processing.ProcessingStep):
+class SubtractSpectrum(aspecd.processing.ProcessingStep):
     """Processing routine to subtract a given spectrum, i.e. in general
     a background, from the processed spectrum
 
@@ -163,7 +162,7 @@ class SpectrumSubtract(aspecd.processing.ProcessingStep):
         self.scnd_dataset = scnd_dataset
 
     def _perform_task(self):
-        """Overriden main method used as wrapper around the :meth: subtract
+        """Overridden main method used as wrapper around the :meth: subtract
         method."""
         self.subtract()
 

@@ -1,13 +1,13 @@
 """Module containing all analysis steps
 
 An analysis step is everything that operates on a dataset and yields a
-result largely independent of this dataset. E.g., integrdation or determination
+result largely independent of this dataset. E.g., integration or determination
 of a field correction value.
 """
 
-import numpy as np
-from math import fabs, ceil
 from copy import deepcopy
+from math import fabs, ceil
+import numpy as np
 from scipy import integrate
 
 import aspecd.analysis
@@ -501,7 +501,7 @@ class CommonspaceAndDelimiters(aspecd.analysis.AnalysisStep):
                 close_points = list()
 
 
-class PeakToPeakLW(aspecd.analysis.AnalysisStep):
+class PeakToPeakLinewidth(aspecd.analysis.AnalysisStep):
     def __init__(self):
         super().__init__()
 

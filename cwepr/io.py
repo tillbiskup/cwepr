@@ -113,7 +113,6 @@ class ImporterEPRGeneral(aspecd.io.DatasetImporter):
         Raised if no pair of files matching any one supported format
         can be found. Currently Bruker BES3T, EMX and ESP/ECS formats
         are supported.
-
     """
     supported_formats = {"BES3T": [".DTA", ".DSC"], "Other": [".spc", ".par"]}
 
@@ -252,38 +251,6 @@ class ParserDSC:
         parsed_dsc_data[0]["Data Ranges and Resolutions:"]["XMIN"] += " Gs"
         parsed_dsc_data[0]["Data Ranges and Resolutions:"]["XWID"] += " Gs"
         return parsed_dsc_data
-
-    @staticmethod
-    def _make_dict_without_structure(processed_file):
-        """Make a dictionary containing all information
-        at the same level, not divided by headlines and sub-headlines
-        for easier mapping
-
-        .. todo::
-            Find out, if this method is actually used.
-
-        Parameters
-        ----------
-        processed_file: :class:'list'
-            Content of a complete \*.DSC file in processed form, i.e. with
-            headlines and sub-headlines.
-
-        Returns
-        -------
-        dict_without_headlines: :class:'dict'
-            Dictionary of all key-value pairs belonging to any
-            headline or sub-headline, all on the same level.
-        """
-        dict_without_structure = col.OrderedDict()
-        for content in processed_file[0].values():
-            for title, entry in content.items():
-                dict_without_structure[title] = entry
-        for title, entry in processed_file[1]:
-            dict_without_structure[title] = entry
-        for content in processed_file[2].values():
-            for title, entry in content.items():
-                dict_without_structure[title] = entry
-        return dict_without_structure
 
     @staticmethod
     def _get_three_parts(file_content):

@@ -12,7 +12,7 @@ def are_values_plausible(array):
     plausible is, so far, rather arbitrary.
 
     Parameters
-    ------
+    ----------
     array: :class:'numpy.array'
     Array to check the values of.
     """
