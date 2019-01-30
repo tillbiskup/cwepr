@@ -5,10 +5,10 @@ result largely independent of this dataset. E.g., integration or determination
 of a field correction value.
 """
 
-from copy import deepcopy
-from math import fabs, ceil
+import copy
+import math
 import numpy as np
-from scipy import integrate
+import scipy.integrate
 
 import aspecd.analysis
 
@@ -99,6 +99,7 @@ class FieldCorrectionValueFinding(aspecd.analysis.AnalysisStep):
     def __init__(self, nu_value):
         super().__init__()
         self.nu_value = nu_value
+        self.description = "Determination of a field correction value"
 
     def _perform_task(self):
         """Wrapper around the method determining the field correction value.
@@ -147,6 +148,7 @@ class BaselineFitting(aspecd.analysis.AnalysisStep):
         super().__init__()
         self.parameters["order"] = order
         self.parameters["percentage"] = percentage
+        self.description = "Polynomial fit to baseline"
 
     def _perform_task(self):
         """Call the function to find a polynomial
@@ -162,8 +164,8 @@ class BaselineFitting(aspecd.analysis.AnalysisStep):
         """
         number_of_points = len(self.dataset.data.data[0, :])
         points_per_side = \
-            ceil(number_of_points*self.parameters["percentage"]/100.0)
-        dataset_copy = deepcopy(self.dataset.data.data)
+            math.ceil(number_of_points*self.parameters["percentage"]/100.0)
+        dataset_copy = copy.deepcopy(self.dataset.data.data)
         data_list = dataset_copy.tolist()
         points_to_use_x = \
             self._get_points_to_use(data_list[0], points_per_side)
@@ -217,6 +219,7 @@ class IntegrationIndefinite(aspecd.analysis.AnalysisStep):
     def __init__(self, y=None):
         super().__init__()
         self.y = y
+        self.description = "Indefinite Integration"
 
     def _perform_task(self):
         """Perform the actual integration.
@@ -231,7 +234,7 @@ class IntegrationIndefinite(aspecd.analysis.AnalysisStep):
         else:
             y = self.y
 
-        integral_values = integrate.cumtrapz(y, x, initial=0)
+        integral_values = scipy.integrate.cumtrapz(y, x, initial=0)
         self.results["integral_values"] = integral_values
 
 
@@ -246,6 +249,7 @@ class IntegrationDefinite(aspecd.analysis.AnalysisStep):
     def __init__(self, y):
         super().__init__()
         self.y = y
+        self.description = "Definite Integration / Area und the curve"
 
     def _perform_task(self):
         """Performs the actual integration. The x values
@@ -281,6 +285,7 @@ class IntegrationVerification(aspecd.analysis.AnalysisStep):
         self.y = y
         self.percentage = percentage
         self.threshold = threshold
+        self.description = "Preprocessing verification after first integration"
 
     def _perform_task(self):
         """Perform the actual verification.
@@ -291,7 +296,7 @@ class IntegrationVerification(aspecd.analysis.AnalysisStep):
 
         The result is a boolean: Is the integral lower than the threshold?
         """
-        number_of_points = ceil(len(self.y)*self.percentage/100.0)
+        number_of_points = math.ceil(len(self.y)*self.percentage/100.0)
         points_y = self.y[len(self.y) - number_of_points - 1:]
         points_x = \
             self.dataset.data.data[0, len(self.y) - number_of_points - 1:]
@@ -358,6 +363,7 @@ class CommonspaceAndDelimiters(aspecd.analysis.AnalysisStep):
         self.minimal_width = None
         self.start_points = list()
         self.end_points = list()
+        self.description = "Common definition space determination"
 
     def _perform_task(self):
         """Main function performing the necessary subtasks.
@@ -438,10 +444,10 @@ class CommonspaceAndDelimiters(aspecd.analysis.AnalysisStep):
         """
         width1 = self.end_points[index1] - self.start_points[index1]
         width2 = self.end_points[index2] - self.start_points[index2]
-        width_delta = fabs(width1-width2)
-        if (fabs(self.start_points[index1]-self.start_points[index2]) > (
+        width_delta = math.fabs(width1-width2)
+        if (math.fabs(self.start_points[index1]-self.start_points[index2]) > (
                 width_delta + self.threshold*(min(width1, width2)))) or (
-            fabs(self.end_points[index1] - self.end_points[index2]) > (
+            math.fabs(self.end_points[index1] - self.end_points[index2]) > (
                 width_delta + self.threshold * (min(width1, width2)))):
             name1 = self.datasets[index1].metadata.measurement.filename
             name2 = self.datasets[index1].metadata.measurement.filename
@@ -478,9 +484,9 @@ class CommonspaceAndDelimiters(aspecd.analysis.AnalysisStep):
         delimiter_points.extend(self.end_points)
         points_close_to_edge = list()
         for n in range(len(delimiter_points)):
-            if (fabs(delimiter_points[n] - self.minimum) <
+            if (math.fabs(delimiter_points[n] - self.minimum) <
                 0.03*self.minimal_width) or (
-                    fabs(delimiter_points[n] - self.maximum) <
+                    math.fabs(delimiter_points[n] - self.maximum) <
                     0.03 * self.minimal_width):
                 points_close_to_edge.append(n)
         points_close_to_edge.reverse()
@@ -502,14 +508,14 @@ class CommonspaceAndDelimiters(aspecd.analysis.AnalysisStep):
         close_points = list()
         while True:
             for n in range(len(points)-1):
-                if fabs(points[n]-points[n+1]) < 0.03*self.minimal_width:
+                if math.fabs(points[n]-points[n+1]) < 0.03*self.minimal_width:
                     close_points.append([n, n+1])
             if close_points == list():
                 return
             else:
                 close_points.reverse()
                 for pair in close_points:
-                    center = fabs(pair[0]-pair[1])/2.0
+                    center = math.fabs(pair[0]-pair[1])/2.0
                     del(points[pair[1]])
                     points[pair[0]] = center
                 close_points = list()
@@ -518,6 +524,7 @@ class CommonspaceAndDelimiters(aspecd.analysis.AnalysisStep):
 class PeakToPeakLinewidth(aspecd.analysis.AnalysisStep):
     def __init__(self):
         super().__init__()
+        self.description = "Determine peak-to-peak linewidth"
 
     def _perform_task(self):
         """Call the function to calculate the line width

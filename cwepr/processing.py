@@ -5,7 +5,7 @@ a independent result. E.g., Field Correction or Baseline correction.
 """
 
 import numpy as np
-from scipy import signal
+import scipy.signal
 
 import aspecd.processing
 
@@ -24,6 +24,7 @@ class FieldCorrection(aspecd.processing.ProcessingStep):
     def __init__(self, correction_value):
         super().__init__()
         self.parameters["correction_value"] = correction_value
+        self.description = "Linear field correction"
 
     def _perform_task(self):
         """Shift all field axis data points by the correction value
@@ -76,6 +77,7 @@ class FrequencyCorrection(aspecd.processing.ProcessingStep):
         super().__init__()
         self.parameters["nu_given"] = nu_given
         self.parameters["nu_target"] = nu_target
+        self.description = "Transform data to target frequency"
 
     def _perform_task(self):
         """Perform the actual transformation / correction.
@@ -140,6 +142,7 @@ class BaselineCorrection(aspecd.processing.ProcessingStep):
     def __init__(self, coeffs):
         super().__init__()
         self.parameters["coeffs"] = coeffs
+        self.description = "Subtraction of baseline polynomial"
 
     def _perform_task(self):
         """Perform the actual correction.
@@ -167,6 +170,7 @@ class SubtractSpectrum(aspecd.processing.ProcessingStep):
     def __init__(self, scnd_dataset):
         super().__init__()
         self.scnd_dataset = scnd_dataset
+        self.description = "Subtract a spectrum"
 
     def _perform_task(self):
         """Overridden main method used as wrapper around the :meth:`_subtract`
@@ -204,6 +208,7 @@ class PhaseCorrection(aspecd.processing.ProcessingStep):
     """
     def __init__(self):
         super().__init__()
+        self.description = "Phase Correction"
 
     def _perform_task(self):
         """Perform the actual phase correction.
@@ -224,7 +229,7 @@ class PhaseCorrection(aspecd.processing.ProcessingStep):
             self.parameters["phaseangle_unit"] = "rad"
 
         data = self.dataset.data.data
-        data_imag = signal.hilbert(data)
+        data_imag = scipy.signal.hilbert(data)
         data_imag = np.exp(-1j*self.parameters["phaseangle_value"])*data_imag
         data_real = np.real(data_imag)
         self.dataset.data.data = data_real
@@ -237,6 +242,7 @@ class NormaliseMaximum(aspecd.processing.ProcessingStep):
     """
     def __init__(self):
         super().__init__()
+        self.description = "Normalisation to maximum"
 
     def _perform_task(self):
         maximum = max(self.dataset.data.data[0, :])
@@ -257,6 +263,7 @@ class NormaliseArea(aspecd.processing.ProcessingStep):
     def __init__(self, integral):
         super().__init__()
         self.parameters["integral"] = integral
+        self.description = "Normalisation to area"
 
     def _perform_task(self):
         for n in range(len(self.dataset.data.data[0, :])):
@@ -271,6 +278,7 @@ class NormaliseScanNumber(aspecd.processing.ProcessingStep):
     """
     def __init__(self):
         super().__init__()
+        self.description = "Normalisation to scan number"
 
     def _perform_task(self):
         self.parameters["scannumber"] = \
