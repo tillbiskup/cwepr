@@ -49,31 +49,31 @@ class DatasetMetadata(aspecd.metadata.DatasetMetadata):
 
     Attributes
     ----------
-    experiment: :obj:'cwepr.metadata.Experiment'
+    experiment: :obj:`cwepr.metadata.Experiment`
         Metadata object containing information such as the type of
         the experiment performed.
 
-    spectrometer: :obj:'cwepr.metadata.Spectrometer'
+    spectrometer: :obj:`cwepr.metadata.Spectrometer`
         Metadata object containing information on the spectrometer
         used.
 
-    magnetic_field: :obj:'cwepr.metadata.BFieldData'
+    magnetic_field: :obj:`cwepr.metadata.BFieldData`
         Metadata object containing information on the magnetic
         field applied in the experiment.
 
-    bridge: :obj:'cwepr.metadata.Brige'
+    bridge: :obj:`cwepr.metadata.Brige`
         Metadata object containing information on the microwave
         bridge used.
 
-    signal_channel: :obj:'cwepr.metadata.SignalChannel'
+    signal_channel: :obj:`cwepr.metadata.SignalChannel`
         Metadata object containing information on the signal
         channel applied.
 
-    probehead: :obj:'cwepr.metadata.Probehead'
+    probehead: :obj:`cwepr.metadata.Probehead`
         Metadata object containing information on the probehead
         used in the experiment.
 
-    modifications : :class:'list'
+    modifications : :class:`list`
         List of all modifications performed on the metadata,
         e.g, overrides.
 
@@ -107,7 +107,9 @@ class BFieldData(aspecd.metadata.Metadata):
         self.power_supply = ""
 
     def can_calculate(self):
-        """Checks if enough different pieces of information
+        """Check if enough data is present to determine field values.
+
+        Checks if enough different pieces of information
         are provided to calculate all information concerning
         the field sector and sweeping steps.
 
@@ -150,7 +152,9 @@ class BFieldData(aspecd.metadata.Metadata):
         return True
 
     def calculate_values(self):
-        """Calculate the different values concerning the sector and
+        """Perform the calculation of all field values left out.
+
+        Calculate the different values concerning the sector and
         sweeping steps of the magnetic field.
 
         .. note::

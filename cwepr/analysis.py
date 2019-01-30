@@ -19,7 +19,7 @@ class Error(Exception):
 
 
 class WrongOrderError(Error):
-    """Exception raised when the x values given for the commonspace
+    """Exception raised when the x values given for the common space
     determination are not in increasing Order.
 
     Attributes
@@ -64,7 +64,7 @@ class NoCommonspaceError(Error):
 
 
 class FieldCorrectionValueFinding(aspecd.analysis.AnalysisStep):
-    """Determine correction value for field correction.
+    """Determine correction value for a field correction.
 
     References for the constants:
 
@@ -88,7 +88,7 @@ class FieldCorrectionValueFinding(aspecd.analysis.AnalysisStep):
 
     Parameters
     ----------
-    nu_value: :class:'float'
+    nu_value: :class:`float`
         Frequency value of the measurement used to calculate the expected
         field value.
     """
@@ -101,8 +101,7 @@ class FieldCorrectionValueFinding(aspecd.analysis.AnalysisStep):
         self.nu_value = nu_value
 
     def _perform_task(self):
-        """Call the function to calculate the correction value
-        and set it into the results.
+        """Wrapper around the method determining the field correction value.
         """
         self.results["Delta_B0"] = self.get_field_correction_value()
 
@@ -116,7 +115,7 @@ class FieldCorrectionValueFinding(aspecd.analysis.AnalysisStep):
 
         Returns
         -------
-        delta_b0: :class:'float'
+        delta_b0: :class:`float`
             Field correction value
         """
         index_max = np.argmax(self.dataset.data.data[1, :])
@@ -135,10 +134,10 @@ class BaselineFitting(aspecd.analysis.AnalysisStep):
 
     Attributes
     ----------
-    order: :class:'int'
+    order: :class:`int`
         Order of the polynomial to create
 
-    percentage: :class:'int'
+    percentage: :class:`int`
         Percentage of the spectrum to consider as baseline on
         EACH SIDE of the spectrum. I.e. 10% means 10% left and
         10 % right.
@@ -156,7 +155,9 @@ class BaselineFitting(aspecd.analysis.AnalysisStep):
         self.results["Fit_Coeffs"] = self._find_polynome_by_fit()
 
     def _find_polynome_by_fit(self):
-        """This method assembles the data points of the spectrum to consider
+        """Perform a polynomial fit on the baseline.
+
+        This method assembles the data points of the spectrum to consider
         and uses a numpy polynomial fit on these points.
         """
         number_of_points = len(self.dataset.data.data[0, :])
@@ -175,12 +176,14 @@ class BaselineFitting(aspecd.analysis.AnalysisStep):
 
     @staticmethod
     def _get_points_to_use(data, points_per_side):
-        """Slices the list of all data points to have a list of
+        """Get a number of points from the spectrum to use for a fit.
+
+        Slices the list of all data points to have a list of
         points from each side of the spectrum to use for polynomial fitting.
 
         Parameters
         ----------
-        data: :class:'list'
+        data: :class:`list`
             List from which points should be used on each side.
 
         points_per_side: :class:'int'
@@ -188,7 +191,7 @@ class BaselineFitting(aspecd.analysis.AnalysisStep):
 
         Returns
         -------
-        points_to_use: :class:'list'
+        points_to_use: :class:`list`
             List only containing the correct number of points from each side
             and not the points in between.
         """
@@ -200,12 +203,14 @@ class BaselineFitting(aspecd.analysis.AnalysisStep):
 
 
 class IntegrationIndefinite(aspecd.analysis.AnalysisStep):
-    """Makes an indefinite integration, yielding a new array of y
-    values of the integrated function.
+    """Performs an indefinite integration.
+
+    Indefinite integration yields a new array of y values of the integrated
+    function.
 
     Attributes
     ----------
-    y: :class:'list'
+    y: :class:`list`
         y values to use for the integration. If this is omitted the y values
         of the dataset are used.
     """
@@ -214,7 +219,9 @@ class IntegrationIndefinite(aspecd.analysis.AnalysisStep):
         self.y = y
 
     def _perform_task(self):
-        """Perform the actual integration using trapezoidal integration
+        """Perform the actual integration.
+
+        Perform the actual integration using trapezoidal integration
         functionality from scipy. The keyword argument initial=0 is used
         to yield a list of length identical to the original one.
         """
@@ -229,11 +236,11 @@ class IntegrationIndefinite(aspecd.analysis.AnalysisStep):
 
 
 class IntegrationDefinite(aspecd.analysis.AnalysisStep):
-    """Makes a definite integration and calculates the area under the curve.
+    """Makes a definite integration, i.e. calculates the area under the curve.
 
     Attributes
     ----------
-    y: :class:'list'
+    y: :class:`list`
         y values to use for the integration.
     """
     def __init__(self, y):
@@ -259,13 +266,13 @@ class IntegrationVerification(aspecd.analysis.AnalysisStep):
 
     Attributes
     ----------
-    y: :class:'list'
+    y: :class:`list`
         y values to use for the integration
 
-    percentage: :class:'int'
+    percentage: :class:`int`
         Percentage of the spectrum to consider
 
-    threshold: :class:'float'
+    threshold: :class:`float`
         Threshold for the integral. If the integral determined is smaller
         the preprocessing is considered to have been successful.
     """
@@ -276,7 +283,9 @@ class IntegrationVerification(aspecd.analysis.AnalysisStep):
         self.threshold = threshold
 
     def _perform_task(self):
-        """Performs the actual integration on a certain percentage of the
+        """Perform the actual verification.
+
+        Performs the actual integration on a certain percentage of the
         points from the right part of the spectrum and compares them to the
         threshold.
 
@@ -304,26 +313,26 @@ class CommonspaceAndDelimiters(aspecd.analysis.AnalysisStep):
 
     Attributes
     ----------
-    datasets: :class:'list'
+    datasets: :class:`list`
         List of datasets to consider in the determination.
 
-    threshold: :class:'float'
+    threshold: :class:`float`
         Distance used for determining whether or not the common
         definition range of two spectra is large enough (vide infra).
 
-    minimum: :class:'float'
+    minimum: :class:`float`
         Leftmost end of all spectra determined in the routine.
 
-    maximum: :class:'float'
+    maximum: :class:`float`
         Rightmost end of all spectra determined in the routine.
 
-    minimal_width: :class:'float'
+    minimal_width: :class:`float`
         Smallest width of all spectra determined in the routine.
 
-    start_points: :class:'list'
+    start_points: :class:`list`
         List of the left ends of all spectra determined in the routine.
 
-    end_points: :class:'list'
+    end_points: :class:`list`
         List of the right ends of all spectra determined in the routine.
 
     Raises
@@ -351,7 +360,9 @@ class CommonspaceAndDelimiters(aspecd.analysis.AnalysisStep):
         self.end_points = list()
 
     def _perform_task(self):
-        """To find the common definition ranges first all relevant data points
+        """Main function performing the necessary subtasks.
+
+        To find the common definition ranges first all relevant data points
         are collected. Subsequently the common ranges are determined and
         finally the delimiter points between different ranges are
         determined.
@@ -413,10 +424,10 @@ class CommonspaceAndDelimiters(aspecd.analysis.AnalysisStep):
 
         Parameters
         ----------
-        index1: :class:'int'
+        index1: :class:`int`
             Index of one dataset used in the comparison. The index is given
             for the instance's list of datasets.
-        index2: :class:'int'
+        index2: :class:`int`
             Index of the second dataset used in the comparison.
 
         Raises
@@ -438,7 +449,7 @@ class CommonspaceAndDelimiters(aspecd.analysis.AnalysisStep):
                                      "have not enough commonspace.")
 
     def _check_commonspace_for_all(self):
-        """Checks the common defintion range for any combination of two
+        """Checks the common definition range for any combination of two
         different spectra.
 
         .. todo::
@@ -480,6 +491,9 @@ class CommonspaceAndDelimiters(aspecd.analysis.AnalysisStep):
     def _eliminate_close_delimiters(self, points):
         """Combine points close to each other.
 
+        Combining means, eliminating both and adding a new point between the
+        two.
+
         Close means less than:
             0.03*smallest width of all spectra
 
@@ -520,7 +534,7 @@ class PeakToPeakLinewidth(aspecd.analysis.AnalysisStep):
 
         Returns
         -------
-        linewidth: :class:'float'
+        linewidth: :class:`float`
             line width as determined
         """
         index_max = np.argmax(self.dataset.data.data[1, :])

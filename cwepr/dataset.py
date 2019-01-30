@@ -42,7 +42,7 @@ class Dataset(aspecd.dataset.Dataset):
 
         Parameters
         ----------
-        filename : :class:'str'
+        filename : :class:`str`
             Path including the filename but not the extension.
         """
 
@@ -61,13 +61,15 @@ class Dataset(aspecd.dataset.Dataset):
         self.metadata.magnetic_field.gauss_to_millitesla()
 
     def _map_metadata_and_check_for_overrides(self, metadata):
-        """Modifies names of metadata information as necessary, combines
+        """Perform some operations to yield to give the final set of metadata.
+
+        Modifies names of metadata information as necessary, combines
         data from the INFO file and the spectrometer parameter file and checks
         for possible overrides.
 
         Parameters
         ----------
-        metadata: :class:'list'
+        metadata: :class:`list`
             Loaded metadata to use. First entry: from infofile;
             Second entry: from spectrometer parameter file.
         """
@@ -82,11 +84,14 @@ class Dataset(aspecd.dataset.Dataset):
             self._check_for_override(metadata_mapper.metadata, data_part)
 
     def _check_for_override(self, data1, data2, name=""):
-        """Compare the keys in the info file dict with those in
+        """Check if metadata values from info file are overridden by
+        parameter file.
+
+        Compare the keys in the info file dict with those in
         each part of the dsc/par file to find overrides.
         Any matching keys are considered to be overriden and
         a respective note is added to
-        :attr:'cwepr.metadata.DatasetMetadata.metadata_modifications'.
+        :attr:`cwepr.metadata.DatasetMetadata.metadata_modifications`.
 
         The method cascades through nested dicts returning a
         'path' of the potential overrides.
@@ -95,13 +100,13 @@ class Dataset(aspecd.dataset.Dataset):
 
         Parameters
         ----------
-        data1 : :class:'dict'
+        data1 : :class:`dict`
             Original data.
 
-        data2: :class:'dict'
+        data2: :class:`dict`
             Data that is added to the original dict.
 
-        name: :class:'str'
+        name: :class:`str`
             Used in the cascade to keep track of the path. This should not
             be set to anything other than the default value.
         """
@@ -132,7 +137,7 @@ class Dataset(aspecd.dataset.Dataset):
 
         Parameters
         ----------
-        importer : :class:'cwepr.importers.ImporterEPRGeneral'
+        importer : :class:`cwepr.importers.ImporterEPRGeneral`
             Importer instance to use for the import.
 
         Raises

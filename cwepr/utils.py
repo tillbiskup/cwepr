@@ -3,8 +3,10 @@ in multiple other routines.
 """
 
 
-def are_values_plausible(array):
-    """Check whether the values imported are plausible, i.e.
+def are_intensity_values_plausible(array):
+    """Check imported values for plausibility.
+
+    Check whether the values imported are plausible, i.e.
     not extremely high or low.
 
     Note: In case of a wrong byteorder the values observed can
@@ -13,7 +15,7 @@ def are_values_plausible(array):
 
     Parameters
     ----------
-    array: :class:'numpy.array'
+    array: :class:`numpy.array`
     Array to check the values of.
     """
     for v in array:

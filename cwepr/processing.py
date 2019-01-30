@@ -11,12 +11,14 @@ import aspecd.processing
 
 
 class FieldCorrection(aspecd.processing.ProcessingStep):
-    """Perform field correction of the data with a correction
+    """Processing step for field correction.
+
+    Perform a linear field correction of the data with a correction
     value previously determined.
 
     Parameters
     ----------
-    correction_value: :class:'float'
+    correction_value: :class:`float`
         The previously determined correction value.
     """
     def __init__(self, correction_value):
@@ -33,8 +35,7 @@ class FieldCorrection(aspecd.processing.ProcessingStep):
 
 
 class FrequencyCorrection(aspecd.processing.ProcessingStep):
-    """Converts data of a given frequency to another given
-    frequency.
+    """Converts data of a given frequency to another given frequency.
 
     This is used to make spectra comparable.
 
@@ -60,10 +61,10 @@ class FrequencyCorrection(aspecd.processing.ProcessingStep):
 
     Attributes
     ----------
-    nu_given: :class:'float'
+    nu_given: :class:`float`
         Given frequency of the data present.
 
-    nu_target: :class:'float'
+    nu_target: :class:`float`
         Frequency that the data should be converted to.
 
     """
@@ -77,7 +78,9 @@ class FrequencyCorrection(aspecd.processing.ProcessingStep):
         self.parameters["nu_target"] = nu_target
 
     def _perform_task(self):
-        """For the conversion the x axis data is first converted to
+        """Perform the actual transformation / correction.
+
+        For the conversion the x axis data is first converted to
         an axis in units of using the given frequency, then converted back
         using target frequency.
 
@@ -94,12 +97,12 @@ class FrequencyCorrection(aspecd.processing.ProcessingStep):
 
         Parameters
         ----------
-         value: :class:'float'
+         value: :class:`float`
          B value to transform.
 
         Returns
         -------
-        g_value: :class:'float'
+        g_value: :class:`float`
         Transformed value.
         """
         g_value = self.VALUE_H*self.parameters["nu_given"].value \
@@ -111,12 +114,12 @@ class FrequencyCorrection(aspecd.processing.ProcessingStep):
 
         Parameters
         ----------
-        value: :class:'float'
+        value: :class:`float`
         g value to transform.
 
         Returns
         -------
-        b_value: :class:'float'
+        b_value: :class:`float`
         Transformed value.
         """
         b_value = self.VALUE_H * self.parameters["nu_target"].value \
@@ -130,7 +133,7 @@ class BaselineCorrection(aspecd.processing.ProcessingStep):
 
     Attributes
     ----------
-    coeffs: :class:'list'
+    coeffs: :class:`list`
         List of the polynomial coefficients of the polynomial to subtract.
     """
 
@@ -139,7 +142,9 @@ class BaselineCorrection(aspecd.processing.ProcessingStep):
         self.parameters["coeffs"] = coeffs
 
     def _perform_task(self):
-        """Baseline correction is performed by subtraction of  a
+        """Perform the actual correction.
+
+        Baseline correction is performed by subtraction of  a
         previously determined polynomial."""
         x = self.dataset.data.data[0, :]
         values_to_subtract = np.polyval(
@@ -149,12 +154,14 @@ class BaselineCorrection(aspecd.processing.ProcessingStep):
 
 
 class SubtractSpectrum(aspecd.processing.ProcessingStep):
-    """Processing routine to subtract a given spectrum, i.e. in general
+    """Subtract one spectrum from another.
+
+    Processing routine to subtract a given spectrum, i.e. in general
     a background, from the processed spectrum
 
     Attributes
     ----------
-    scnd_dataset: :class:'cwepr.dataset.Dataset'
+    scnd_dataset: :class:`cwepr.dataset.Dataset`
         Dataset containing the spectrum that should be subtracted.
     """
     def __init__(self, scnd_dataset):
@@ -162,12 +169,14 @@ class SubtractSpectrum(aspecd.processing.ProcessingStep):
         self.scnd_dataset = scnd_dataset
 
     def _perform_task(self):
-        """Overridden main method used as wrapper around the :meth: subtract
+        """Overridden main method used as wrapper around the :meth:`_subtract`
         method."""
-        self.subtract()
+        self._subtract()
 
     def interpolate(self):
-        """Interpolates the spectrum that should be subtracted from the
+        """Perform a potentially necessary interpolation.
+
+        Interpolates the spectrum that should be subtracted from the
         other one on the x values of this other spectrum.
         """
         x = self.dataset.data.data[0, :]
@@ -176,8 +185,10 @@ class SubtractSpectrum(aspecd.processing.ProcessingStep):
         interpolated_values = np.interp(x, xp, fp)
         return interpolated_values
 
-    def subtract(self):
-        """The actual subtraction. The second spectrum (the one gets subtracted
+    def _subtract(self):
+        """Perform the actual subtraction.
+
+        The actual subtraction. The second spectrum (the one gets subtracted
         is first interpolated on the x values of the other one.
         """
         y_interp = self.interpolate()
@@ -195,7 +206,9 @@ class PhaseCorrection(aspecd.processing.ProcessingStep):
         super().__init__()
 
     def _perform_task(self):
-        """Perform the actual phase correction. The phase angle is
+        """Perform the actual phase correction.
+
+        The phase angle is
         acquired from the dataset's metadata and transformed to radians
         if necessary.
         The phase correction is then applied and the corrected data inserted
@@ -238,7 +251,7 @@ class NormaliseArea(aspecd.processing.ProcessingStep):
 
     Parameters
     ----------
-    integral: :class:'float'
+    integral: :class:`float`
         Area under the curve.
     """
     def __init__(self, integral):
@@ -251,7 +264,7 @@ class NormaliseArea(aspecd.processing.ProcessingStep):
 
 
 class NormaliseScanNumber(aspecd.processing.ProcessingStep):
-    """Normalises a spectrum concerning the area under the curve.
+    """Normalises a spectrum concerning the number of scans used.
 
     This is necessary to make spectra where the intensity of different scans
     is added comparable to ones where it is averaged.
