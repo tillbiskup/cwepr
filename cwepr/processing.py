@@ -200,6 +200,48 @@ class SubtractSpectrum(aspecd.processing.ProcessingStep):
             self.dataset.data.data[1, n] -= y_interp[n]
 
 
+class AddSpectrum(aspecd.processing.ProcessingStep):
+    """Add one spectrum to another.
+
+    Attributes
+    ----------
+    scnd_dataset: :class:`cwepr.dataset.Dataset`
+        Dataset containing the spectrum that should be added.
+
+    """
+    def __init__(self, scnd_dataset):
+        super().__init__()
+        self.scnd_dataset = scnd_dataset
+        self.description = "Add another spectrum"
+
+    def _perform_task(self):
+        """Overridden main method used as wrapper around the :meth:`_add`
+        method."""
+        self._add()
+
+    def interpolate(self):
+        """Perform a potentially necessary interpolation.
+
+        Interpolates the spectrum that should be added to the
+        other one on the x values of this other spectrum.
+        """
+        x = self.dataset.data.data[0, :]
+        xp = self.scnd_dataset.data.data[0, :]
+        fp = self.scnd_dataset.data.data[1, :]
+        interpolated_values = np.interp(x, xp, fp)
+        return interpolated_values
+
+    def _add(self):
+        """Perform the actual subtraction.
+
+        The actual subtraction. The second spectrum (the one gets subtracted)
+        is first interpolated on the x values of the other one.
+        """
+        y_interp = self.interpolate()
+        for n in range(len(self.dataset.data.data[0, :])):
+            self.dataset.data.data[1, n] += y_interp[n]
+
+
 class PhaseCorrection(aspecd.processing.ProcessingStep):
     """Processing step for phase correction.
 

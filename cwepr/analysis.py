@@ -550,3 +550,106 @@ class PeakToPeakLinewidth(aspecd.analysis.AnalysisStep):
             self.dataset.data.data[0, index_max] -
             self.dataset.data.data[0, index_min])
         return linewidth
+
+
+class LinewidthFWHM(aspecd.analysis.AnalysisStep):
+    """
+
+    """
+    def __init__(self):
+        super().__init__()
+        self.description = "Determine linewidth (full width at half max; FWHM)"
+
+    def _perform_task(self):
+        """Call the function to calculate the line width
+        and set it into the results.
+        """
+        self.results["fwhm_lw"] = self.get_fwhm_linewidth()
+
+    def get_fwhm_linewidth(self):
+        """Calculates the line width (full width at half maximum, FWHM).
+
+        This is done by subtracting maximum/2, building the absolute value
+        and then determining the minima. The distance between these points
+        corresponds to the FWHM linewidth.
+
+        Returns
+        -------
+        linewidth: :class:`float`
+            line width as determined
+        """
+        index_max = np.argmax(self.dataset.data.data[1, :])
+        spectral_data = copy.deepcopy(self.dataset.data.data)
+        maximum = spectral_data[1, index_max]
+        for n in range(len(spectral_data[1, :])):
+            spectral_data[1, n] -= maximum/2
+            if spectral_data[1, n] < 0:
+                spectral_data[1, n] *= -1
+        left_zero_cross_index = np.argmin(spectral_data[1, :index_max])
+        right_zero_cross_index = np.argmin(spectral_data[1, index_max:])
+        linewidth = right_zero_cross_index - left_zero_cross_index
+        return linewidth
+
+
+class SignalToNoise(aspecd.analysis.AnalysisStep):
+    def __init__(self, percentage=10):
+        super().__init__()
+        self.parameters["percentage"] = percentage
+        self.description = "Determine signal to noise ratio."
+
+    def _perform_task(self):
+        """Call the function to calculate the actual ratio
+        and set it into the results.
+        """
+        data_copy = copy.deepcopy(self.dataset.data.data)
+        data_list_absolute = data_copy.to_list()
+        for n in range(len(data_list_absolute)):
+            if data_list_absolute[n] < 0:
+                data_list_absolute[n] *= -1
+        signal_max = max(data_list_absolute)
+        noise_max = self._get_noise_maximum(data_list_absolute)
+        self.results["S/N ratio"] = signal_max/noise_max
+
+    def _get_noise_maximum(self, data_absolute):
+        """Find the maximum of the noise.
+
+        This method assembles the data points of the spectrum to consider as
+        noise and returns the maximum.
+        """
+        number_of_points = len(data_absolute)
+        points_per_side = \
+            math.ceil(number_of_points*self.parameters["percentage"]/100.0)
+        points_to_use_y = \
+            self._get_points_to_use(data_absolute, points_per_side)
+        maximum = max(points_to_use_y)
+        return maximum
+
+    @staticmethod
+    def _get_points_to_use(data, points_per_side):
+        """Get a number of points from the spectrum to use for a fit.
+
+        Slices the list of all data points to have a list of
+        points from each side of the spectrum to consider as noise.
+
+        WARNING: The spectral data needs to be provided and/or the percentage
+        to use set in a way that no actual peak lies in this range.
+
+        Parameters
+        ----------
+        data: :class:`list`
+            List from which points should be used on each side.
+
+        points_per_side: :class:'int'
+            How many points from each end of the list should be used.
+
+        Returns
+        -------
+        points_to_use: :class:`list`
+            List only containing the correct number of points from each side
+            and not the points in between.
+        """
+        left_part = data[:points_per_side+1]
+        right_part = data[len(data) - points_per_side - 1:]
+        points_to_use = left_part
+        points_to_use.extend(right_part)
+        return points_to_use
