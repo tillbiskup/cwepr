@@ -177,6 +177,9 @@ class ImporterBES3T(ImporterEPRGeneral):
         if not are_intensity_values_plausible(raw_data):
             raw_data = raw_data.byteswap()
         self.dataset.data.data = raw_data
+        metadata = self.import_metadata()
+        self.dataset.map_metadata_and_check_for_overrides(metadata)
+        self.dataset.modify_field_values()
 
     def import_metadata(self):
         """Import parameter file in BES3T format and user created info file.
@@ -591,6 +594,9 @@ class ImporterEMXandESP(ImporterEPRGeneral):
             datatype = np.dtype('>i4')
             raw_data = np.fromfile(complete_filename, datatype)
         self.dataset.data.data = raw_data
+        metadata = self.import_metadata()
+        self.dataset.map_metadata_and_check_for_overrides(metadata)
+        self.dataset.modify_field_values()
 
     def import_metadata(self):
         """Import parameter file in BES3T format and user created info file.
@@ -768,8 +774,9 @@ class ImporterFactoryEPR(aspecd.io.DatasetImporterFactory):
             ):
                 return k
         else:
-            raise NoMatchingFilePairError("""No file pair matching a single
-            format was found for path: """+source)
+            msg = "No file pair matching a single format was found for path: "\
+             + source
+            raise NoMatchingFilePairError(message=msg)
 
 
 class ExporterASCII(aspecd.io.DatasetExporter):

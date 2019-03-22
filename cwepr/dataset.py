@@ -50,18 +50,18 @@ class Dataset(aspecd.dataset.Dataset):
         importer = importer_factory.get_importer(source=filename)
         super().import_from(importer=importer)
         metadata = self._import_metadata(importer=importer)
-        self._map_metadata_and_check_for_overrides(metadata)
-        self._modify_field_values()
+        self.map_metadata_and_check_for_overrides(metadata)
+        self.modify_field_values()
 
-    def _modify_field_values(self):
+    def modify_field_values(self):
         """Fills in all variables concerning the magnetic field and transforms
         them from gauss to millitesla.
         """
         self.metadata.magnetic_field.calculate_values()
         self.metadata.magnetic_field.gauss_to_millitesla()
 
-    def _map_metadata_and_check_for_overrides(self, metadata):
-        """Perform some operations to yield to give the final set of metadata.
+    def map_metadata_and_check_for_overrides(self, metadata):
+        """Perform some operations to yield the final set of metadata.
 
         Modifies names of metadata information as necessary, combines
         data from the INFO file and the spectrometer parameter file and checks
