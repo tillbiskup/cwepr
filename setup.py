@@ -37,9 +37,9 @@ setuptools.setup(
         "Topic :: Scientific/Engineering",
     ],
     install_requires=[
-        'numpy'
-	'scipy'
-
+        'numpy',
+        'scipy',
+        'matplotlib',
     ],
     python_requires='>=3',
 )
