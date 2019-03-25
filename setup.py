@@ -17,7 +17,7 @@ setuptools.setup(
     description='Package for handling cw-EPR data.',
     long_description=readme,
     long_description_content_type='text/x-rst',
-    author='',
+    author='Pascal Kirchner',
     author_email='',
     url='',
     license=license_,
@@ -38,6 +38,8 @@ setuptools.setup(
     ],
     install_requires=[
         'numpy'
+	'scipy'
+
     ],
     python_requires='>=3',
 )

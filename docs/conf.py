@@ -25,9 +25,9 @@ with open(os.path.join(os.path.dirname(__file__), '..', 'VERSION')) as \
         version_file:
     release_ = version_file.read().strip()
 
-project = 'SpinPy'
-copyright = '2018, Till Biskup, Jara Popp, Stephan Rein'
-author = 'Till Biskup, Jara Popp, Stephan Rein'
+project = 'cwEPR'
+copyright = '2018-2019, Pascal Kirchner, Till Biskup'
+author = 'Pascal Kirchner'
 
 # The short X.Y version
 version = ".".join(release_.split('.')[0:2])
