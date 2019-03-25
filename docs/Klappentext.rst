@@ -25,7 +25,7 @@ Hereafter, the different possible processing and analysis routines are explained
 
 Baseline Correction
 ===================
-The baseline correction makes use of two different routines: The BaselineFitting (analysis module) and BaselineCorrection (processing module). The former determines a polynomial for the baseline using the outer parts of the spectrum for a fit and a user-specified order for the polynomial and yields the polynomial coefficients as result. The latter performs the actual baseline correction by subtracting the polynomial from the spectrum.
+The baseline correction makes use of two different routines: The :class:`cwepr.processing.BaselineFitting` (:mod:`cwepr.analysis` module) and :class:`cwepr.analysis.BaselineCorrection` (:mod:`cwepr.processing` module). The former determines a polynomial for the baseline using the outer parts of the spectrum for a fit and a user-specified order for the polynomial and yields the polynomial coefficients as result. The latter performs the actual baseline correction by subtracting the polynomial from the spectrum.
 
 Field Correction
 ================
