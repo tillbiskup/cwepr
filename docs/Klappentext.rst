@@ -42,9 +42,9 @@ Frequency Correction
 
 Here, *h* is the Planck constant and :math:`{\mu}_{\textrm{B}}` Bohr’s magneton.
 
-Subtracting Spectra
-===================
-The :class:`cwepr.processing.SubtractSpectrum` routine (:mod:`cwepr.processing` module) allows for subtracting a curve (usually a background spectrum) from a given dataset’s spectrum. The class uses interpolation automatically, though it is advisable to check the axis limits of both curves/spectra prior to subtraction. This is not done automatically, but the cwEPR package contains the routine :class:`cwepr.analysis.CommonspaceAndDelimiters` specifically designed for this purpose that will raise an error if the common axis space is rather small.
+Subtracting and Adding Spectra
+==============================
+The :class:`cwepr.processing.SubtractSpectrum` routine (:mod:`cwepr.processing` module) allows for subtracting a curve (usually a background spectrum) from a given dataset’s spectrum; the :class:`cwepr.processing.AddSpectrum` routine (:mod:`cwepr.processing` module) works completely analogously to and allows for adding a curve to a given dataset’s spectrum. Both classes use interpolation automatically, though it is advisable to check the axis limits of both curves/spectra prior to subtraction or addition. This is not done automatically, but the cwEPR package contains the routine :class:`cwepr.analysis.CommonspaceAndDelimiters` specifically designed for this purpose that will raise an error if the common axis space is rather small.
 
 Phase Correction
 ================
@@ -57,10 +57,21 @@ Here, *S* is the spectral data, *i.e.* the intensities.
 
 Normalisation
 =============
-The :mod:`cwepr.processing` module contains two routines for normalisation of spectra: :class:`cwepr.processing.NormaliseMaximum` for a normalisation concerning the intensity maximum and :class:`cwepr.processing.NormaliseArea` for one concerning the area under the curve. A third variant, :class:`cwepr.processing.NormaliseScanNumber`, is useful in cases where multiple scans of a spectrum are added rather than averaged.
+The :mod:`cwepr.processing` module contains three routines for normalisation of spectra: :class:`cwepr.processing.NormaliseMaximum` for a normalisation concerning the intensity maximum and :class:`cwepr.processing.NormaliseArea` for one concerning the area under the curve. The third variant, :class:`cwepr.processing.NormaliseScanNumber`, is useful in cases where multiple scans of a spectrum are added rather than averaged.
 
 Integration
 ===========
 The :mod:`cwepr.analysis` module contains two routines for integration: :class:`cwepr.analysis.IntegrationIndefinite` performs an integration yielding a new function (*i.e.* a new set of *y* values) This routine is used to obtain the absorption spectrum from the first derivative spectrum. :class:`cwepr.analysis.IntegrationDefinite` yields a numeric value (*i.e.* the area under the curve). This is useful for comparing spectra and for quantification, *inter alia*.
+
+Signal-to-Noise ratio
+=====================
+
+The :class:`cwepr.analysis.SignalToNoise` routine (:mod:`cwepr.analysis` module) determines a signal-to-noise ratio by comparing the spectrum's global intensity maximum with the intensity maximum of the left border area. The percentage of the spectrum that is considered the border area is customizable. It is import to make sure that the border area does not contain actual peaks as this will distort the result. 
+
+Linewidth
+=========
+
+Two routines for measuring linewidths are provided. The peak-to-peak linewidth can be determined on the first derivate spectrum using :class:`cwepr.analysis.PeakToPeakLinewidth` (:mod:`cwepr.analysis` module). The result corresponds to the distance between the spectrum's intensity maximum and intensity minimum. The other routine, :class:`cwepr.analysis.LinewidthFWHM`, measures the full width at half maximum. This routine is performed on the absorption spectrum (*i.e.* the integrated spectrum).
+
 
 
