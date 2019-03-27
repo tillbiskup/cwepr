@@ -30,9 +30,9 @@ class FieldCorrection(aspecd.processing.ProcessingStep):
         """Shift all field axis data points by the correction value
         from the parameters.
         """
-        for n in range(len(self.dataset.data.data[0, :])):
-            round(self.parameters["correction_value"], 6)
-            self.dataset.data.data[0, n] += self.parameters["correction_value"]
+        round(self.parameters["correction_value"], 6)
+        for n in range(len(self.dataset.data.data)):
+            self.dataset.data.axes[0].values[n] += self.parameters["correction_value"]
 
 
 class FrequencyCorrection(aspecd.processing.ProcessingStep):
@@ -87,12 +87,12 @@ class FrequencyCorrection(aspecd.processing.ProcessingStep):
         using target frequency.
 
         """
-        for n in range(len(self.dataset.data.data[0, :])):
-            self.dataset.data.data[0, n] = self._transform_to_g(
-                self.dataset.data.data[0, n])
-        for n in range(len(self.dataset.data.data[0, :])):
-            self.dataset.data.data[0, n] = self._transform_to_b(
-                self.dataset.data.data[0, n])
+        for n in range(len(self.dataset.data.data)):
+            self.dataset.data.data[n] = self._transform_to_g(
+                self.dataset.data.data[n])
+        for n in range(len(self.dataset.data.data)):
+            self.dataset.data.data[n] = self._transform_to_b(
+                self.dataset.data.data[n])
 
     def _transform_to_g(self, value):
         """Transforms a field (B) axis value to a g axis value.
@@ -149,11 +149,11 @@ class BaselineCorrection(aspecd.processing.ProcessingStep):
 
         Baseline correction is performed by subtraction of  a
         previously determined polynomial."""
-        x = self.dataset.data.data[0, :]
+        x = self.dataset.data.data
         values_to_subtract = np.polyval(
             np.poly1d(self.parameters["coeffs"]), x)
-        for n in range(len(list(self.dataset.data.data[1, :]))):
-            self.dataset.data.data[1, n] -= values_to_subtract[n]
+        for n in range(len(list(self.dataset.data.data))):
+            self.dataset.data.data[n] -= values_to_subtract[n]
 
 
 class SubtractSpectrum(aspecd.processing.ProcessingStep):
@@ -183,9 +183,9 @@ class SubtractSpectrum(aspecd.processing.ProcessingStep):
         Interpolates the spectrum that should be subtracted from the
         other one on the x values of this other spectrum.
         """
-        x = self.dataset.data.data[0, :]
-        xp = self.scnd_dataset.data.data[0, :]
-        fp = self.scnd_dataset.data.data[1, :]
+        x = self.dataset.data.data
+        xp = self.scnd_dataset.data.data
+        fp = self.scnd_dataset.data.axes[0].values
         interpolated_values = np.interp(x, xp, fp)
         return interpolated_values
 
@@ -196,8 +196,8 @@ class SubtractSpectrum(aspecd.processing.ProcessingStep):
         is first interpolated on the x values of the other one.
         """
         y_interp = self.interpolate()
-        for n in range(len(self.dataset.data.data[0, :])):
-            self.dataset.data.data[1, n] -= y_interp[n]
+        for n in range(len(self.dataset.data.data)):
+            self.dataset.data.axes[0].values[n] -= y_interp[n]
 
 
 class AddSpectrum(aspecd.processing.ProcessingStep):
@@ -225,9 +225,9 @@ class AddSpectrum(aspecd.processing.ProcessingStep):
         Interpolates the spectrum that should be added to the
         other one on the x values of this other spectrum.
         """
-        x = self.dataset.data.data[0, :]
-        xp = self.scnd_dataset.data.data[0, :]
-        fp = self.scnd_dataset.data.data[1, :]
+        x = self.dataset.data.data
+        xp = self.scnd_dataset.data.data
+        fp = self.scnd_dataset.data.axes[0].values
         interpolated_values = np.interp(x, xp, fp)
         return interpolated_values
 
@@ -238,8 +238,8 @@ class AddSpectrum(aspecd.processing.ProcessingStep):
         is first interpolated on the x values of the other one.
         """
         y_interp = self.interpolate()
-        for n in range(len(self.dataset.data.data[0, :])):
-            self.dataset.data.data[1, n] += y_interp[n]
+        for n in range(len(self.dataset.data.data)):
+            self.dataset.data.axes[0].values[n] += y_interp[n]
 
 
 class PhaseCorrection(aspecd.processing.ProcessingStep):
@@ -287,9 +287,9 @@ class NormaliseMaximum(aspecd.processing.ProcessingStep):
         self.description = "Normalisation to maximum"
 
     def _perform_task(self):
-        maximum = max(self.dataset.data.data[0, :])
-        for n in range(len(self.dataset.data.data[0, :])):
-            self.dataset.data.data[0, n] /= maximum
+        maximum = max(self.dataset.data.data)
+        for n in range(len(self.dataset.data.data)):
+            self.dataset.data.data[n] /= maximum
 
 
 class NormaliseArea(aspecd.processing.ProcessingStep):
@@ -308,8 +308,8 @@ class NormaliseArea(aspecd.processing.ProcessingStep):
         self.description = "Normalisation to area"
 
     def _perform_task(self):
-        for n in range(len(self.dataset.data.data[0, :])):
-            self.dataset.data.data[0, n] /= self.parameters["integral"]
+        for n in range(len(self.dataset.data.data)):
+            self.dataset.data.data[n] /= self.parameters["integral"]
 
 
 class NormaliseScanNumber(aspecd.processing.ProcessingStep):
@@ -325,6 +325,6 @@ class NormaliseScanNumber(aspecd.processing.ProcessingStep):
     def _perform_task(self):
         self.parameters["scannumber"] = \
             self.dataset.metadata.signal_channel.accumulations
-        for n in range(len(self.dataset.data.data[0, :])):
-            self.dataset.data.data[0, n] /= self.parameters["scannumber"]
+        for n in range(len(self.dataset.data.data)):
+            self.dataset.data.data[n] /= self.parameters["scannumber"]
 

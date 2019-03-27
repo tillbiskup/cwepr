@@ -119,11 +119,11 @@ class FieldCorrectionValueFinding(aspecd.analysis.AnalysisStep):
         delta_b0: :class:`float`
             Field correction value
         """
-        index_max = np.argmax(self.dataset.data.data[1, :])
-        index_min = np.argmin(self.dataset.data.data[1, :])
+        index_max = np.argmax(self.dataset.data.axes[0].values)
+        index_min = np.argmin(self.dataset.data.axes[0].values)
         experimental_field = (
-            self.dataset.data.data[0, index_max] -
-            self.dataset.data.data[0, index_min])/2.0
+            self.dataset.data.data[index_max] -
+            self.dataset.data.data[index_min])/2.0
         calcd_field = \
             self.VALUE_H*self.nu_value/self.VALUE_G_LILIF/self.VALUE_MuB
         delta_b0 = calcd_field - experimental_field
@@ -162,15 +162,16 @@ class BaselineFitting(aspecd.analysis.AnalysisStep):
         This method assembles the data points of the spectrum to consider
         and uses a numpy polynomial fit on these points.
         """
-        number_of_points = len(self.dataset.data.data[0, :])
+        number_of_points = len(self.dataset.data.data)
         points_per_side = \
             math.ceil(number_of_points*self.parameters["percentage"]/100.0)
-        dataset_copy = copy.deepcopy(self.dataset.data.data)
-        data_list = dataset_copy.tolist()
+        dataset_copy_y = copy.deepcopy(self.dataset.data.data)
+        data_list_y = dataset_copy_y.tolist()
+        data_list_x = (copy.deepcopy(self.dataset.data.axes[0].values)).tolist()
         points_to_use_x = \
-            self._get_points_to_use(data_list[0], points_per_side)
+            self._get_points_to_use(data_list_x, points_per_side)
         points_to_use_y = \
-            self._get_points_to_use(data_list[1], points_per_side)
+            self._get_points_to_use(data_list_y, points_per_side)
         coefficients = np.polyfit(
             np.asarray(points_to_use_x), np.asarray(points_to_use_y),
             self.parameters["order"])
@@ -228,9 +229,9 @@ class IntegrationIndefinite(aspecd.analysis.AnalysisStep):
         functionality from scipy. The keyword argument initial=0 is used
         to yield a list of length identical to the original one.
         """
-        x = self.dataset.data.data[0, :]
+        x = self.dataset.data.data
         if self.y is None:
-            y = self.dataset.data.data[1, :]
+            y = self.dataset.data.axes[0].values
         else:
             y = self.y
 
@@ -254,7 +255,7 @@ class IntegrationDefinite(aspecd.analysis.AnalysisStep):
     def _perform_task(self):
         """Performs the actual integration. The x values
         from the dataset are used."""
-        x = self.dataset.data.data[0, :]
+        x = self.dataset.data.data
         y = self.y
 
         integral = np.trapz(y, x)
@@ -299,7 +300,7 @@ class IntegrationVerification(aspecd.analysis.AnalysisStep):
         number_of_points = math.ceil(len(self.y)*self.percentage/100.0)
         points_y = self.y[len(self.y) - number_of_points - 1:]
         points_x = \
-            self.dataset.data.data[0, len(self.y) - number_of_points - 1:]
+            self.dataset.data.data[len(self.y) - number_of_points - 1:]
         integral = np.trapz(points_y, points_x)
         self.results["integral_okay"] = (integral < self.threshold)
 
@@ -399,14 +400,14 @@ class CommonspaceAndDelimiters(aspecd.analysis.AnalysisStep):
             of the first and last value).
         """
         for dataset in self.datasets:
-            x = dataset.data.data[0, :]
+            x = dataset.data.data
             if x[-1] < x[0]:
                 dataset_name = dataset.metadata.measurement.filename
                 raise WrongOrderError("Dataset " + dataset_name +
                                       " has x values in the wrong order.")
 
         for dataset in self.datasets:
-            x = dataset.data.data[0, :]
+            x = dataset.data.data
             self.start_points.append(x[0])
             self.end_points.append(x[-1])
             if self.minimum is None or x[0] < self.minimum:
@@ -544,11 +545,11 @@ class PeakToPeakLinewidth(aspecd.analysis.AnalysisStep):
         linewidth: :class:`float`
             line width as determined
         """
-        index_max = np.argmax(self.dataset.data.data[1, :])
-        index_min = np.argmin(self.dataset.data.data[1, :])
+        index_max = np.argmax(self.dataset.data.axes[0].values)
+        index_min = np.argmin(self.dataset.data.axes[0].values)
         linewidth = (
-            self.dataset.data.data[0, index_max] -
-            self.dataset.data.data[0, index_min])
+            self.dataset.data.data[index_max] -
+            self.dataset.data.data[index_min])
         return linewidth
 
 
@@ -578,15 +579,15 @@ class LinewidthFWHM(aspecd.analysis.AnalysisStep):
         linewidth: :class:`float`
             line width as determined
         """
-        index_max = np.argmax(self.dataset.data.data[1, :])
+        index_max = np.argmax(self.dataset.data.axes[0].values)
         spectral_data = copy.deepcopy(self.dataset.data.data)
-        maximum = spectral_data[1, index_max]
-        for n in range(len(spectral_data[1, :])):
-            spectral_data[1, n] -= maximum/2
-            if spectral_data[1, n] < 0:
-                spectral_data[1, n] *= -1
-        left_zero_cross_index = np.argmin(spectral_data[1, :index_max])
-        right_zero_cross_index = np.argmin(spectral_data[1, index_max:])
+        maximum = self.dataset.data.axes[0].values[index_max]
+        for n in range(len(spectral_data)):
+            spectral_data[n] -= maximum/2
+            if spectral_data[n] < 0:
+                spectral_data[n] *= -1
+        left_zero_cross_index = np.argmin(spectral_data[:index_max])
+        right_zero_cross_index = np.argmin(spectral_data[index_max:])
         linewidth = right_zero_cross_index - left_zero_cross_index
         return linewidth
 

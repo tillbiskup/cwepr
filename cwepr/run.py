@@ -38,7 +38,7 @@ get_baseline_polynome_step = cwepr.analysis.BaselineFitting(3)
 get_baseline_polynome_analysis = dts.analyse(get_baseline_polynome_step)
 polynome_coeffs3 = get_baseline_polynome_analysis.results["Fit_Coeffs"]
 
-plotter = cwepr.plotting.BaselineControlPlotter(dts.data.data, [polynome_coeffs0, polynome_coeffs1, polynome_coeffs3])
+plotter = cwepr.plotting.BaselineControlPlotter(dts.data, [polynome_coeffs0, polynome_coeffs1, polynome_coeffs3])
 dts.plot(plotter)
 
 correct_baseline_step = cwepr.processing.BaselineCorrection(polynome_coeffs1)
@@ -64,7 +64,6 @@ dts.analyse(verif)
 final_integrate_step = cwepr.analysis.IntegrationDefinite(integrate_values1)
 final_integrate = dts.analyse(final_integrate_step)
 final_integral = final_integrate.results["integral"]
-print(final_integral)
 
 plotter = cwepr.plotting.SpectrumAndIntegralPlotter(integral_1=integrate_values1, integral_2=integrate_values2)
 dts.plot(plotter)
@@ -74,15 +73,12 @@ dts.plot(plotter)
 #Import Spectra
 dts_v1 = cwepr.dataset.Dataset()
 dts_v1.import_from_file((path+"/Messdaten/20190110-Daten-Dotierung/19_No1b-Sa483-dunkel-parallelB0"))
-dts_v1.fill_axes()
 dts_v2 = cwepr.dataset.Dataset()
 dts_v2.import_from_file((path+"/Messdaten/20190110-Daten-Dotierung/20_No1b-Sa483-dunkel-senkrechtB0"))
-dts_v2.fill_axes()
 
 #Import Field Standard Spectrum
 dts_vst = cwepr.dataset.Dataset()
 dts_vst.import_from_file((path+"/Messdaten/20190110-Daten-Dotierung/LiLiF-20180628"))
-dts_vst.fill_axes()
 
 #Field Correction
 nu_value = dts_vst.metadata.bridge.mw_frequency.value
@@ -136,7 +132,7 @@ print(delimiters)
 #Plot
 multiplotter = cwepr.plotting.Multiplotter([dts_v1, dts_v2], integrals=[fi1, fi2])
 multiplotter.plot()
-#dts_v1.plot(multiplotter)
+dts_v1.plot(multiplotter)
 
 
 #Substract 2nd from 1st, then integrate + plot

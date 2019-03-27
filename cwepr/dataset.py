@@ -45,13 +45,9 @@ class Dataset(aspecd.dataset.Dataset):
         filename : :class:`str`
             Path including the filename but not the extension.
         """
-
         importer_factory = cwepr.io.ImporterFactoryEPR()
         importer = importer_factory.get_importer(source=filename)
         super().import_from(importer=importer)
-        metadata = self._import_metadata(importer=importer)
-        self.map_metadata_and_check_for_overrides(metadata)
-        self.modify_field_values()
 
     def modify_field_values(self):
         """Fills in all variables concerning the magnetic field and transforms
@@ -165,6 +161,35 @@ class Dataset(aspecd.dataset.Dataset):
                                 self.metadata.magnetic_field.step_width.value
                                 * n)
         field_data = np.array(field_points)
-        intensity_data = np.array(copy.deepcopy(self.data.data))
-        complete_data = np.array([field_data, intensity_data])
-        self.data.data = complete_data
+        #intensity_data = np.array(copy.deepcopy(self.data.data))
+        #complete_data = np.array([field_data, intensity_data])
+        self.data.axes[0].values = field_data
+        self.data.axes[0].quantity = "magnetic field"
+        self.data.axes[0].unit = "mT"
+        self.data.axes[1].quantity = "intensity"
+
+
+class DatasetFactory(aspecd.dataset.DatasetFactory):
+    def __init__(self):
+        super().__init__()
+        self.importer_factory = cwepr.io.ImporterFactoryEPR()
+
+    @staticmethod
+    def _create_dataset(source=''):
+        """
+        Implementation of the dataset factory for recipe driven evaluation
+
+        Parameters
+        ----------
+        source : :class:`str`
+            string describing the source of the dataset
+
+            May be a filename or path, a URL/URI, a LOI, or similar
+
+        Returns
+        -------
+        dataset : :class:`cwepr.dataset.Dataset`
+            Dataset object of appropriate type
+
+        """
+        return cwepr.dataset.Dataset()

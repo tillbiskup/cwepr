@@ -64,8 +64,8 @@ class BaselineControlPlotter(aspecd.plotting.SinglePlotter):
 
         data = self.parameters["data"]
         coeffs_list = self.parameters["coeffs_list"]
-        x = data[0, :]
-        y = data[1, :]
+        x = data.axes[0].values
+        y = data.data
 
         plt.title("Baseline Comparison")
         plt.xlabel("$B_0$ / mT")
@@ -217,8 +217,8 @@ class SimpleSpectrumPlotter(aspecd.plotting.SinglePlotter):
 
         The plot settings are put into the parameter attribute.
         """
-        x = self.dataset.data.data[0, :]
-        y = self.dataset.data.data[1, :]
+        x = self.dataset.data.axes[0].values
+        y = self.dataset.data.data
         self._make_labels_and_title()
         self._plot_lines(x, y)
         self._make_axis_limits(x)
@@ -526,8 +526,8 @@ class Multiplotter(aspecd.plotting.MultiPlotter):
         x_axes = list()
         self._make_labels()
         for n in range(len(self.datasets)):
-            x = self.datasets[n].data.data[0, :]
-            y = self.datasets[n].data.data[1, :]
+            x = self.datasets[n].data.axes[0].values
+            y = self.datasets[n].data.data
             x_axes.append(x)
             self._plot_lines(x, y, n)
         x_axis_limits = self.get_x_axis_limits(x_axes)

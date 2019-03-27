@@ -1,16 +1,16 @@
 import aspecd.tasks
 import aspecd.io
 import os
-import cwepr.io
+import cwepr.dataset
 
 
 path = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 source = path+"/Messdaten/Recipe.yaml"
 #source = "/home/kirchner/nas/Praktikum/Messdaten/Recipe.yaml"
 
-imp_fact = cwepr.io.ImporterFactoryEPR()
+dts_fact = cwepr.dataset.DatasetFactory()
 recipe = aspecd.tasks.Recipe()
-recipe.importer_factory = imp_fact
+recipe.dataset_factory = dts_fact
 importer = aspecd.io.RecipeYamlImporter(source=source)
 importer.import_into(recipe=recipe)
 

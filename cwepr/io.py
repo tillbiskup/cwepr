@@ -11,6 +11,7 @@ import aspecd.io
 import aspecd.infofile
 import aspecd.metadata
 import aspecd.utils
+import aspecd.dataset
 
 from cwepr.utils import are_intensity_values_plausible
 
@@ -180,6 +181,7 @@ class ImporterBES3T(ImporterEPRGeneral):
         metadata = self.import_metadata()
         self.dataset.map_metadata_and_check_for_overrides(metadata)
         self.dataset.modify_field_values()
+        self.dataset.fill_axes()
 
     def import_metadata(self):
         """Import parameter file in BES3T format and user created info file.
@@ -595,8 +597,10 @@ class ImporterEMXandESP(ImporterEPRGeneral):
             raw_data = np.fromfile(complete_filename, datatype)
         self.dataset.data.data = raw_data
         metadata = self.import_metadata()
+        print(metadata)
         self.dataset.map_metadata_and_check_for_overrides(metadata)
         self.dataset.modify_field_values()
+        self.dataset.fill_axes()
 
     def import_metadata(self):
         """Import parameter file in BES3T format and user created info file.
@@ -837,3 +841,5 @@ class ExporterASCII(aspecd.io.DatasetExporter):
             if type(v) == np.array:
                 dictionary[k].to_list()
         return dictionary
+
+
