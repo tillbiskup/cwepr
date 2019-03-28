@@ -12,7 +12,7 @@ import cwepr.io as importers
 import cwepr.metadata
 
 
-class Dataset(aspecd.dataset.Dataset):
+class Dataset(aspecd.dataset.ExperimentalDataset):
     """Set of data uniting all relevant information.
 
     The unity of numerical and metadata is indispensable for the
@@ -78,6 +78,7 @@ class Dataset(aspecd.dataset.Dataset):
         for data_part in param_data_mapped:
             self.metadata.from_dict(data_part)
             self._check_for_override(metadata_mapper.metadata, data_part)
+
 
     def _check_for_override(self, data1, data2, name=""):
         """Check if metadata values from info file are overridden by

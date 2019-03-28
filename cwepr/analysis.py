@@ -144,7 +144,7 @@ class BaselineFitting(aspecd.analysis.AnalysisStep):
         10 % right.
 
     """
-    def __init__(self, order, percentage=10):
+    def __init__(self, order=0, percentage=10):
         super().__init__()
         self.parameters["order"] = order
         self.parameters["percentage"] = percentage
@@ -155,6 +155,10 @@ class BaselineFitting(aspecd.analysis.AnalysisStep):
         and set it into the results.
         """
         self.results["Fit_Coeffs"] = self._find_polynome_by_fit()
+        self.resulting_dataset = aspecd.dataset.CalculatedDataset()
+        x = self.dataset.data.axes[0].values
+        self.resulting_dataset.data.axes[0].values = x
+        self.resulting_dataset.data.data = np.polyval(np.poly1d(self.results["Fit_Coeffs"]), x)
 
     def _find_polynome_by_fit(self):
         """Perform a polynomial fit on the baseline.
@@ -229,9 +233,9 @@ class IntegrationIndefinite(aspecd.analysis.AnalysisStep):
         functionality from scipy. The keyword argument initial=0 is used
         to yield a list of length identical to the original one.
         """
-        x = self.dataset.data.data
+        x = self.dataset.data.axes[0].values
         if self.y is None:
-            y = self.dataset.data.axes[0].values
+            y = self.dataset.data.data
         else:
             y = self.y
 
@@ -255,7 +259,7 @@ class IntegrationDefinite(aspecd.analysis.AnalysisStep):
     def _perform_task(self):
         """Performs the actual integration. The x values
         from the dataset are used."""
-        x = self.dataset.data.data
+        x = self.dataset.data.axes[0].values
         y = self.y
 
         integral = np.trapz(y, x)
@@ -300,7 +304,7 @@ class IntegrationVerification(aspecd.analysis.AnalysisStep):
         number_of_points = math.ceil(len(self.y)*self.percentage/100.0)
         points_y = self.y[len(self.y) - number_of_points - 1:]
         points_x = \
-            self.dataset.data.data[len(self.y) - number_of_points - 1:]
+            self.dataset.data.axes[0].values[len(self.y) - number_of_points - 1:]
         integral = np.trapz(points_y, points_x)
         self.results["integral_okay"] = (integral < self.threshold)
 
@@ -400,14 +404,14 @@ class CommonspaceAndDelimiters(aspecd.analysis.AnalysisStep):
             of the first and last value).
         """
         for dataset in self.datasets:
-            x = dataset.data.data
+            x = dataset.data.axes[0].values
             if x[-1] < x[0]:
-                dataset_name = dataset.metadata.measurement.filename
+                dataset_name = dataset.id
                 raise WrongOrderError("Dataset " + dataset_name +
                                       " has x values in the wrong order.")
 
         for dataset in self.datasets:
-            x = dataset.data.data
+            x = dataset.data.axes[0].values
             self.start_points.append(x[0])
             self.end_points.append(x[-1])
             if self.minimum is None or x[0] < self.minimum:
@@ -450,10 +454,11 @@ class CommonspaceAndDelimiters(aspecd.analysis.AnalysisStep):
                 width_delta + self.threshold*(min(width1, width2)))) or (
             math.fabs(self.end_points[index1] - self.end_points[index2]) > (
                 width_delta + self.threshold * (min(width1, width2)))):
-            name1 = self.datasets[index1].metadata.measurement.filename
-            name2 = self.datasets[index1].metadata.measurement.filename
-            raise NoCommonspaceError("Datasets " + name1 + " and " + name2 +
+            name1 = self.datasets[index1].id
+            name2 = self.datasets[index1].id
+            errormessage = ("Datasets " + name1 + " and " + name2 +
                                      "have not enough commonspace.")
+            raise NoCommonspaceError(errormessage)
 
     def _check_commonspace_for_all(self):
         """Checks the common definition range for any combination of two

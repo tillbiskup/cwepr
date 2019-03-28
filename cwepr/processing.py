@@ -149,9 +149,35 @@ class BaselineCorrection(aspecd.processing.ProcessingStep):
 
         Baseline correction is performed by subtraction of  a
         previously determined polynomial."""
-        x = self.dataset.data.data
+        x = self.dataset.data.axes[0].values
         values_to_subtract = np.polyval(
             np.poly1d(self.parameters["coeffs"]), x)
+        for n in range(len(list(self.dataset.data.data))):
+            self.dataset.data.data[n] -= values_to_subtract[n]
+
+
+class BaselineCorrectionWithClcdDataset(aspecd.processing.ProcessingStep):
+    """Performs a baseline correction using a polynomial
+    previously determined.
+
+    Attributes
+    ----------
+    coeffs: :class:`list`
+        List of the polynomial coefficients of the polynomial to subtract.
+    """
+
+    def __init__(self, clcd_dataset=aspecd.dataset.CalculatedDataset()):
+        super().__init__()
+        self.parameters["baseline_dataset"] = clcd_dataset
+        self.description = "Subtraction of baseline polynomial"
+
+    def _perform_task(self):
+        """Perform the actual correction.
+
+        Baseline correction is performed by subtraction of  a
+        previously determined polynomial."""
+        #x = self.dataset.data.axes[0].values
+        values_to_subtract = self.parameters["baseline_dataset"].data.data
         for n in range(len(list(self.dataset.data.data))):
             self.dataset.data.data[n] -= values_to_subtract[n]
 
@@ -183,9 +209,9 @@ class SubtractSpectrum(aspecd.processing.ProcessingStep):
         Interpolates the spectrum that should be subtracted from the
         other one on the x values of this other spectrum.
         """
-        x = self.dataset.data.data
-        xp = self.scnd_dataset.data.data
-        fp = self.scnd_dataset.data.axes[0].values
+        x = self.dataset.data.axes[0].values
+        xp = self.scnd_dataset.data.axes[0].values
+        fp = self.scnd_dataset.data.data
         interpolated_values = np.interp(x, xp, fp)
         return interpolated_values
 
@@ -197,7 +223,7 @@ class SubtractSpectrum(aspecd.processing.ProcessingStep):
         """
         y_interp = self.interpolate()
         for n in range(len(self.dataset.data.data)):
-            self.dataset.data.axes[0].values[n] -= y_interp[n]
+            self.dataset.data.data[n] -= y_interp[n]
 
 
 class AddSpectrum(aspecd.processing.ProcessingStep):
@@ -225,9 +251,9 @@ class AddSpectrum(aspecd.processing.ProcessingStep):
         Interpolates the spectrum that should be added to the
         other one on the x values of this other spectrum.
         """
-        x = self.dataset.data.data
-        xp = self.scnd_dataset.data.data
-        fp = self.scnd_dataset.data.axes[0].values
+        x = self.dataset.data.axes[0].values
+        xp = self.scnd_dataset.data.axes[0].values
+        fp = self.scnd_dataset.data.data
         interpolated_values = np.interp(x, xp, fp)
         return interpolated_values
 
@@ -239,7 +265,7 @@ class AddSpectrum(aspecd.processing.ProcessingStep):
         """
         y_interp = self.interpolate()
         for n in range(len(self.dataset.data.data)):
-            self.dataset.data.axes[0].values[n] += y_interp[n]
+            self.dataset.data.data[n] += y_interp[n]
 
 
 class PhaseCorrection(aspecd.processing.ProcessingStep):

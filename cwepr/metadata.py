@@ -44,7 +44,7 @@ class UnequalUnitsError(Error):
         self.message = message
 
 
-class DatasetMetadata(aspecd.metadata.DatasetMetadata):
+class DatasetMetadata(aspecd.metadata.ExperimentalDatasetMetadata):
     """Set of all metadata for a dataset object.
 
     Attributes
