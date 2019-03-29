@@ -21,7 +21,7 @@ class FieldCorrection(aspecd.processing.ProcessingStep):
     correction_value: :class:`float`
         The previously determined correction value.
     """
-    def __init__(self, correction_value):
+    def __init__(self, correction_value=0):
         super().__init__()
         self.parameters["correction_value"] = correction_value
         self.description = "Linear field correction"
@@ -166,7 +166,7 @@ class BaselineCorrectionWithClcdDataset(aspecd.processing.ProcessingStep):
         List of the polynomial coefficients of the polynomial to subtract.
     """
 
-    def __init__(self, clcd_dataset=aspecd.dataset.CalculatedDataset()):
+    def __init__(self, clcd_dataset=None):
         super().__init__()
         self.parameters["baseline_dataset"] = clcd_dataset
         self.description = "Subtraction of baseline polynomial"
@@ -177,6 +177,7 @@ class BaselineCorrectionWithClcdDataset(aspecd.processing.ProcessingStep):
         Baseline correction is performed by subtraction of  a
         previously determined polynomial."""
         #x = self.dataset.data.axes[0].values
+        #print(self.parameters["baseline_dataset"].data.data)
         values_to_subtract = self.parameters["baseline_dataset"].data.data
         for n in range(len(list(self.dataset.data.data))):
             self.dataset.data.data[n] -= values_to_subtract[n]

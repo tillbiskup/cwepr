@@ -96,15 +96,16 @@ class FieldCorrectionValueFinding(aspecd.analysis.AnalysisStep):
     VALUE_MuB = 9.27401*10**(-24)
     VALUE_H = 6.62607*10**(-34)
 
-    def __init__(self, nu_value):
+    def __init__(self):
         super().__init__()
-        self.nu_value = nu_value
+        self.nu_value = 0.0
         self.description = "Determination of a field correction value"
 
     def _perform_task(self):
         """Wrapper around the method determining the field correction value.
         """
-        self.results["Delta_B0"] = self.get_field_correction_value()
+        self.nu_value = self.dataset.metadata.bridge.mw_frequency.value
+        self.result = self.get_field_correction_value()
 
     def get_field_correction_value(self):
         """Calculates a field correction value.
@@ -154,11 +155,11 @@ class BaselineFitting(aspecd.analysis.AnalysisStep):
         """Call the function to find a polynomial
         and set it into the results.
         """
-        self.results["Fit_Coeffs"] = self._find_polynome_by_fit()
-        self.resulting_dataset = aspecd.dataset.CalculatedDataset()
+        coeffs = self._find_polynome_by_fit()
+        self.result = aspecd.dataset.CalculatedDataset()
         x = self.dataset.data.axes[0].values
-        self.resulting_dataset.data.axes[0].values = x
-        self.resulting_dataset.data.data = np.polyval(np.poly1d(self.results["Fit_Coeffs"]), x)
+        self.result.data.axes[0].values = x
+        self.result.data.data = np.polyval(np.poly1d(coeffs), x)
 
     def _find_polynome_by_fit(self):
         """Perform a polynomial fit on the baseline.
@@ -240,7 +241,7 @@ class IntegrationIndefinite(aspecd.analysis.AnalysisStep):
             y = self.y
 
         integral_values = scipy.integrate.cumtrapz(y, x, initial=0)
-        self.results["integral_values"] = integral_values
+        self.result = integral_values
 
 
 class IntegrationDefinite(aspecd.analysis.AnalysisStep):
@@ -251,7 +252,7 @@ class IntegrationDefinite(aspecd.analysis.AnalysisStep):
     y: :class:`list`
         y values to use for the integration.
     """
-    def __init__(self, y):
+    def __init__(self, y=None):
         super().__init__()
         self.y = y
         self.description = "Definite Integration / Area und the curve"
@@ -263,7 +264,7 @@ class IntegrationDefinite(aspecd.analysis.AnalysisStep):
         y = self.y
 
         integral = np.trapz(y, x)
-        self.results["integral"] = integral
+        self.result = integral
 
 
 class IntegrationVerification(aspecd.analysis.AnalysisStep):
@@ -306,7 +307,7 @@ class IntegrationVerification(aspecd.analysis.AnalysisStep):
         points_x = \
             self.dataset.data.axes[0].values[len(self.y) - number_of_points - 1:]
         integral = np.trapz(points_y, points_x)
-        self.results["integral_okay"] = (integral < self.threshold)
+        self.result = (integral < self.threshold)
 
 
 class CommonspaceAndDelimiters(aspecd.analysis.AnalysisStep):
@@ -391,7 +392,7 @@ class CommonspaceAndDelimiters(aspecd.analysis.AnalysisStep):
                 ") is too low!")
         self._acquire_data()
         self._check_commonspace_for_all()
-        self.results["delimiters"] = self._find_all_delimiter_points()
+        self.result = self._find_all_delimiter_points()
 
     def _acquire_data(self):
         """All relevant data (see class attributes) are collected.
@@ -536,7 +537,7 @@ class PeakToPeakLinewidth(aspecd.analysis.AnalysisStep):
         """Call the function to calculate the line width
         and set it into the results.
         """
-        self.results["p2p_lw"] = self.get_p2p_linewidth()
+        self.result = self.get_p2p_linewidth()
 
     def get_p2p_linewidth(self):
         """Calculates the peak-to-peak line width.
@@ -570,7 +571,7 @@ class LinewidthFWHM(aspecd.analysis.AnalysisStep):
         """Call the function to calculate the line width
         and set it into the results.
         """
-        self.results["fwhm_lw"] = self.get_fwhm_linewidth()
+        self.result = self.get_fwhm_linewidth()
 
     def get_fwhm_linewidth(self):
         """Calculates the line width (full width at half maximum, FWHM).
@@ -614,7 +615,7 @@ class SignalToNoise(aspecd.analysis.AnalysisStep):
                 data_list_absolute[n] *= -1
         signal_max = max(data_list_absolute)
         noise_max = self._get_noise_maximum(data_list_absolute)
-        self.results["S/N ratio"] = signal_max/noise_max
+        self.result = signal_max/noise_max
 
     def _get_noise_maximum(self, data_absolute):
         """Find the maximum of the noise.
