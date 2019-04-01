@@ -48,7 +48,7 @@ class BaselineControlPlotter(aspecd.plotting.SinglePlotter):
     """
     def __init__(self, data, coeffs):
         super().__init__()
-        self.parameters["coeffs_list"] = coeffs
+        self.parameters["coeffs"] = coeffs
         self.parameters["data"] = data
 
     def _create_plot(self):
@@ -63,7 +63,7 @@ class BaselineControlPlotter(aspecd.plotting.SinglePlotter):
         """
 
         data = self.parameters["data"]
-        coeffs_list = self.parameters["coeffs_list"]
+        coeffs_list = self.parameters["coeffs"]
         x = data.axes[0].values
         y = data.data
 
@@ -394,7 +394,7 @@ class Multiplotter(aspecd.plotting.MultiPlotter):
     def __init__(self, datasets, integrals=None):
         super().__init__()
         self.description = "Plotter for multiple cwepr datasets."
-        self.datasets = datasets
+        self.parameters["datasets"] = datasets
         self.integrals = integrals
         if self.integrals is None:
             self.integrals = list()
@@ -412,9 +412,9 @@ class Multiplotter(aspecd.plotting.MultiPlotter):
         self.set_fit_axis_to_spectrum(True)
         color_library = ["tab:blue", "tab:red", "tab:green", "tab:cyan",
                          "tab:magenta", "tab:yellow"]
-        self.set_curve_colors(color_library[:len(self.datasets)])
+        self.set_curve_colors(color_library[:len(self.parameters["datasets"])])
         curve_names = list()
-        for n in range(len(self.datasets)):
+        for n in range(len(self.parameters["datasets"])):
             name = "Curve " + str(n)
             curve_names.append(name)
         self.set_curve_names(curve_names)
@@ -525,9 +525,9 @@ class Multiplotter(aspecd.plotting.MultiPlotter):
         """Draw and display the plot."""
         x_axes = list()
         self._make_labels()
-        for n in range(len(self.datasets)):
-            x = self.datasets[n].data.axes[0].values
-            y = self.datasets[n].data.data
+        for n in range(len(self.parameters["datasets"])):
+            x = self.parameters["datasets"][n].data.axes[0].values
+            y = self.parameters["datasets"][n].data.data
             x_axes.append(x)
             self._plot_lines(x, y, n)
         x_axis_limits = self.get_x_axis_limits(x_axes)

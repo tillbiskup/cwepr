@@ -166,9 +166,9 @@ class BaselineCorrectionWithClcdDataset(aspecd.processing.ProcessingStep):
         List of the polynomial coefficients of the polynomial to subtract.
     """
 
-    def __init__(self, clcd_dataset=None):
+    def __init__(self, baseline_dataset=None):
         super().__init__()
-        self.parameters["baseline_dataset"] = clcd_dataset
+        self.parameters["baseline_dataset"] = baseline_dataset
         self.description = "Subtraction of baseline polynomial"
 
     def _perform_task(self):
@@ -196,7 +196,7 @@ class SubtractSpectrum(aspecd.processing.ProcessingStep):
     """
     def __init__(self, scnd_dataset):
         super().__init__()
-        self.scnd_dataset = scnd_dataset
+        self.parameters["scnd_dataset"] = scnd_dataset
         self.description = "Subtract a spectrum"
 
     def _perform_task(self):
@@ -211,8 +211,8 @@ class SubtractSpectrum(aspecd.processing.ProcessingStep):
         other one on the x values of this other spectrum.
         """
         x = self.dataset.data.axes[0].values
-        xp = self.scnd_dataset.data.axes[0].values
-        fp = self.scnd_dataset.data.data
+        xp = self.parameters["scnd_dataset"].data.axes[0].values
+        fp = self.parameters["scnd_dataset"].data.data
         interpolated_values = np.interp(x, xp, fp)
         return interpolated_values
 

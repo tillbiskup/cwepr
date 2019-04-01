@@ -224,7 +224,7 @@ class IntegrationIndefinite(aspecd.analysis.AnalysisStep):
     """
     def __init__(self, y=None):
         super().__init__()
-        self.y = y
+        self.parameters["y"] = y
         self.description = "Indefinite Integration"
 
     def _perform_task(self):
@@ -235,10 +235,10 @@ class IntegrationIndefinite(aspecd.analysis.AnalysisStep):
         to yield a list of length identical to the original one.
         """
         x = self.dataset.data.axes[0].values
-        if self.y is None:
+        if self.parameters["y"] is None:
             y = self.dataset.data.data
         else:
-            y = self.y
+            y = self.parameters["y"]
 
         integral_values = scipy.integrate.cumtrapz(y, x, initial=0)
         self.result = integral_values
@@ -254,14 +254,14 @@ class IntegrationDefinite(aspecd.analysis.AnalysisStep):
     """
     def __init__(self, y=None):
         super().__init__()
-        self.y = y
+        self.parameters["y"] = y
         self.description = "Definite Integration / Area und the curve"
 
     def _perform_task(self):
         """Performs the actual integration. The x values
         from the dataset are used."""
         x = self.dataset.data.axes[0].values
-        y = self.y
+        y = self.parameters["y"]
 
         integral = np.trapz(y, x)
         self.result = integral
@@ -288,7 +288,7 @@ class IntegrationVerification(aspecd.analysis.AnalysisStep):
     """
     def __init__(self, y, percentage=15, threshold=0.001):
         super().__init__()
-        self.y = y
+        self.parameters["y"] = y
         self.percentage = percentage
         self.threshold = threshold
         self.description = "Preprocessing verification after first integration"
@@ -303,9 +303,9 @@ class IntegrationVerification(aspecd.analysis.AnalysisStep):
         The result is a boolean: Is the integral lower than the threshold?
         """
         number_of_points = math.ceil(len(self.y)*self.percentage/100.0)
-        points_y = self.y[len(self.y) - number_of_points - 1:]
+        points_y = self.parameters["y"][len(self.parameters["y"]) - number_of_points - 1:]
         points_x = \
-            self.dataset.data.axes[0].values[len(self.y) - number_of_points - 1:]
+            self.dataset.data.axes[0].values[len(self.parameters["y"]) - number_of_points - 1:]
         integral = np.trapz(points_y, points_x)
         self.result = (integral < self.threshold)
 
@@ -362,8 +362,8 @@ class CommonspaceAndDelimiters(aspecd.analysis.AnalysisStep):
     """
     def __init__(self, datasets, threshold=0.05):
         super().__init__()
-        self.datasets = datasets
-        self.threshold = threshold
+        self.parameters["datasets"] = datasets
+        self.parameters["threshold"] = threshold
         self.minimum = None
         self.maximum = None
         self.minimal_width = None
@@ -386,9 +386,9 @@ class CommonspaceAndDelimiters(aspecd.analysis.AnalysisStep):
         NotEnoughDatasetsError
             Exception raised when less than two datasets are provided.
         """
-        if len(self.datasets) < 2:
+        if len(self.parameters["datasets"]) < 2:
             raise NotEnoughDatasetsError(
-                "Number of datasets( " + str(len(self.datasets)) +
+                "Number of datasets( " + str(len(self.parameters["datasets"])) +
                 ") is too low!")
         self._acquire_data()
         self._check_commonspace_for_all()
@@ -404,14 +404,14 @@ class CommonspaceAndDelimiters(aspecd.analysis.AnalysisStep):
             smallest and end with the highest value (determined by comparison
             of the first and last value).
         """
-        for dataset in self.datasets:
+        for dataset in self.parameters["datasets"]:
             x = dataset.data.axes[0].values
             if x[-1] < x[0]:
                 dataset_name = dataset.id
                 raise WrongOrderError("Dataset " + dataset_name +
                                       " has x values in the wrong order.")
 
-        for dataset in self.datasets:
+        for dataset in self.parameters["datasets"]:
             x = dataset.data.axes[0].values
             self.start_points.append(x[0])
             self.end_points.append(x[-1])
@@ -452,11 +452,11 @@ class CommonspaceAndDelimiters(aspecd.analysis.AnalysisStep):
         width2 = self.end_points[index2] - self.start_points[index2]
         width_delta = math.fabs(width1-width2)
         if (math.fabs(self.start_points[index1]-self.start_points[index2]) > (
-                width_delta + self.threshold*(min(width1, width2)))) or (
+                width_delta + self.parameters["threshold"]*(min(width1, width2)))) or (
             math.fabs(self.end_points[index1] - self.end_points[index2]) > (
-                width_delta + self.threshold * (min(width1, width2)))):
-            name1 = self.datasets[index1].id
-            name2 = self.datasets[index1].id
+                width_delta + self.parameters["threshold"] * (min(width1, width2)))):
+            name1 = self.parameters["datasets"][index1].id
+            name2 = self.parameters["datasets"][index1].id
             errormessage = ("Datasets " + name1 + " and " + name2 +
                                      "have not enough commonspace.")
             raise NoCommonspaceError(errormessage)
@@ -468,8 +468,8 @@ class CommonspaceAndDelimiters(aspecd.analysis.AnalysisStep):
         .. todo::
             Avoid calculating every combination twice.
         """
-        for n in range(len(self.datasets)):
-            for m in range(len(self.datasets)):
+        for n in range(len(self.parameters["datasets"])):
+            for m in range(len(self.parameters["datasets"])):
                 if n != m:
                     self.check_commonspace_for_two(n, m)
 
