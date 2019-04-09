@@ -8,6 +8,7 @@ import numpy as np
 import scipy.signal
 
 import aspecd.processing
+import cwepr.analysis
 
 
 class FieldCorrection(aspecd.processing.ProcessingStep):
@@ -32,7 +33,27 @@ class FieldCorrection(aspecd.processing.ProcessingStep):
         """
         round(self.parameters["correction_value"], 6)
         for n in range(len(self.dataset.data.data)):
-            self.dataset.data.axes[0].values[n] += self.parameters["correction_value"]
+            self.dataset.data.axes[0].values[n] += \
+                self.parameters["correction_value"]
+
+
+class FieldCorrectionComplete(aspecd.processing.ProcessingStep):
+    """
+
+    """
+    def __init__(self, dataset=None):
+        super().__init__()
+        self.parameters["dataset"] = dataset
+        self.kind = "standard"
+        self.description = "Complete linear field correction"
+
+    def _perform_task(self):
+        value_finding_step = cwepr.analysis.FieldCorrectionValueFinding()
+        field_analysis = self.parameters["dataset"].analyse(
+            value_finding_step)
+        self.parameters["correction_value"] = field_analysis.result
+        correction_step = FieldCorrection(self.parameters["correction_value"])
+        self.dataset.process(correction_step)
 
 
 class FrequencyCorrection(aspecd.processing.ProcessingStep):
@@ -176,11 +197,29 @@ class BaselineCorrectionWithClcdDataset(aspecd.processing.ProcessingStep):
 
         Baseline correction is performed by subtraction of  a
         previously determined polynomial."""
-        #x = self.dataset.data.axes[0].values
-        #print(self.parameters["baseline_dataset"].data.data)
         values_to_subtract = self.parameters["baseline_dataset"].data.data
         for n in range(len(list(self.dataset.data.data))):
             self.dataset.data.data[n] -= values_to_subtract[n]
+
+
+class BaselineCorrectionComplete(aspecd.processing.ProcessingStep):
+    """
+
+    """
+    def __init__(self, order=0, percentage=10):
+        super().__init__()
+        self.parameters["order"] = order
+        self.parameters["percentage"] = percentage
+        self.description = "Complete baseline correction"
+
+    def _perform_task(self):
+        baseline_fit_step = cwepr.analysis.BaselineFitting(
+            self.parameters["order"], self.parameters["percentage"])
+        baseline_analysis = self.dataset.analyse(baseline_fit_step)
+        self.parameters["baseline_dataset"] = baseline_analysis.result
+        baseline_correct_step = BaselineCorrectionWithClcdDataset(
+            self.parameters["baseline_dataset"])
+        self.dataset.process(baseline_correct_step)
 
 
 class SubtractSpectrum(aspecd.processing.ProcessingStep):

@@ -5,7 +5,8 @@ import cwepr.dataset
 
 
 path = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
-source = path+"/Messdaten/Recipe.yaml"
+source = path+"/Messdaten/Recipe3" \
+              ".yaml"
 #source = "/home/kirchner/nas/Praktikum/Messdaten/Recipe.yaml"
 
 dts_fact = cwepr.dataset.DatasetFactory()
