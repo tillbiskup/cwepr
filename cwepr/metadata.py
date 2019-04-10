@@ -81,12 +81,22 @@ class DatasetMetadata(aspecd.metadata.ExperimentalDatasetMetadata):
     def __init__(self):
         super().__init__()
         self.experiment = Experiment()
+        self.sample = Sample()
         self.spectrometer = SpectrometerInfo()
         self.magnetic_field = BFieldData()
         self.bridge = BridgeInfo()
         self.signal_channel = SignalChannel()
         self.probehead = Probehead()
         self.metadata_modifications = []
+
+
+class Sample(aspecd.metadata.Sample):
+    """
+
+    """
+    def __init__(self):
+        super().__init__()
+        self.solvent = ""
 
 
 class BFieldData(aspecd.metadata.Metadata):
