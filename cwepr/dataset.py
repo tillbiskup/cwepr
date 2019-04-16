@@ -79,7 +79,6 @@ class Dataset(aspecd.dataset.ExperimentalDataset):
             self.metadata.from_dict(data_part)
             self._check_for_override(metadata_mapper.metadata, data_part)
 
-
     def _check_for_override(self, data1, data2, name=""):
         """Check if metadata values from info file are overridden by
         parameter file.

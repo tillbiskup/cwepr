@@ -97,8 +97,8 @@ class SimpleSpectrumPlotter(aspecd.plotting.SinglePlotter):
         """Create default values for all settings of the plot."""
         self.set_color("tab:blue")
         self.set_title("Spectrum")
-        self.set_x_axis_name("Field")
-        self.set_y_axis_name("Intensity Change")
+        #self.set_x_axis_name("Field")
+        #self.set_y_axis_name("Intensity Change")
         self.set_curve_name("Derivative Spectrum")
         self.set_draw_zeroline(True)
         self.set_zeroline_thickness(0.5)
@@ -229,8 +229,8 @@ class SimpleSpectrumPlotter(aspecd.plotting.SinglePlotter):
     def _make_labels_and_title(self):
         """Create the title as well as the labels for the axes."""
         plt.title(self.parameters["title"])
-        plt.xlabel(self.parameters["x_name"])
-        plt.ylabel(self.parameters["y_name"])
+        #plt.xlabel(self.parameters["x_name"])
+        #plt.ylabel(self.parameters["y_name"])
 
     def _plot_lines(self, x, y):
         """Draw the spectrum curve and the zero line (if necessary).
