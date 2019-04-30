@@ -223,7 +223,6 @@ class SimpleSpectrumPlotter(aspecd.plotting.SinglePlotter):
         self._plot_lines(x, y)
         self._make_axis_limits(x)
         plt.legend()
-        self.parameters["settings"] = self.parameters
         plt.show()
 
     def _make_labels_and_title(self):
