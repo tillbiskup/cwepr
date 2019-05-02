@@ -17,3 +17,4 @@ importer.import_into(recipe=recipe)
 
 chef = aspecd.tasks.Chef(recipe=recipe)
 chef.cook()
+print(list(recipe.datasets.values())[0].to_dict()['tasks'][8])
