@@ -216,9 +216,13 @@ class BaselineCorrectionComplete(aspecd.processing.ProcessingStep):
         baseline_fit_step = cwepr.analysis.BaselineFitting(
             self.parameters["order"], self.parameters["percentage"])
         baseline_analysis = self.dataset.analyse(baseline_fit_step)
-        self.parameters["baseline_dataset"] = baseline_analysis.result
-        baseline_correct_step = BaselineCorrectionWithClcdDataset(
-            self.parameters["baseline_dataset"])
+        self.parameters["baseline_coefficients"] = baseline_analysis.result
+        baseline = aspecd.dataset.CalculatedDataset()
+        x = self.dataset.data.axes[0].values
+        baseline.data.axes[0].values = x
+        baseline.data.data = np.polyval(np.poly1d(self.parameters[
+                                            "baseline_coefficients"]), x)
+        baseline_correct_step = BaselineCorrectionWithClcdDataset(baseline)
         self.dataset.process(baseline_correct_step)
 
 

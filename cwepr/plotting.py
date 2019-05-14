@@ -96,7 +96,7 @@ class SimpleSpectrumPlotter(aspecd.plotting.SinglePlotter):
     def _set_defaults(self):
         """Create default values for all settings of the plot."""
         self.set_color("tab:blue")
-        self.set_title("Spectrum")
+        self.set_title("")
         #self.set_x_axis_name("Field")
         #self.set_y_axis_name("Intensity Change")
         self.set_curve_name("Derivative Spectrum")

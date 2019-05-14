@@ -63,6 +63,22 @@ class NoCommonspaceError(Error):
         self.message = message
 
 
+class SpectrumNotIntegratedError(Error):
+    """Exception raised when a definite integration is performed on a
+    derivative spectrum.
+
+    Attributes
+    ----------
+    message : :class:`str`
+        explanation of the error
+
+    """
+
+    def __init__(self, message=''):
+        super().__init__()
+        self.message = message
+
+
 class FieldCorrectionValueFinding(aspecd.analysis.AnalysisStep):
     """Determine correction value for a field correction.
 
@@ -156,10 +172,8 @@ class BaselineFitting(aspecd.analysis.AnalysisStep):
         and set it into the results.
         """
         coeffs = self._find_polynome_by_fit()
-        self.result = aspecd.dataset.CalculatedDataset()
-        x = self.dataset.data.axes[0].values
-        self.result.data.axes[0].values = x
-        self.result.data.data = np.polyval(np.poly1d(coeffs), x)
+        self.result = coeffs
+
 
     def _find_polynome_by_fit(self):
         """Perform a polynomial fit on the baseline.
@@ -222,9 +236,8 @@ class IntegrationIndefinite(aspecd.analysis.AnalysisStep):
         y values to use for the integration. If this is omitted the y values
         of the dataset are used.
     """
-    def __init__(self, y=None):
+    def __init__(self):
         super().__init__()
-        self.parameters["y"] = y
         self.description = "Indefinite Integration"
 
     def _perform_task(self):
@@ -235,13 +248,13 @@ class IntegrationIndefinite(aspecd.analysis.AnalysisStep):
         to yield a list of length identical to the original one.
         """
         x = self.dataset.data.axes[0].values
-        if self.parameters["y"] is None:
-            y = self.dataset.data.data
-        else:
-            y = self.parameters["y"]
+        y = self.dataset.data.data
 
         integral_values = scipy.integrate.cumtrapz(y, x, initial=0)
-        self.result = integral_values
+        self.result = aspecd.dataset.CalculatedDataset()
+        self.result.data.axes[0].values = x
+        self.result.data.data = integral_values
+        self.dataset.integrated_spectrum = self.result
 
 
 class IntegrationDefinite(aspecd.analysis.AnalysisStep):
@@ -252,16 +265,20 @@ class IntegrationDefinite(aspecd.analysis.AnalysisStep):
     y: :class:`list`
         y values to use for the integration.
     """
-    def __init__(self, y=None):
+    def __init__(self):
         super().__init__()
-        self.parameters["y"] = y
         self.description = "Definite Integration / Area und the curve"
 
     def _perform_task(self):
         """Performs the actual integration. The x values
         from the dataset are used."""
-        x = self.dataset.data.axes[0].values
-        y = self.parameters["y"]
+        if not hasattr(self.dataset, 'integrated_spectrum'):
+            raise SpectrumNotIntegratedError
+        dts = self.dataset.integrated_spectrum
+        self.parameters['integrated_spectrum'] = dts
+
+        x = dts.data.axes[0].values
+        y = dts.data.data
 
         integral = np.trapz(y, x)
         self.result = integral
