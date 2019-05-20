@@ -79,7 +79,7 @@ class SpectrumNotIntegratedError(Error):
         self.message = message
 
 
-class FieldCorrectionValueFinding(aspecd.analysis.AnalysisStep):
+class FieldCorrectionValueFinding(aspecd.analysis.SingleAnalysisStep):
     """Determine correction value for a field correction.
 
     References for the constants:
@@ -147,7 +147,7 @@ class FieldCorrectionValueFinding(aspecd.analysis.AnalysisStep):
         return delta_b0
 
 
-class BaselineFitting(aspecd.analysis.AnalysisStep):
+class BaselineFitting(aspecd.analysis.SingleAnalysisStep):
     """Analysis step for finding a baseline correction polynomial.
 
     Attributes
@@ -224,7 +224,7 @@ class BaselineFitting(aspecd.analysis.AnalysisStep):
         return points_to_use
 
 
-class IntegrationIndefinite(aspecd.analysis.AnalysisStep):
+class IntegrationIndefinite(aspecd.analysis.SingleAnalysisStep):
     """Performs an indefinite integration.
 
     Indefinite integration yields a new array of y values of the integrated
@@ -257,7 +257,7 @@ class IntegrationIndefinite(aspecd.analysis.AnalysisStep):
         self.dataset.integrated_spectrum = self.result
 
 
-class IntegrationDefinite(aspecd.analysis.AnalysisStep):
+class IntegrationDefinite(aspecd.analysis.SingleAnalysisStep):
     """Makes a definite integration, i.e. calculates the area under the curve.
 
     Attributes
@@ -284,7 +284,7 @@ class IntegrationDefinite(aspecd.analysis.AnalysisStep):
         self.result = integral
 
 
-class IntegrationVerification(aspecd.analysis.AnalysisStep):
+class IntegrationVerification(aspecd.analysis.SingleAnalysisStep):
     """Verifies, if the spectrum was correctly preprocessed.
 
     In the case of a correct preprocessing, the curve after the first
@@ -327,7 +327,7 @@ class IntegrationVerification(aspecd.analysis.AnalysisStep):
         self.result = (integral < self.threshold)
 
 
-class CommonspaceAndDelimiters(aspecd.analysis.AnalysisStep):
+class CommonspaceAndDelimiters(aspecd.analysis.SingleAnalysisStep):
     """Analysis step for determine how much common definition range
     some given spectra have.
 
@@ -545,7 +545,7 @@ class CommonspaceAndDelimiters(aspecd.analysis.AnalysisStep):
                 close_points = list()
 
 
-class PeakToPeakLinewidth(aspecd.analysis.AnalysisStep):
+class PeakToPeakLinewidth(aspecd.analysis.SingleAnalysisStep):
     def __init__(self):
         super().__init__()
         self.description = "Determine peak-to-peak linewidth"
@@ -576,7 +576,7 @@ class PeakToPeakLinewidth(aspecd.analysis.AnalysisStep):
         return linewidth
 
 
-class LinewidthFWHM(aspecd.analysis.AnalysisStep):
+class LinewidthFWHM(aspecd.analysis.SingleAnalysisStep):
     """
 
     """
@@ -615,7 +615,7 @@ class LinewidthFWHM(aspecd.analysis.AnalysisStep):
         return linewidth
 
 
-class SignalToNoise(aspecd.analysis.AnalysisStep):
+class SignalToNoise(aspecd.analysis.SingleAnalysisStep):
     def __init__(self, percentage=10):
         super().__init__()
         self.parameters["percentage"] = percentage
