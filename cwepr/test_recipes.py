@@ -16,10 +16,5 @@ importer = aspecd.io.RecipeYamlImporter(source=source)
 importer.import_into(recipe=recipe)
 
 chef = aspecd.tasks.Chef(recipe=recipe)
-try:
-    chef.cook()
-except:
-    pass
-print(recipe.tasks[6].properties['context'])
+chef.cook()
 
-#print(list(recipe.datasets.values())[0].to_dict()['tasks'][8])
