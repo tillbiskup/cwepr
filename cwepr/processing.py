@@ -6,6 +6,7 @@ a independent result. E.g., Field Correction or Baseline correction.
 
 import numpy as np
 import scipy.signal
+import scipy.integrate
 
 import aspecd.processing
 import cwepr.analysis
@@ -397,4 +398,26 @@ class NormaliseScanNumber(aspecd.processing.ProcessingStep):
             self.dataset.metadata.signal_channel.accumulations
         for n in range(len(self.dataset.data.data)):
             self.dataset.data.data[n] /= self.parameters["scannumber"]
+
+
+class IntegrationIndefinite(aspecd.processing.ProcessingStep):
+    """
+    """
+    def __init__(self):
+        super().__init__()
+        self.description = "Indefinite Integration"
+
+    def _perform_task(self):
+        """Perform the actual integration.
+
+        Perform the actual integration using trapezoidal integration
+        functionality from scipy. The keyword argument initial=0 is used
+        to yield a list of length identical to the original one.
+        """
+        x = self.dataset.data.axes[0].values
+        y = self.dataset.data.data
+
+        integral_values = scipy.integrate.cumtrapz(y, x, initial=0)
+        self.dataset.data.data = integral_values
+
 

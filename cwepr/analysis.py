@@ -272,13 +272,9 @@ class IntegrationDefinite(aspecd.analysis.SingleAnalysisStep):
     def _perform_task(self):
         """Performs the actual integration. The x values
         from the dataset are used."""
-        if not hasattr(self.dataset, 'integrated_spectrum'):
-            raise SpectrumNotIntegratedError
-        dts = self.dataset.integrated_spectrum
-        self.parameters['integrated_spectrum'] = dts
 
-        x = dts.data.axes[0].values
-        y = dts.data.data
+        x = self.dataset.data.axes[0].values
+        y = self.dataset.data.data
 
         integral = np.trapz(y, x)
         self.result = integral
