@@ -174,7 +174,6 @@ class BaselineFitting(aspecd.analysis.SingleAnalysisStep):
         coeffs = self._find_polynome_by_fit()
         self.result = coeffs
 
-
     def _find_polynome_by_fit(self):
         """Perform a polynomial fit on the baseline.
 
@@ -247,14 +246,8 @@ class IntegrationIndefinite(aspecd.analysis.SingleAnalysisStep):
         functionality from scipy. The keyword argument initial=0 is used
         to yield a list of length identical to the original one.
         """
-        x = self.dataset.data.axes[0].values
-        y = self.dataset.data.data
 
-        integral_values = scipy.integrate.cumtrapz(y, x, initial=0)
-        self.result = aspecd.dataset.CalculatedDataset()
-        self.result.data.axes[0].values = x
-        self.result.data.data = integral_values
-        self.dataset.integrated_spectrum = self.result
+        self.result = copy.deepcopy(self.dataset)
 
 
 class IntegrationDefinite(aspecd.analysis.SingleAnalysisStep):
