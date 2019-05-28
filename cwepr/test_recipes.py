@@ -5,7 +5,7 @@ import cwepr.dataset
 
 
 path = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
-source = path+"/Messdaten/Recipe" \
+source = path+"/Messdaten/Recipe2" \
               ".yaml"
 #source = "/home/kirchner/nas/Praktikum/Messdaten/Recipe.yaml"
 
@@ -17,4 +17,5 @@ importer.import_into(recipe=recipe)
 
 chef = aspecd.tasks.Chef(recipe=recipe)
 chef.cook()
+
 
