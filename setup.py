@@ -7,9 +7,6 @@ with open(os.path.join(os.path.dirname(__file__), 'VERSION')) as version_file:
 with open(os.path.join(os.path.dirname(__file__), 'README.rst')) as f:
     readme = f.read()
 
-with open(os.path.join(os.path.dirname(__file__), 'LICENSE')) as f:
-    license_ = f.read()
-
 
 setuptools.setup(
     name='cwepr',
@@ -17,10 +14,9 @@ setuptools.setup(
     description='Package for handling cw-EPR data.',
     long_description=readme,
     long_description_content_type='text/x-rst',
-    author='Pascal Kirchner',
+    author='Pascal Kirchner, Till Biskup',
     author_email='',
     url='',
-    license=license_,
     packages=setuptools.find_packages(exclude=('tests', 'docs')),
     keywords=[
         'EPR spectroscopy',
@@ -41,5 +37,5 @@ setuptools.setup(
         'scipy',
         'matplotlib',
     ],
-    python_requires='>=3',
+    python_requires='>=3.5',
 )
