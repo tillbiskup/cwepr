@@ -10,18 +10,20 @@ import aspecd.metadata
 
 class Error(Exception):
     """Base class for exceptions in this module."""
+
     pass
 
 
 class NotEnoughValuesError(Error):
-    """Exception raised when not enough different values
+    """Exception raised when information for 
+
+    not enough different values
     are provided to calculate all other values.
 
     Attributes
     ----------
     message : `str`
         explanation of the error
-
     """
     def __init__(self, message=''):
         super().__init__()
@@ -29,9 +31,10 @@ class NotEnoughValuesError(Error):
 
 
 class UnequalUnitsError(Error):
-    """Exception raised when two physical quantities
-    that shall be added or subtracted do not have the
-    same unit.
+    """Exception raised when summands have unequal units.
+
+    This is relevant when two physical quantities that shall be added or
+    subtracted do not have the same unit.
 
     Attributes
     ----------
@@ -73,7 +76,7 @@ class DatasetMetadata(aspecd.metadata.ExperimentalDatasetMetadata):
         Metadata object containing information on the probehead
         used in the experiment.
 
-    modifications : :class:`list`
+    metadata_modifications : :class:`list`
         List of all modifications performed on the metadata,
         e.g, overrides.
 
@@ -91,18 +94,16 @@ class DatasetMetadata(aspecd.metadata.ExperimentalDatasetMetadata):
 
 
 class Sample(aspecd.metadata.Sample):
-    """
+    """Metadata information on the sample measured."""
 
-    """
     def __init__(self):
         super().__init__()
         self.solvent = ""
 
 
 class BFieldData(aspecd.metadata.Metadata):
-    """This metadata class contains all variables concerning the magnetic
-    field.
-    """
+    """Metadata class including all variables concerning the magnetic field."""
+
     def __init__(self, dict_=None):
         super().__init__(dict_=dict_)
         self.field_min = aspecd.metadata.PhysicalQuantity()
@@ -177,34 +178,39 @@ class BFieldData(aspecd.metadata.Metadata):
         UnequalUnitsError :
             Raised, when two physical quantities shall be added or
             subtracted that have unequal units.
+
         """
         if self.can_calculate():
             self.step_count = int(self.step_count)
             if self.field_width.value == 0.:
                 if self.field_max.unit != self.field_min.unit:
                     raise UnequalUnitsError(
-                        "Quantities with different units provided.")
+                                            """Quantities with different units 
+                                            provided.""")
                 self.field_width.value = self.field_max.value - \
-                                         self.field_min.value
+                    self.field_min.value
                 self.field_width.unit = self.field_max.unit
             if self.field_max.value == 0.:
                 if self.field_width.unit != self.field_min.unit:
                     raise UnequalUnitsError(
-                        "Quantities with different units provided.")
+                                            """Quantities with different units 
+                                            provided.""")
                 self.field_max.value = self.field_min.value + \
                                        self.field_width.value
                 self.field_max.unit = self.field_min.unit
             if self.field_min.value == 0.:
                 if self.field_max.unit != self.field_width.unit:
                     raise UnequalUnitsError(
-                        "Quantities with different units provided.")
+                                            """Quantities with different units 
+                                            provided.""")
                 self.field_min.value = self.field_max.value - \
                                        self.field_width.value
                 self.field_min.unit = self.field_max.unit
             if self.step_count == 0:
                 if self.field_width.unit != self.step_width.unit:
                     raise UnequalUnitsError(
-                        "Quantities with different units provided.")
+                                            """Quantities with different units 
+                                            provided.""")
                 self.step_count = int(round((self.field_width.value /
                                              self.step_width.value), 0)) + 1
             if self.step_width.value == 0.:
@@ -213,8 +219,7 @@ class BFieldData(aspecd.metadata.Metadata):
                 self.step_width.unit = self.field_max.unit
 
     def gauss_to_millitesla(self):
-        """Transforms magnetic field parameters provided in gauss to
-        millitesla."""
+        """Transform magnetic field parameters from gauss to millitesla."""
         for quantity in [self.field_min, self.field_max,
                          self.field_width, self.step_width]:
             quantity.value /= 10
@@ -222,9 +227,7 @@ class BFieldData(aspecd.metadata.Metadata):
 
 
 class Experiment(aspecd.metadata.Metadata):
-    """This metadata class contains general information on what type of
-    experiment was performed.
-    """
+    """General information on what type of experiment was performed."""
     def __init__(self):
         super().__init__()
         self.type = ""
@@ -235,9 +238,7 @@ class Experiment(aspecd.metadata.Metadata):
 
 
 class SpectrometerInfo(aspecd.metadata.Metadata):
-    """This metadata class contains information on what type of spectrometer
-    was used.
-    """
+    """Metadata information on what type of spectrometer was used."""
     def __init__(self):
         super().__init__()
         self.model = ""
@@ -245,9 +246,8 @@ class SpectrometerInfo(aspecd.metadata.Metadata):
 
 
 class BridgeInfo(aspecd.metadata.Metadata):
-    """This metadata class contains information on the microwave bridge
-    employed.
-    """
+    """Metadata information on the microwave bridge employed."""
+
     def __init__(self):
         super().__init__()
         self.model = ""
@@ -261,15 +261,16 @@ class BridgeInfo(aspecd.metadata.Metadata):
 
 
 class SignalChannel(aspecd.metadata.Metadata):
-    """This metadata class contains information on the signal channel
-    employed.
+    """Metadata information information on the signal channel employed.
 
     .. todo::
         Currently aspecd crashes when the creation of an instance of
         :class:`aspecd.metadata.PhysicalQuantity` is attempted from an empty
-        parameter field. Find a workaround or make the supervisor of aspecd
+        parameter field (such as time_constant).
+        Find a workaround or make the supervisor of aspecd
         find one.
     """
+
     def __init__(self):
         super().__init__()
         self.model = ""
@@ -279,13 +280,13 @@ class SignalChannel(aspecd.metadata.Metadata):
         self.modulation_amplitude = aspecd.metadata.PhysicalQuantity()
         self.receiver_gain = aspecd.metadata.PhysicalQuantity()
         self.conversion_time = aspecd.metadata.PhysicalQuantity()
-        self.time_constant = "" #aspecd.metadata.PhysicalQuantity()
+        self.time_constant = ""
         self.phase = aspecd.metadata.PhysicalQuantity()
 
 
 class Probehead(aspecd.metadata.Metadata):
-    """This metadata class contains information on the probe head employed.
-    """
+    """Metadata information on the probe head employed."""
+
     def __init__(self):
         super().__init__()
         self.type = ""

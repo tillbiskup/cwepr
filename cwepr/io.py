@@ -2,11 +2,11 @@
 
 
 import os.path
-import numpy as np
 import collections as col
 import re
 
 
+import numpy as np
 import aspecd.io
 import aspecd.infofile
 import aspecd.metadata
@@ -22,29 +22,30 @@ class Error(Exception):
 
 
 class UnsupportedDataFormatError(Error):
-    """Exception raised when given data format is not supported by an
-    available importer.
+    """Exception raised when given data format is not supported.
 
     Attributes
     ----------
     message : :class:`str`
         explanation of the error
-
     """
+
     def __init__(self, message=''):
         super().__init__()
         self.message = message
 
 
 class NoMatchingFilePairError(Error):
-    """Exception raised when no pair of a data and parameter files
-    is found where the extensions match a single format.
+    """Exception raised when no pair of data and parameter file is found.
+
+    Data and parameter files' extensions must match a single format.
 
     Attributes
     ----------
     message : :class:`str`
         explanation of the error
     """
+
     def __init__(self, message=''):
         super().__init__()
         self.message = message
@@ -58,29 +59,34 @@ class MissingInfoFileError(Error):
     message : :class:`str`
         explanation of the error
     """
+
     def __init__(self, message=''):
         super().__init__()
         self.message = message
 
 
 class ImportMetadataOnlyError(Error):
-    """Exception raised when import of metadata is attempted
-    without importing experimental data first and no importer
-    has been initialized.
+    """Exception raised when no importer has been initialized.
+
+    This happens when import of metadata is attempted without importing
+    experimental data first.
 
     Attributes
     ----------
     message : :class:`str`
         explanation of the error
     """
+
     def __init__(self, message=''):
         super().__init__()
         self.message = message
 
 
 class ExperimentTypeError(Error):
-    """Exception raised when the data provided does not correspond
-    to a continuous wave experiment or the experiment type cannot be
+    """Exception raised in case of problems with designated experiment type.
+
+    This inlcudes to cases: 1) when the data provided does not correspond
+    to a continuous wave experiment or 2) the experiment type cannot be
     determined.
 
     Attributes
@@ -88,14 +94,16 @@ class ExperimentTypeError(Error):
     message : `str`
         explanation of the error
     """
+
     def __init__(self, message=''):
         super().__init__()
         self.message = message
 
 
 class ImporterEPRGeneral(aspecd.io.DatasetImporter):
-    """Importer super class that determines the correct
-    specialized importer for a format.
+    """Importer super class
+
+    This class will determine the correct specialized importer for a format.
 
     Attributes
     ----------
@@ -115,6 +123,7 @@ class ImporterEPRGeneral(aspecd.io.DatasetImporter):
         can be found. Currently Bruker BES3T, EMX and ESP/ECS formats
         are supported.
     """
+
     supported_formats = {"BES3T": [".DTA", ".DSC"], "Other": [".spc", ".par"]}
 
     def __init__(self, data_format=None, source=None):
@@ -124,8 +133,7 @@ class ImporterEPRGeneral(aspecd.io.DatasetImporter):
                                       "Other": ImporterEMXandESP}
 
     def import_metadata(self):
-        """Import metadata from user made info file and device
-        parameter file.
+        """Import metadata from parameter file and user made info file.
 
         Raises
         ------
@@ -137,6 +145,7 @@ class ImporterEPRGeneral(aspecd.io.DatasetImporter):
             called without first importing the experimental data,
             because :meth:'_import' creates an instance of a
             format specific importer.
+
         """
         if not os.path.isfile((self.source + ".info")):
             raise MissingInfoFileError("No info file provided")
@@ -145,13 +154,13 @@ class ImporterEPRGeneral(aspecd.io.DatasetImporter):
 
     @staticmethod
     def _import_infofile(filename):
-        """Import and parse user made info file using the method
-        provided by ASpecD.
+        """Use aspecd method to import user made info file.
 
         Returns
-        ------
+        -------
         infofile_data: :class:`dict`
             Parsed data from the info file.
+
         """
         infofile_data = aspecd.infofile.parse(filename)
         return infofile_data
@@ -159,6 +168,7 @@ class ImporterEPRGeneral(aspecd.io.DatasetImporter):
 
 class ImporterBES3T(ImporterEPRGeneral):
     """Specialized Importer for the BES3T format."""
+
     def __init__(self, source=None):
         super().__init__(source=source)
 
@@ -172,8 +182,9 @@ class ImporterBES3T(ImporterEPRGeneral):
         -------
         raw_data: :class:`numpy.array`
             Raw numerical data in processable form.
+
         """
-        complete_filename = self.source+".DTA"
+        complete_filename = self.source + ".DTA"
         raw_data = np.fromfile(complete_filename)
         if not are_intensity_values_plausible(raw_data):
             raw_data = raw_data.byteswap()
@@ -190,9 +201,10 @@ class ImporterBES3T(ImporterEPRGeneral):
         -------
         processed_param_data: :class:`dict`
             Parsed data from the source parameter file.
+
         """
         info_data = super().import_metadata()
-        file_param = open(self.source+".DSC")
+        file_param = open(self.source + ".DSC")
         raw_param_data = file_param.read()
         dsc_file_parser = ParserDSC()
         parsed_param_data = dsc_file_parser.parse_dsc(raw_param_data)
@@ -200,12 +212,10 @@ class ImporterBES3T(ImporterEPRGeneral):
 
 
 class ParserDSC:
-    """
-    Parser for a \*.DSC parameter file belonging to the BES3T format.
-    """
+    r"""Parser for a \*.DSC parameter file belonging to the BES3T format."""
 
     def parse_dsc(self, file_content):
-        """Main method for parsing a \*.DSC.
+        r"""Main method for parsing a \*.DSC.
 
         The is split into its
         three parts and each of the three parts into a dictionary
@@ -253,6 +263,7 @@ class ParserDSC:
         -------
         parsed_dsc_data: :class:`dict`
             Data with units added.
+
         """
         parsed_dsc_data[0]["Data Ranges and Resolutions:"]["XMIN"] += " Gs"
         parsed_dsc_data[0]["Data Ranges and Resolutions:"]["XWID"] += " Gs"
@@ -260,7 +271,7 @@ class ParserDSC:
 
     @staticmethod
     def _get_three_parts(file_content):
-        """Split a \*.DSC file into three parts.
+        r"""Split a \*.DSC file into three parts.
 
         The three parts are: Descriptor Information,
         Standard Parameter Layer and Device Specific Layer.
@@ -277,6 +288,7 @@ class ParserDSC:
         -------
         three_parts: :class:`list`
             The three parts of the file.
+
         """
         three_parts = list()
         first_split = file_content.split("#SPL")
@@ -287,7 +299,7 @@ class ParserDSC:
 
     @staticmethod
     def _subdivide_part1(part1):
-        """Pre process the first part ("Descriptor Information")
+        r"""Pre process the first part ("Descriptor Information")
         of a \*.DSC file.
 
         The crude string is split into subdivisions; the delimiter
@@ -328,9 +340,10 @@ class ParserDSC:
 
     @staticmethod
     def _create_dict_p1p3(p1p3_split, delimiter, delimiter_width=0):
-        """Create a dict from the first part ("Descriptor Information")
-        or third part ("Device Specific Layer") of a \*.DSC file.
+        r"""Create a dict from the first or third part () of a \*.DSC file.
 
+        First part corresponds to "Descriptor Information, third part
+        corresponds to "Device Specific Layer"
         For every subdivision. lines are split at tabs. The method
         accounts for lines containing only a parameter name with no
         corresponding value.
@@ -362,6 +375,7 @@ class ParserDSC:
             Data from the input as pairs of key (subdivision name) and
             value (subdivision info). Each subdivision info is also a dict
             with keys (parameter names) and values (parameter values).
+
         """
         p1p3_dict = col.OrderedDict()
         for title, subpart in p1p3_split.items():
@@ -374,7 +388,7 @@ class ParserDSC:
                             param_count += 1
                         else:
                             break
-                    final_delimiter = (delimiter_width-param_count)*delimiter
+                    final_delimiter = (delimiter_width - param_count) * delimiter
                 else:
                     final_delimiter = delimiter
                 line_split = line.split(final_delimiter)
@@ -388,9 +402,9 @@ class ParserDSC:
 
     @staticmethod
     def _subdivide_part2(part2):
-        """Pre process the second part ("Standard parameter
-        layer") of a \*.DSC file.
+        r"""Pre process the second part of a \*.DSC file.
 
+        Second part corresponds to the "Standard parameter layer"
         The crude string is split into lines; lines devoid of
         information (e.g. containing only an asterisk) are
         removed.
@@ -412,6 +426,7 @@ class ParserDSC:
         entries_clean: :class:`list`
             All lines from the file part except those devoid of
             information.
+
         """
         entries_param = part2.split("\n")
         entries_clean = list()
@@ -422,9 +437,9 @@ class ParserDSC:
 
     @staticmethod
     def _create_dict_part2(part2_split):
-        """Create a dict from the second part ("Standard parameter
-        layer") of a \*.DSC file.
+        r"""Create a dict from the second part of a \*.DSC file.
 
+        Second part corresponds to the "Standard parameter layer"
         Lines are split at tabs. The method accounts for lines
         containing only a parameter name with no corresponding
         value.
@@ -447,6 +462,7 @@ class ParserDSC:
         part2_dict: :class:`dict`
             Data from the input as pairs of key (parameter name) and
             value (parameter value).
+
         """
         part2_dict = col.OrderedDict()
         for line in part2_split:
@@ -465,12 +481,11 @@ class ParserDSC:
 
     @staticmethod
     def _subdivide_part3(part3):
-        """Pre process the third part ("Device Specific Layer")
-         of a \*.DSC file.
+        r"""Pre process the third part of a \*.DSC file.
 
+        Third part corresponds to the "Device Specific Layer"
         The crude string is split into subdivisions, which start
         with a headline containing the fragment ".DVC"
-
         Each subdivision is then transformed into a dict entry
         with the headline, stripped of the first eight characters
         (".DVC    ") as key and the remaining information as value.
@@ -487,6 +502,7 @@ class ParserDSC:
             All subdivisions from the file with headlines as keys
             and list of lines as values; lines devoid of information
             removed.
+
         """
         lines = part3.split("\n")
         subdivisions = col.OrderedDict()
@@ -503,7 +519,7 @@ class ParserDSC:
             current_subpart.append(line)
         if len(current_subpart) == 1:
             subdivisions[current_subpart[0][9:]] = []
-        elif len(current_subpart) != 0:
+        elif current_subpart:
             subdivisions[current_subpart[0][9:]] = current_subpart[1:]
         return subdivisions
 
@@ -520,6 +536,7 @@ class ParserDSC:
         mapped_data: :class:`list`
             data with the necessary modifications applied to allow
             for addition to the metadata.
+
         """
         dsc_mapper = aspecd.metadata.MetadataMapper()
         mapped_data = []
@@ -540,6 +557,7 @@ class ParserDSC:
         mapper : :obj:`aspecd.metadata.MetadataMapper`
             metadata mapper containing the respective first part of the
             dsc file as metadata.
+
         """
         mapper.mappings = [
             ["Data Ranges and Resolutions:", "rename_key",
@@ -563,18 +581,20 @@ class ParserDSC:
         mapper : :obj:`aspecd.metadata.MetadataMapper`
             metadata mapper containing the respective third part of the
             dsc file as metadata.
+
         """
         mapper.mappings = [
             ["mwBridge, 1.0", "rename_key", ["PowerAtten", "attenuation"]],
             ["", "rename_key", ["mwBridge, 1.0", "bridge"]],
             ["", "rename_key", ["signalChannel, 1.0", "experiment"]]
-                            ]
+        ]
         mapper.map()
         return mapper.metadata
 
 
 class ImporterEMXandESP(ImporterEPRGeneral):
     """Specialized Importer for the BES3T format."""
+
     def __init__(self, source=None):
         super().__init__(source=source)
 
@@ -588,6 +608,7 @@ class ImporterEMXandESP(ImporterEPRGeneral):
         -------
         raw_data: :class:`numpy.array`
             Raw numerical data in processable form.
+
         """
         complete_filename = self.source + ".spc"
         datatype = np.dtype('<f')
@@ -609,6 +630,7 @@ class ImporterEMXandESP(ImporterEPRGeneral):
         -------
         processed_param_data: :class:`dict`
             Parsed data from the source parameter file.
+
         """
         headlines = ["experiment", "spectrometer", "magnetic_field",
                      "bridge", "signal_channel", "probehead", "metadata"]
@@ -624,13 +646,20 @@ class ImporterEMXandESP(ImporterEPRGeneral):
 
 
 class ParserPAR:
-    """Parser for \*.par parameter file belonging to the EMX and ESP/ECS
-    formats.
-    """
+    r"""Parser for \*.par file belonging to the EMX and ESP/ECS formats."""
+
     def __init__(self):
         pass
 
     def parse_and_map(self, file_content):
+        """Wrapper method for parsing and mapping.
+
+        Returns
+        -------
+        content_mapped: :class:`dict`
+            Prepared metadata
+
+        """
         content_parsed = self._parse2(file_content)
         content_mapped = self._map_par(content_parsed)
         return content_mapped
@@ -649,13 +678,13 @@ class ParserPAR:
             ["", "rename_key", ["RRG", "receiver_gain"]],
             ["", "rename_key", ["RCT", "conversion_time"]],
             ["", "rename_key", ["RTC", "time_constant"]]
-                            ]
+        ]
         mapper.map()
         return mapper.metadata
 
     @staticmethod
     def _parse1(file_content):
-        """Main method for parsing a \*.par into a dictionary.
+        r"""Main method for parsing a \*.par into a dictionary.
 
         The method `_parse2` (vide infra) does the exact same thing in a
         different manner.
@@ -668,6 +697,7 @@ class ParserPAR:
         Returns
         -------
         content_parsed: :class:`dict`
+
         """
         lines = file_content.split("\n")
         content_parsed = dict()
@@ -688,14 +718,13 @@ class ParserPAR:
                     parts_to_remove.append(n)
             parts_to_remove.reverse()
             for n in parts_to_remove:
-                del(line_content[n])
+                del line_content[n]
             content_parsed[line_content[0]] = line_content[1]
         return content_parsed
 
     @staticmethod
     def _parse2(file_content):
-        """Alternative method for parsing a \*.par file using regular
-        expressions.
+        r"""Alternative for parsing a \*.par file using regular expressions.
 
         The method `_parse1` (vide supra) does the exact same thing in a
         different manner.
@@ -710,6 +739,7 @@ class ParserPAR:
         Returns
         -------
         content_parsed: :class:`dict`
+
         """
         spacing_pattern = r"[\S]+[\s]+[\S]+"
         exp_object = re.compile(spacing_pattern)
@@ -718,8 +748,8 @@ class ParserPAR:
         for line in lines:
             matching = re.search(exp_object, line)
             if matching:
-                end1 = matching.start()+1
-                start2 = matching.end()-1
+                end1 = matching.start() + 1
+                start2 = matching.end() - 1
                 content_parsed[line[:end1]] = line[start2:]
             else:
                 content_parsed[line] = ""
@@ -727,15 +757,15 @@ class ParserPAR:
 
 
 class ImporterFactoryEPR(aspecd.io.DatasetImporterFactory):
-    """This class is an importer factory used to get an instance of an
-    importer for a given filename.
-    """
+    """Factory that returns correct importer class for a given file."""
+
     supported_formats = {"BES3T": [".DTA", ".DSC"], "Other": [".spc", ".par"]}
 
     def __init__(self):
         super().__init__()
         self.importers_for_formats = {"BES3T": ImporterBES3T,
                                       "Other": ImporterEMXandESP}
+        self.data_format = None
 
     def _get_importer(self, source):
         """Main method returning the importer instance.
@@ -749,6 +779,7 @@ class ImporterFactoryEPR(aspecd.io.DatasetImporterFactory):
         UnsupportedDataFormatError
             Raised if a format is set but does not match any of
             the supported formats
+
         """
         self.data_format = self._find_format(source)
         special_importer = self.importers_for_formats[
@@ -771,15 +802,16 @@ class ImporterFactoryEPR(aspecd.io.DatasetImporterFactory):
             Raised if no pair of files matching any one supported
             format can be found. Currently only Bruker BES3T format
             is supported.
+
         """
         for k, v in self.supported_formats.items():
-            if os.path.isfile((source+v[0])) and os.path.isfile(
-                (source+v[1])
+            if os.path.isfile((source + v[0])) and os.path.isfile(
+                (source + v[1])
             ):
                 return k
         else:
             msg = "No file pair matching a single format was found for path: "\
-             + source
+                + source
             raise NoMatchingFilePairError(message=msg)
 
 
@@ -790,6 +822,7 @@ class ExporterASCII(aspecd.io.DatasetExporter):
     the respective metadata is exported into a YAML file using the
     functionality provided by aspecd.
     """
+
     def __init__(self):
         super().__init__()
 
@@ -812,6 +845,7 @@ class ExporterASCII(aspecd.io.DatasetExporter):
         -------
         metadata_prepared: :class:`dict`
             transformed metadata
+
         """
         metadata = self.dataset.metadata.to_dict()
         metadata_prepared = self._remove_arrays(metadata)
@@ -834,12 +868,11 @@ class ExporterASCII(aspecd.io.DatasetExporter):
         -------
         dictionary: :class:`dict`
             Dictionary relieved of arrays.
+
         """
         for k, v in dictionary.items():
-            if type(v) == dict:
+            if isinstance(v, dict):
                 dictionary[k] = self._remove_arrays(v)
             if type(v) == np.array:
                 dictionary[k].to_list()
         return dictionary
-
-

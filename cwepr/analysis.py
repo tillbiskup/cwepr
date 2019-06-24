@@ -8,54 +8,58 @@ of a field correction value.
 import copy
 import math
 import numpy as np
-import scipy.integrate
+
 
 import aspecd.analysis
 
 
 class Error(Exception):
     """Base class for exceptions in this module."""
+
     pass
 
 
 class WrongOrderError(Error):
-    """Exception raised when the x values given for the common space
-    determination are not in increasing Order.
+    """Exception raised when x values are decreasing.
+
+    Values given for the common space determination should always be in
+    increasing order.
 
     Attributes
     ----------
     message : `str`
         explanation of the error
-
     """
+
     def __init__(self, message=''):
         super().__init__()
         self.message = message
 
 
 class NotEnoughDatasetsError(Error):
-    """Exception raised when less than two datasets are given for
-    the commonspace determination.
+    """Exception raised when common definition range can't be determined.
+
+    This is usually the case when less than two datasets are given for the
+    common space determination.
 
     Attributes
     ----------
     message : :class:`str`
         explanation of the error
     """
+
     def __init__(self, message=''):
         super().__init__()
         self.message = message
 
 
 class NoCommonspaceError(Error):
-    """Exception raised when less than two datasets are given for
-    the commonspace determination.
+    """Exception raised when common definition range is zero.
 
     Attributes
     ----------
     message : :class:`str`
         explanation of the error
-
     """
 
     def __init__(self, message=''):
@@ -64,14 +68,14 @@ class NoCommonspaceError(Error):
 
 
 class SpectrumNotIntegratedError(Error):
-    """Exception raised when a definite integration is performed on a
-    derivative spectrum.
+    """Exception raised when definite integration is used accidentally.
+
+    Definite integration should only be performed on a derivative spectrum.
 
     Attributes
     ----------
     message : :class:`str`
         explanation of the error
-
     """
 
     def __init__(self, message=''):
@@ -108,9 +112,10 @@ class FieldCorrectionValueFinding(aspecd.analysis.SingleAnalysisStep):
         Frequency value of the measurement used to calculate the expected
         field value.
     """
+
     VALUE_G_LILIF = 2.002293
-    VALUE_MuB = 9.27401*10**(-24)
-    VALUE_H = 6.62607*10**(-34)
+    VALUE_MuB = 9.27401 * 10 ** (-24)
+    VALUE_H = 6.62607 * 10 ** (-34)
 
     def __init__(self):
         super().__init__()
@@ -118,8 +123,7 @@ class FieldCorrectionValueFinding(aspecd.analysis.SingleAnalysisStep):
         self.description = "Determination of a field correction value"
 
     def _perform_task(self):
-        """Wrapper around the method determining the field correction value.
-        """
+        """Wrapper around field correction value determination method."""
         self.nu_value = self.dataset.metadata.bridge.mw_frequency.value
         self.result = self.get_field_correction_value()
 
@@ -135,14 +139,15 @@ class FieldCorrectionValueFinding(aspecd.analysis.SingleAnalysisStep):
         -------
         delta_b0: :class:`float`
             Field correction value
+
         """
         index_max = np.argmax(self.dataset.data.axes[0].values)
         index_min = np.argmin(self.dataset.data.axes[0].values)
         experimental_field = (
             self.dataset.data.data[index_max] -
-            self.dataset.data.data[index_min])/2.0
+            self.dataset.data.data[index_min]) / 2.0
         calcd_field = \
-            self.VALUE_H*self.nu_value/self.VALUE_G_LILIF/self.VALUE_MuB
+            self.VALUE_H * self.nu_value / self.VALUE_G_LILIF / self.VALUE_MuB
         delta_b0 = calcd_field - experimental_field
         return delta_b0
 
@@ -168,9 +173,7 @@ class BaselineFitting(aspecd.analysis.SingleAnalysisStep):
         self.description = "Polynomial fit to baseline"
 
     def _perform_task(self):
-        """Call the function to find a polynomial
-        and set it into the results.
-        """
+        """Wrapper around polynomial determination."""
         coeffs = self._find_polynome_by_fit()
         self.result = coeffs
 
@@ -182,7 +185,7 @@ class BaselineFitting(aspecd.analysis.SingleAnalysisStep):
         """
         number_of_points = len(self.dataset.data.data)
         points_per_side = \
-            math.ceil(number_of_points*self.parameters["percentage"]/100.0)
+            math.ceil(number_of_points * self.parameters["percentage"] / 100.0)
         dataset_copy_y = copy.deepcopy(self.dataset.data.data)
         data_list_y = dataset_copy_y.tolist()
         data_list_x = (copy.deepcopy(self.dataset.data.axes[0].values)).tolist()
@@ -215,8 +218,9 @@ class BaselineFitting(aspecd.analysis.SingleAnalysisStep):
         points_to_use: :class:`list`
             List only containing the correct number of points from each side
             and not the points in between.
+
         """
-        left_part = data[:points_per_side+1]
+        left_part = data[:points_per_side + 1]
         right_part = data[len(data) - points_per_side - 1:]
         points_to_use = left_part
         points_to_use.extend(right_part)
@@ -235,6 +239,7 @@ class IntegrationIndefinite(aspecd.analysis.SingleAnalysisStep):
         y values to use for the integration. If this is omitted the y values
         of the dataset are used.
     """
+
     def __init__(self):
         super().__init__()
         self.description = "Indefinite Integration"
@@ -246,7 +251,6 @@ class IntegrationIndefinite(aspecd.analysis.SingleAnalysisStep):
         functionality from scipy. The keyword argument initial=0 is used
         to yield a list of length identical to the original one.
         """
-
         self.result = copy.deepcopy(self.dataset)
 
 
@@ -258,14 +262,17 @@ class IntegrationDefinite(aspecd.analysis.SingleAnalysisStep):
     y: :class:`list`
         y values to use for the integration.
     """
+
     def __init__(self):
         super().__init__()
         self.description = "Definite Integration / Area und the curve"
 
     def _perform_task(self):
-        """Performs the actual integration. The x values
-        from the dataset are used."""
+        """Performs the actual integration.
 
+        The x values from the dataset are used.
+
+        """
         x = self.dataset.data.axes[0].values
         y = self.dataset.data.data
 
@@ -292,6 +299,7 @@ class IntegrationVerification(aspecd.analysis.SingleAnalysisStep):
         Threshold for the integral. If the integral determined is smaller
         the preprocessing is considered to have been successful.
     """
+
     def __init__(self, y, percentage=15, threshold=0.001):
         super().__init__()
         self.parameters["y"] = y
@@ -307,8 +315,9 @@ class IntegrationVerification(aspecd.analysis.SingleAnalysisStep):
         threshold.
 
         The result is a boolean: Is the integral lower than the threshold?
+
         """
-        number_of_points = math.ceil(len(self.y)*self.percentage/100.0)
+        number_of_points = math.ceil(len(self.y) * self.percentage / 100.0)
         points_y = self.parameters["y"][len(self.parameters["y"]) - number_of_points - 1:]
         points_x = \
             self.dataset.data.axes[0].values[len(self.parameters["y"]) - number_of_points - 1:]
@@ -317,8 +326,7 @@ class IntegrationVerification(aspecd.analysis.SingleAnalysisStep):
 
 
 class CommonspaceAndDelimiters(aspecd.analysis.SingleAnalysisStep):
-    """Analysis step for determine how much common definition range
-    some given spectra have.
+    """Determination of common definition ranges.
 
     If the common range is inferior to a certain value, an exception is raised.
     This can be transformed to a warning on a higher level application. In this
@@ -366,6 +374,7 @@ class CommonspaceAndDelimiters(aspecd.analysis.SingleAnalysisStep):
         Exception raised when the size of the common definition range is
         considered too low (vide supra).
     """
+
     def __init__(self, datasets, threshold=0.05):
         super().__init__()
         self.parameters["datasets"] = datasets
@@ -391,6 +400,7 @@ class CommonspaceAndDelimiters(aspecd.analysis.SingleAnalysisStep):
         ------
         NotEnoughDatasetsError
             Exception raised when less than two datasets are provided.
+
         """
         if len(self.parameters["datasets"]) < 2:
             raise NotEnoughDatasetsError(
@@ -409,6 +419,7 @@ class CommonspaceAndDelimiters(aspecd.analysis.SingleAnalysisStep):
             Exception raised when any given x axis does not start with the
             smallest and end with the highest value (determined by comparison
             of the first and last value).
+
         """
         for dataset in self.parameters["datasets"]:
             x = dataset.data.axes[0].values
@@ -425,8 +436,8 @@ class CommonspaceAndDelimiters(aspecd.analysis.SingleAnalysisStep):
                 self.minimum = x[0]
             if self.maximum is None or x[-1] > self.maximum:
                 self.maximum = x[-1]
-            if self.minimal_width is None or (x[-1]-x[0]) < self.minimal_width:
-                self.minimal_width = x[-1]-x[0]
+            if self.minimal_width is None or (x[-1] - x[0]) < self.minimal_width:
+                self.minimal_width = x[-1] - x[0]
 
     def check_commonspace_for_two(self, index1, index2):
         """Compares the definition ranges of two datasets.
@@ -453,12 +464,13 @@ class CommonspaceAndDelimiters(aspecd.analysis.SingleAnalysisStep):
         NoCommonspaceError
             Exception raised when the size of the common definition range is
             considered too low (vide supra).
+
         """
         width1 = self.end_points[index1] - self.start_points[index1]
         width2 = self.end_points[index2] - self.start_points[index2]
-        width_delta = math.fabs(width1-width2)
-        if (math.fabs(self.start_points[index1]-self.start_points[index2]) > (
-                width_delta + self.parameters["threshold"]*(min(width1, width2)))) or (
+        width_delta = math.fabs(width1 - width2)
+        if (math.fabs(self.start_points[index1] - self.start_points[index2]) > (
+                width_delta + self.parameters["threshold"] * (min(width1, width2)))) or (
             math.fabs(self.end_points[index1] - self.end_points[index2]) > (
                 width_delta + self.parameters["threshold"] * (min(width1, width2)))):
             name1 = self.parameters["datasets"][index1].id
@@ -468,11 +480,11 @@ class CommonspaceAndDelimiters(aspecd.analysis.SingleAnalysisStep):
             raise NoCommonspaceError(errormessage)
 
     def _check_commonspace_for_all(self):
-        """Checks the common definition range for any combination of two
-        different spectra.
+        """Check all possible common definition ranges.
 
         .. todo::
             Avoid calculating every combination twice.
+
         """
         for n in range(len(self.parameters["datasets"])):
             for m in range(len(self.parameters["datasets"])):
@@ -488,6 +500,7 @@ class CommonspaceAndDelimiters(aspecd.analysis.SingleAnalysisStep):
 
         This method is used to provide points to display edges of common
         ranges inside a plot.
+
         """
         self.start_points.sort()
         self.end_points.sort()
@@ -498,13 +511,13 @@ class CommonspaceAndDelimiters(aspecd.analysis.SingleAnalysisStep):
         points_close_to_edge = list()
         for n in range(len(delimiter_points)):
             if (math.fabs(delimiter_points[n] - self.minimum) <
-                0.03*self.minimal_width) or (
+                0.03 * self.minimal_width) or (
                     math.fabs(delimiter_points[n] - self.maximum) <
                     0.03 * self.minimal_width):
                 points_close_to_edge.append(n)
         points_close_to_edge.reverse()
         for n in range(len(points_close_to_edge)):
-            del(delimiter_points[n])
+            del delimiter_points[n]
         return delimiter_points
 
     def _eliminate_close_delimiters(self, points):
@@ -517,32 +530,29 @@ class CommonspaceAndDelimiters(aspecd.analysis.SingleAnalysisStep):
             0.03*smallest width of all spectra
 
         This threshold is currently rather arbitrary.
+
         """
         close_points = list()
         while True:
-            for n in range(len(points)-1):
-                if math.fabs(points[n]-points[n+1]) < 0.03*self.minimal_width:
-                    close_points.append([n, n+1])
-            if close_points == list():
-                return
-            else:
+            for n in range(len(points) - 1):
+                if math.fabs(points[n] - points[n + 1]) < 0.03 * self.minimal_width:
+                    close_points.append([n, n + 1])
+            if close_points != list():
                 close_points.reverse()
                 for pair in close_points:
-                    center = math.fabs(pair[0]-pair[1])/2.0
-                    del(points[pair[1]])
+                    center = math.fabs(pair[0] - pair[1]) / 2.0
+                    del points[pair[1]]
                     points[pair[0]] = center
                 close_points = list()
 
 
 class PeakToPeakLinewidth(aspecd.analysis.SingleAnalysisStep):
+    """Linewidth measurement (peak to peak in derivative)"""
     def __init__(self):
         super().__init__()
         self.description = "Determine peak-to-peak linewidth"
 
     def _perform_task(self):
-        """Call the function to calculate the line width
-        and set it into the results.
-        """
         self.result = self.get_p2p_linewidth()
 
     def get_p2p_linewidth(self):
@@ -556,6 +566,7 @@ class PeakToPeakLinewidth(aspecd.analysis.SingleAnalysisStep):
         -------
         linewidth: :class:`float`
             line width as determined
+
         """
         index_max = np.argmax(self.dataset.data.axes[0].values)
         index_min = np.argmin(self.dataset.data.axes[0].values)
@@ -566,17 +577,12 @@ class PeakToPeakLinewidth(aspecd.analysis.SingleAnalysisStep):
 
 
 class LinewidthFWHM(aspecd.analysis.SingleAnalysisStep):
-    """
-
-    """
+    """Linewidth measurement at half maximum"""
     def __init__(self):
         super().__init__()
         self.description = "Determine linewidth (full width at half max; FWHM)"
 
     def _perform_task(self):
-        """Call the function to calculate the line width
-        and set it into the results.
-        """
         self.result = self.get_fwhm_linewidth()
 
     def get_fwhm_linewidth(self):
@@ -590,12 +596,13 @@ class LinewidthFWHM(aspecd.analysis.SingleAnalysisStep):
         -------
         linewidth: :class:`float`
             line width as determined
+
         """
         index_max = np.argmax(self.dataset.data.axes[0].values)
         spectral_data = copy.deepcopy(self.dataset.data.data)
         maximum = self.dataset.data.axes[0].values[index_max]
         for n in range(len(spectral_data)):
-            spectral_data[n] -= maximum/2
+            spectral_data[n] -= maximum / 2
             if spectral_data[n] < 0:
                 spectral_data[n] *= -1
         left_zero_cross_index = np.argmin(spectral_data[:index_max])
@@ -605,14 +612,30 @@ class LinewidthFWHM(aspecd.analysis.SingleAnalysisStep):
 
 
 class SignalToNoise(aspecd.analysis.SingleAnalysisStep):
+    """Measure a spectrum's signal to noise ratio.
+
+    This is done by comparing the absolute maximum of the spectrum to the
+    maximum of the edge part of the spectrum (i.e. a part which is considered
+    to not contain any signal.
+
+    Attributes
+    ----------
+    percentage: :class:`int`
+        percentage of the spectrum to be considered edge part on any side
+        (i.e. 10% means 10% on each end).
+    """
+
     def __init__(self, percentage=10):
         super().__init__()
         self.parameters["percentage"] = percentage
         self.description = "Determine signal to noise ratio."
 
     def _perform_task(self):
-        """Call the function to calculate the actual ratio
-        and set it into the results.
+        """Determine signal to noise ratio.
+
+        Call method to get the maximum of the noise, compare it to the
+        absolute maximum and set a result.
+
         """
         data_copy = copy.deepcopy(self.dataset.data.data)
         data_list_absolute = data_copy.to_list()
@@ -621,17 +644,18 @@ class SignalToNoise(aspecd.analysis.SingleAnalysisStep):
                 data_list_absolute[n] *= -1
         signal_max = max(data_list_absolute)
         noise_max = self._get_noise_maximum(data_list_absolute)
-        self.result = signal_max/noise_max
+        self.result = signal_max / noise_max
 
     def _get_noise_maximum(self, data_absolute):
         """Find the maximum of the noise.
 
         This method assembles the data points of the spectrum to consider as
         noise and returns the maximum.
+
         """
         number_of_points = len(data_absolute)
         points_per_side = \
-            math.ceil(number_of_points*self.parameters["percentage"]/100.0)
+            math.ceil(number_of_points * self.parameters["percentage"] / 100.0)
         points_to_use_y = \
             self._get_points_to_use(data_absolute, points_per_side)
         maximum = max(points_to_use_y)
@@ -660,8 +684,9 @@ class SignalToNoise(aspecd.analysis.SingleAnalysisStep):
         points_to_use: :class:`list`
             List only containing the correct number of points from each side
             and not the points in between.
+
         """
-        left_part = data[:points_per_side+1]
+        left_part = data[:points_per_side + 1]
         right_part = data[len(data) - points_per_side - 1:]
         points_to_use = left_part
         points_to_use.extend(right_part)

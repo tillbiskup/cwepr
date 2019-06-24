@@ -70,7 +70,6 @@ class FrequencyCorrection(aspecd.processing.ProcessingStep):
 
     nu_target: :class:`float`
         Frequency that the data should be converted to.
-
     """
     VALUE_G_LILIF = 2.002293
     VALUE_MuB = 9.27401*10**(-24)
@@ -235,7 +234,6 @@ class AddSpectrum(aspecd.processing.ProcessingStep):
     ----------
     scnd_dataset: :class:`cwepr.dataset.Dataset`
         Dataset containing the spectrum that should be added.
-
     """
     def __init__(self, scnd_dataset):
         super().__init__()

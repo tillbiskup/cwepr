@@ -1,3 +1,10 @@
+"""Module containing composite processing steps.
+
+In the definition of this package, a composite processing step includes both,
+processing and analysis. Generally this is the case if a processing step is
+performed which uses parameters obtained through an analysis step.
+"""
+
 import numpy as np
 
 
@@ -7,9 +14,20 @@ import cwepr.processing
 
 
 class BaselineCorrectionComplete(aspecd.processing.ProcessingStep):
+    """Perform fit on spectral data and subtract baseline.
+
+    Wrapper around :class:`cwepr.analysis.BaselineFitting` and
+    :class:`cwepr.processing.BaselineCorrectionWithClcdDataset` to fit a
+    polynomial on the baseline and subtract it.
+
+    Attributes
+    ----------
+    order: :class:`int`
+        order of the polynomial to be fitted
+    percentage: :class:`int`
+        percentage of the data to be used for the fit
     """
 
-    """
     def __init__(self, order=0, percentage=10):
         super().__init__()
         self.parameters["order"] = order
@@ -31,9 +49,18 @@ class BaselineCorrectionComplete(aspecd.processing.ProcessingStep):
 
 
 class FieldCorrectionComplete(aspecd.processing.ProcessingStep):
+    """Acquire a correction value and apply it to the spectral data.
+
+    Wrapper around :class:`cwepr.analysis.FieldCorrectionValueFinding` and
+    :class:`cwepr.processing.FieldCorrection` to find a correction value and
+    apply it to the spectral data, i.e. shift the spectrum.
+
+    Attributes
+    ----------
+    dataset: :class:`cwepr.dataset.Dataset`
+        dataset of the field standard measurement
     """
 
-    """
     def __init__(self, dataset=None):
         super().__init__()
         self.parameters["dataset"] = dataset

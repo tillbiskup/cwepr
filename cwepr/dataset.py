@@ -2,13 +2,11 @@
 
 
 import collections as col
-import copy
 import numpy as np
 
 import aspecd
 import aspecd.metadata
 
-import cwepr.io as importers
 import cwepr.metadata
 
 
@@ -44,14 +42,17 @@ class Dataset(aspecd.dataset.ExperimentalDataset):
         ----------
         filename : :class:`str`
             Path including the filename but not the extension.
+
         """
         importer_factory = cwepr.io.ImporterFactoryEPR()
         importer = importer_factory.get_importer(source=filename)
         super().import_from(importer=importer)
 
     def modify_field_values(self):
-        """Fills in all variables concerning the magnetic field and transforms
-        them from gauss to millitesla.
+        """Wrapper method to get all magnetic field data in desired form.
+
+        Fills in all variables concerning the magnetic field as appropriate
+        and transforms them from gauss to millitesla.
         """
         self.metadata.magnetic_field.calculate_values()
         self.metadata.magnetic_field.gauss_to_millitesla()
@@ -68,6 +69,7 @@ class Dataset(aspecd.dataset.ExperimentalDataset):
         metadata: :class:`list`
             Loaded metadata to use. First entry: from infofile;
             Second entry: from spectrometer parameter file.
+
         """
         metadata_mapper = aspecd.metadata.MetadataMapper()
         metadata_mapper.metadata = metadata[0]
@@ -80,19 +82,16 @@ class Dataset(aspecd.dataset.ExperimentalDataset):
             self._check_for_override(metadata_mapper.metadata, data_part)
 
     def _check_for_override(self, data1, data2, name=""):
-        """Check if metadata values from info file are overridden by
-        parameter file.
+        """Check if metadata from info file is overridden by parameter file.
 
-        Compare the keys in the info file dict with those in
-        each part of the dsc/par file to find overrides.
-        Any matching keys are considered to be overriden and
-        a respective note is added to
+        Compare the keys in the info file dict with those in each part of the
+        dsc/par file to find overrides. Any matching keys are considered to be
+        overriden and a respective note is added to
         :attr:`cwepr.metadata.DatasetMetadata.metadata_modifications`.
-
         The method cascades through nested dicts returning a
         'path' of the potential overrides.
-        E.g., when the key 'a' in the sub dict 'b' is found in
-        both dicts the path will be '/b/a'.
+        E.g., when the key 'a' in the sub dict 'b' is found in both dicts the
+        path will be '/b/a'.
 
         Parameters
         ----------
@@ -105,12 +104,13 @@ class Dataset(aspecd.dataset.ExperimentalDataset):
         name: :class:`str`
             Used in the cascade to keep track of the path. This should not
             be set to anything other than the default value.
+
         """
         toplevel = False
         for entry in list(data1.keys()):
             data1[entry.lower()] = data1.pop(entry)
         for entry in data1.keys():
-            if type(data1[entry]) == col.OrderedDict:
+            if isinstance(data1[entry], col.OrderedDict):
                 toplevel = True
         for entry in data1.keys():
             if entry in data2.keys():
@@ -137,7 +137,7 @@ class Dataset(aspecd.dataset.ExperimentalDataset):
             Importer instance to use for the import.
 
         Raises
-        ----------
+        ------
         MissingImporterError :
             Raised, when no importer is provided
 
@@ -161,8 +161,6 @@ class Dataset(aspecd.dataset.ExperimentalDataset):
                                 self.metadata.magnetic_field.step_width.value
                                 * n)
         field_data = np.array(field_points)
-        #intensity_data = np.array(copy.deepcopy(self.data.data))
-        #complete_data = np.array([field_data, intensity_data])
         self.data.axes[0].values = field_data
         self.data.axes[0].quantity = "magnetic field"
         self.data.axes[0].unit = "mT"
@@ -170,14 +168,15 @@ class Dataset(aspecd.dataset.ExperimentalDataset):
 
 
 class DatasetFactory(aspecd.dataset.DatasetFactory):
+    """Implementation of the dataset factory for recipe driven evaluation"""
+
     def __init__(self):
         super().__init__()
         self.importer_factory = cwepr.io.ImporterFactoryEPR()
 
     @staticmethod
     def _create_dataset(source=''):
-        """
-        Implementation of the dataset factory for recipe driven evaluation
+        """Return cwepr dataset.
 
         Parameters
         ----------
@@ -189,7 +188,7 @@ class DatasetFactory(aspecd.dataset.DatasetFactory):
         Returns
         -------
         dataset : :class:`cwepr.dataset.Dataset`
-            Dataset object of appropriate type
+            Dataset object for cwepr package
 
         """
         return cwepr.dataset.Dataset()

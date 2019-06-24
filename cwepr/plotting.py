@@ -21,7 +21,6 @@ class NoIntegralDataProvidedError(Error):
     ----------
     message : :class:`str`
         explanation of the error
-
     """
 
     def __init__(self, message=''):
