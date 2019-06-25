@@ -26,6 +26,7 @@ class BaselineCorrectionComplete(aspecd.processing.ProcessingStep):
         order of the polynomial to be fitted
     percentage: :class:`int`
         percentage of the data to be used for the fit
+
     """
 
     def __init__(self, order=0, percentage=10):
@@ -40,11 +41,12 @@ class BaselineCorrectionComplete(aspecd.processing.ProcessingStep):
         baseline_analysis = self.dataset.analyse(baseline_fit_step)
         self.parameters["baseline_coefficients"] = baseline_analysis.result
         baseline = aspecd.dataset.CalculatedDataset()
-        x = self.dataset.data.axes[0].values
-        baseline.data.axes[0].values = x
+        x_coords = self.dataset.data.axes[0].values
+        baseline.data.axes[0].values = x_coords
         baseline.data.data = np.polyval(np.poly1d(self.parameters[
-                                            "baseline_coefficients"]), x)
-        baseline_correct_step = cwepr.processing.BaselineCorrectionWithClcdDataset(baseline)
+                                        "baseline_coefficients"]), x_coords)
+        baseline_correct_step = \
+            cwepr.processing.BaselineCorrectionWithClcdDataset(baseline)
         self.dataset.process(baseline_correct_step)
 
 
@@ -59,6 +61,7 @@ class FieldCorrectionComplete(aspecd.processing.ProcessingStep):
     ----------
     dataset: :class:`cwepr.dataset.Dataset`
         dataset of the field standard measurement
+
     """
 
     def __init__(self, dataset=None):
@@ -72,5 +75,7 @@ class FieldCorrectionComplete(aspecd.processing.ProcessingStep):
         field_analysis = self.parameters["dataset"].analyse(
             value_finding_step)
         self.parameters["correction_value"] = field_analysis.result
-        correction_step = cwepr.processing.FieldCorrection(self.parameters["correction_value"])
+        correction_step = \
+            cwepr.processing.FieldCorrection(self.parameters[
+                                             "correction_value"])
         self.dataset.process(correction_step)

@@ -29,6 +29,7 @@ class WrongOrderError(Error):
     ----------
     message : `str`
         explanation of the error
+
     """
 
     def __init__(self, message=''):
@@ -46,6 +47,7 @@ class NotEnoughDatasetsError(Error):
     ----------
     message : :class:`str`
         explanation of the error
+
     """
 
     def __init__(self, message=''):
@@ -60,6 +62,7 @@ class NoCommonspaceError(Error):
     ----------
     message : :class:`str`
         explanation of the error
+
     """
 
     def __init__(self, message=''):
@@ -76,6 +79,7 @@ class SpectrumNotIntegratedError(Error):
     ----------
     message : :class:`str`
         explanation of the error
+
     """
 
     def __init__(self, message=''):
@@ -111,6 +115,7 @@ class FieldCorrectionValueFinding(aspecd.analysis.SingleAnalysisStep):
     nu_value: :class:`float`
         Frequency value of the measurement used to calculate the expected
         field value.
+
     """
 
     VALUE_G_LILIF = 2.002293
@@ -166,6 +171,7 @@ class BaselineFitting(aspecd.analysis.SingleAnalysisStep):
         10 % right.
 
     """
+
     def __init__(self, order=0, percentage=10):
         super().__init__()
         self.parameters["order"] = order
@@ -238,6 +244,7 @@ class IntegrationIndefinite(aspecd.analysis.SingleAnalysisStep):
     y: :class:`list`
         y values to use for the integration. If this is omitted the y values
         of the dataset are used.
+
     """
 
     def __init__(self):
@@ -261,6 +268,7 @@ class IntegrationDefinite(aspecd.analysis.SingleAnalysisStep):
     ----------
     y: :class:`list`
         y values to use for the integration.
+
     """
 
     def __init__(self):
@@ -273,10 +281,10 @@ class IntegrationDefinite(aspecd.analysis.SingleAnalysisStep):
         The x values from the dataset are used.
 
         """
-        x = self.dataset.data.axes[0].values
-        y = self.dataset.data.data
+        x_coords = self.dataset.data.axes[0].values
+        y_coords = self.dataset.data.data
 
-        integral = np.trapz(y, x)
+        integral = np.trapz(y_coords, x_coords)
         self.result = integral
 
 
@@ -298,6 +306,7 @@ class IntegrationVerification(aspecd.analysis.SingleAnalysisStep):
     threshold: :class:`float`
         Threshold for the integral. If the integral determined is smaller
         the preprocessing is considered to have been successful.
+
     """
 
     def __init__(self, y, percentage=15, threshold=0.001):
@@ -373,6 +382,7 @@ class CommonspaceAndDelimiters(aspecd.analysis.SingleAnalysisStep):
     NoCommonspaceError
         Exception raised when the size of the common definition range is
         considered too low (vide supra).
+
     """
 
     def __init__(self, datasets, threshold=0.05):
@@ -422,22 +432,22 @@ class CommonspaceAndDelimiters(aspecd.analysis.SingleAnalysisStep):
 
         """
         for dataset in self.parameters["datasets"]:
-            x = dataset.data.axes[0].values
-            if x[-1] < x[0]:
+            x_coords = dataset.data.axes[0].values
+            if x_coords[-1] < x_coords[0]:
                 dataset_name = dataset.id
                 raise WrongOrderError("Dataset " + dataset_name +
                                       " has x values in the wrong order.")
 
         for dataset in self.parameters["datasets"]:
-            x = dataset.data.axes[0].values
-            self.start_points.append(x[0])
-            self.end_points.append(x[-1])
-            if self.minimum is None or x[0] < self.minimum:
-                self.minimum = x[0]
-            if self.maximum is None or x[-1] > self.maximum:
-                self.maximum = x[-1]
-            if self.minimal_width is None or (x[-1] - x[0]) < self.minimal_width:
-                self.minimal_width = x[-1] - x[0]
+            x_coords = dataset.data.axes[0].values
+            self.start_points.append(x_coords[0])
+            self.end_points.append(x_coords[-1])
+            if self.minimum is None or x_coords[0] < self.minimum:
+                self.minimum = x_coords[0]
+            if self.maximum is None or x_coords[-1] > self.maximum:
+                self.maximum = x_coords[-1]
+            if self.minimal_width is None or (x_coords[-1] - x_coords[0]) < self.minimal_width:
+                self.minimal_width = x_coords[-1] - x_coords[0]
 
     def check_commonspace_for_two(self, index1, index2):
         """Compares the definition ranges of two datasets.
@@ -476,7 +486,7 @@ class CommonspaceAndDelimiters(aspecd.analysis.SingleAnalysisStep):
             name1 = self.parameters["datasets"][index1].id
             name2 = self.parameters["datasets"][index1].id
             errormessage = ("Datasets " + name1 + " and " + name2 +
-                                     "have not enough commonspace.")
+                            "have not enough commonspace.")
             raise NoCommonspaceError(errormessage)
 
     def _check_commonspace_for_all(self):
@@ -486,10 +496,11 @@ class CommonspaceAndDelimiters(aspecd.analysis.SingleAnalysisStep):
             Avoid calculating every combination twice.
 
         """
-        for n in range(len(self.parameters["datasets"])):
-            for m in range(len(self.parameters["datasets"])):
-                if n != m:
-                    self.check_commonspace_for_two(n, m)
+        for dataset_index_1 in range(len(self.parameters["datasets"])):
+            for dataset_index_2 in range(len(self.parameters["datasets"])):
+                if dataset_index_1 != dataset_index_2:
+                    self.check_commonspace_for_two(dataset_index_1,
+                                                   dataset_index_2)
 
     def _find_all_delimiter_points(self):
         """Find points where a spectrum starts or ends.
@@ -509,15 +520,15 @@ class CommonspaceAndDelimiters(aspecd.analysis.SingleAnalysisStep):
         delimiter_points = self.start_points
         delimiter_points.extend(self.end_points)
         points_close_to_edge = list()
-        for n in range(len(delimiter_points)):
-            if (math.fabs(delimiter_points[n] - self.minimum) <
+        for data_value, data_index in enumerate(delimiter_points):
+            if (math.fabs(data_value - self.minimum) <
                 0.03 * self.minimal_width) or (
-                    math.fabs(delimiter_points[n] - self.maximum) <
+                    math.fabs(data_value - self.maximum) <
                     0.03 * self.minimal_width):
-                points_close_to_edge.append(n)
+                points_close_to_edge.append(data_index)
         points_close_to_edge.reverse()
-        for n in range(len(points_close_to_edge)):
-            del delimiter_points[n]
+        for data_index in range(len(points_close_to_edge)):
+            del delimiter_points[data_index]
         return delimiter_points
 
     def _eliminate_close_delimiters(self, points):
@@ -534,9 +545,10 @@ class CommonspaceAndDelimiters(aspecd.analysis.SingleAnalysisStep):
         """
         close_points = list()
         while True:
-            for n in range(len(points) - 1):
-                if math.fabs(points[n] - points[n + 1]) < 0.03 * self.minimal_width:
-                    close_points.append([n, n + 1])
+            for data_index in range(len(points) - 1):
+                if math.fabs(points[data_index] - points[data_index + 1]) < \
+                        0.03 * self.minimal_width:
+                    close_points.append([data_index, data_index + 1])
             if close_points != list():
                 close_points.reverse()
                 for pair in close_points:
@@ -548,6 +560,7 @@ class CommonspaceAndDelimiters(aspecd.analysis.SingleAnalysisStep):
 
 class PeakToPeakLinewidth(aspecd.analysis.SingleAnalysisStep):
     """Linewidth measurement (peak to peak in derivative)"""
+
     def __init__(self):
         super().__init__()
         self.description = "Determine peak-to-peak linewidth"
@@ -578,6 +591,7 @@ class PeakToPeakLinewidth(aspecd.analysis.SingleAnalysisStep):
 
 class LinewidthFWHM(aspecd.analysis.SingleAnalysisStep):
     """Linewidth measurement at half maximum"""
+
     def __init__(self):
         super().__init__()
         self.description = "Determine linewidth (full width at half max; FWHM)"
@@ -601,10 +615,11 @@ class LinewidthFWHM(aspecd.analysis.SingleAnalysisStep):
         index_max = np.argmax(self.dataset.data.axes[0].values)
         spectral_data = copy.deepcopy(self.dataset.data.data)
         maximum = self.dataset.data.axes[0].values[index_max]
-        for n in range(len(spectral_data)):
-            spectral_data[n] -= maximum / 2
-            if spectral_data[n] < 0:
-                spectral_data[n] *= -1
+        for data_value, data_index in enumerate(spectral_data):
+            data_value -= maximum / 2
+            if data_value < 0:
+                data_value *= -1
+            spectral_data[data_index] = data_value
         left_zero_cross_index = np.argmin(spectral_data[:index_max])
         right_zero_cross_index = np.argmin(spectral_data[index_max:])
         linewidth = right_zero_cross_index - left_zero_cross_index
@@ -623,6 +638,7 @@ class SignalToNoise(aspecd.analysis.SingleAnalysisStep):
     percentage: :class:`int`
         percentage of the spectrum to be considered edge part on any side
         (i.e. 10% means 10% on each end).
+
     """
 
     def __init__(self, percentage=10):
@@ -639,9 +655,9 @@ class SignalToNoise(aspecd.analysis.SingleAnalysisStep):
         """
         data_copy = copy.deepcopy(self.dataset.data.data)
         data_list_absolute = data_copy.to_list()
-        for n in range(len(data_list_absolute)):
-            if data_list_absolute[n] < 0:
-                data_list_absolute[n] *= -1
+        for data_value, data_index in enumerate(data_list_absolute):
+            if data_value < 0:
+                data_list_absolute[data_index] *= -1
         signal_max = max(data_list_absolute)
         noise_max = self._get_noise_maximum(data_list_absolute)
         self.result = signal_max / noise_max

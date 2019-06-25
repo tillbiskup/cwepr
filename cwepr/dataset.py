@@ -156,10 +156,10 @@ class Dataset(aspecd.dataset.ExperimentalDataset):
         Both sets are combined and transformed into a numpy array.
         """
         field_points = []
-        for n in range(self.metadata.magnetic_field.step_count):
+        for step_index in range(self.metadata.magnetic_field.step_count):
             field_points.append(self.metadata.magnetic_field.field_min.value +
                                 self.metadata.magnetic_field.step_width.value
-                                * n)
+                                * step_index)
         field_data = np.array(field_points)
         self.data.axes[0].values = field_data
         self.data.axes[0].quantity = "magnetic field"

@@ -2,7 +2,8 @@
 
 Supplementary data for a dataset, i.e. everything that is not
 part of the literal experimental results, such as identifier,
-date of the experiment..."""
+date of the experiment...
+"""
 
 
 import aspecd.metadata
@@ -15,16 +16,18 @@ class Error(Exception):
 
 
 class NotEnoughValuesError(Error):
-    """Exception raised when information for 
+    """Exception raised when magnetic field data cannot be calculated.
 
-    not enough different values
-    are provided to calculate all other values.
+    This happens when not enough different values are provided to calculate all
+    other values.
 
     Attributes
     ----------
     message : `str`
         explanation of the error
+
     """
+
     def __init__(self, message=''):
         super().__init__()
         self.message = message
@@ -42,6 +45,7 @@ class UnequalUnitsError(Error):
         explanation of the error
 
     """
+
     def __init__(self, message=''):
         super().__init__()
         self.message = message
@@ -81,6 +85,7 @@ class DatasetMetadata(aspecd.metadata.ExperimentalDatasetMetadata):
         e.g, overrides.
 
     """
+
     def __init__(self):
         super().__init__()
         self.experiment = Experiment()
@@ -180,42 +185,35 @@ class BFieldData(aspecd.metadata.Metadata):
             subtracted that have unequal units.
 
         """
+        units_errormessage = "Quantities with different units provided."
         if self.can_calculate():
             self.step_count = int(self.step_count)
             if self.field_width.value == 0.:
                 if self.field_max.unit != self.field_min.unit:
-                    raise UnequalUnitsError(
-                                            """Quantities with different units 
-                                            provided.""")
+                    raise UnequalUnitsError(units_errormessage)
                 self.field_width.value = self.field_max.value - \
                     self.field_min.value
                 self.field_width.unit = self.field_max.unit
             if self.field_max.value == 0.:
                 if self.field_width.unit != self.field_min.unit:
-                    raise UnequalUnitsError(
-                                            """Quantities with different units 
-                                            provided.""")
+                    raise UnequalUnitsError(units_errormessage)
                 self.field_max.value = self.field_min.value + \
-                                       self.field_width.value
+                    self.field_width.value
                 self.field_max.unit = self.field_min.unit
             if self.field_min.value == 0.:
                 if self.field_max.unit != self.field_width.unit:
-                    raise UnequalUnitsError(
-                                            """Quantities with different units 
-                                            provided.""")
+                    raise UnequalUnitsError(units_errormessage)
                 self.field_min.value = self.field_max.value - \
-                                       self.field_width.value
+                    self.field_width.value
                 self.field_min.unit = self.field_max.unit
             if self.step_count == 0:
                 if self.field_width.unit != self.step_width.unit:
-                    raise UnequalUnitsError(
-                                            """Quantities with different units 
-                                            provided.""")
+                    raise UnequalUnitsError(units_errormessage)
                 self.step_count = int(round((self.field_width.value /
                                              self.step_width.value), 0)) + 1
             if self.step_width.value == 0.:
                 self.step_width.value = self.field_width.value / \
-                                        (self.step_count - 1)
+                    (self.step_count - 1)
                 self.step_width.unit = self.field_max.unit
 
     def gauss_to_millitesla(self):
@@ -228,6 +226,7 @@ class BFieldData(aspecd.metadata.Metadata):
 
 class Experiment(aspecd.metadata.Metadata):
     """General information on what type of experiment was performed."""
+
     def __init__(self):
         super().__init__()
         self.type = ""
@@ -239,6 +238,7 @@ class Experiment(aspecd.metadata.Metadata):
 
 class SpectrometerInfo(aspecd.metadata.Metadata):
     """Metadata information on what type of spectrometer was used."""
+
     def __init__(self):
         super().__init__()
         self.model = ""

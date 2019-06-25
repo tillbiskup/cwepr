@@ -13,11 +13,13 @@ import aspecd.metadata
 import aspecd.utils
 import aspecd.dataset
 
+
 from cwepr.utils import are_intensity_values_plausible
 
 
 class Error(Exception):
     """Base class for exceptions in this module."""
+
     pass
 
 
@@ -28,6 +30,7 @@ class UnsupportedDataFormatError(Error):
     ----------
     message : :class:`str`
         explanation of the error
+
     """
 
     def __init__(self, message=''):
@@ -44,6 +47,7 @@ class NoMatchingFilePairError(Error):
     ----------
     message : :class:`str`
         explanation of the error
+
     """
 
     def __init__(self, message=''):
@@ -58,6 +62,7 @@ class MissingInfoFileError(Error):
     ----------
     message : :class:`str`
         explanation of the error
+
     """
 
     def __init__(self, message=''):
@@ -75,6 +80,7 @@ class ImportMetadataOnlyError(Error):
     ----------
     message : :class:`str`
         explanation of the error
+
     """
 
     def __init__(self, message=''):
@@ -93,6 +99,7 @@ class ExperimentTypeError(Error):
     ----------
     message : `str`
         explanation of the error
+
     """
 
     def __init__(self, message=''):
@@ -122,6 +129,7 @@ class ImporterEPRGeneral(aspecd.io.DatasetImporter):
         Raised if no pair of files matching any one supported format
         can be found. Currently Bruker BES3T, EMX and ESP/ECS formats
         are supported.
+
     """
 
     supported_formats = {"BES3T": [".DTA", ".DSC"], "Other": [".spc", ".par"]}
@@ -187,7 +195,7 @@ class ImporterBES3T(ImporterEPRGeneral):
         complete_filename = self.source + ".DTA"
         raw_data = np.fromfile(complete_filename)
         if not are_intensity_values_plausible(raw_data):
-            raw_data = raw_data.byteswap()
+            raw_data.byteswap()
         self.dataset.data.data = raw_data
         metadata = self.import_metadata()
         self.dataset.map_metadata_and_check_for_overrides(metadata)
@@ -299,9 +307,9 @@ class ParserDSC:
 
     @staticmethod
     def _subdivide_part1(part1):
-        r"""Pre process the first part ("Descriptor Information")
-        of a \*.DSC file.
+        r"""Pre process the first part of a \*.DSC file.
 
+        First part corresponds to "Descriptor Information.
         The crude string is split into subdivisions; the delimiter
         employed allows to detect the different headlines made up
         of three lines starting with asterisks, the center line
@@ -540,11 +548,11 @@ class ParserDSC:
         """
         dsc_mapper = aspecd.metadata.MetadataMapper()
         mapped_data = []
-        for n in range(len(dsc_data)):
-            dsc_mapper.metadata = dsc_data[n]
-            if n == 0:
+        for data_part, data_index in enumerate(dsc_data):
+            dsc_mapper.metadata = data_part
+            if data_index == 0:
                 mapped_data.append(self._map_descriptor(dsc_mapper))
-            if n == 2:
+            if data_index == 2:
                 mapped_data.append(self._map_device(dsc_mapper))
         return mapped_data
 
@@ -568,7 +576,7 @@ class ParserDSC:
              ["XWID", "field_width"]],
             ["", "rename_key",
              ["Data Ranges and Resolutions:", "magnetic_field"]]
-                          ]
+        ]
         mapper.map()
         return mapper.metadata
 
@@ -713,12 +721,12 @@ class ParserPAR:
                         break
             line_content = line.split(" ", separating_whitespace)
             parts_to_remove = list()
-            for n in range(len(line_content)):
-                if line_content[n] == "":
-                    parts_to_remove.append(n)
+            for data_value, data_index in enumerate(line_content):
+                if data_value == "":
+                    parts_to_remove.append(data_index)
             parts_to_remove.reverse()
-            for n in parts_to_remove:
-                del line_content[n]
+            for part in parts_to_remove:
+                del line_content[part]
             content_parsed[line_content[0]] = line_content[1]
         return content_parsed
 
@@ -804,15 +812,14 @@ class ImporterFactoryEPR(aspecd.io.DatasetImporterFactory):
             is supported.
 
         """
-        for k, v in self.supported_formats.items():
-            if os.path.isfile((source + v[0])) and os.path.isfile(
-                (source + v[1])
+        for key, value in self.supported_formats.items():
+            if os.path.isfile((source + value[0])) and os.path.isfile(
+                (source + value[1])
             ):
-                return k
-        else:
-            msg = "No file pair matching a single format was found for path: "\
-                + source
-            raise NoMatchingFilePairError(message=msg)
+                return key
+        msg = "No file pair matching a single format was found for path: "\
+            + source
+        raise NoMatchingFilePairError(message=msg)
 
 
 class ExporterASCII(aspecd.io.DatasetExporter):
@@ -870,9 +877,9 @@ class ExporterASCII(aspecd.io.DatasetExporter):
             Dictionary relieved of arrays.
 
         """
-        for k, v in dictionary.items():
-            if isinstance(v, dict):
-                dictionary[k] = self._remove_arrays(v)
-            if type(v) == np.array:
-                dictionary[k].to_list()
+        for key, value in dictionary.items():
+            if isinstance(value, dict):
+                dictionary[key] = self._remove_arrays(value)
+            if type(value) == np.array:
+                dictionary[key].to_list()
         return dictionary

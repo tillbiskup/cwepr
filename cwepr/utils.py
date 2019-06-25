@@ -1,6 +1,4 @@
-"""This module contains routines that are rather general and that are employed
-in multiple other routines.
-"""
+"""Routines that are rather general."""
 
 
 def are_intensity_values_plausible(array):
@@ -16,9 +14,10 @@ def are_intensity_values_plausible(array):
     Parameters
     ----------
     array: :class:`numpy.array`
-    Array to check the values of.
+        Array to check the values of.
+
     """
-    for v in array:
-        if v > 10 ** 4 or v < 10 ** -10:
+    for value in array:
+        if value > 10 ** 4 or value < 10 ** -10:
             return False
     return True
