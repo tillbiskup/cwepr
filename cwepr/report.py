@@ -10,7 +10,7 @@ import aspecd.report
 
 
 class ReporterCWEPR(aspecd.report.LaTeXReporter):
-    """Report implementaio for cwepr module."""
+    """Report implementation for cwepr module."""
 
     def __init__(self):
         super().__init__()

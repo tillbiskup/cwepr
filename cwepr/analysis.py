@@ -109,13 +109,6 @@ class FieldCorrectionValueFinding(aspecd.analysis.SingleAnalysisStep):
         h = 6.62607*10**(-34)
 
     Reference: Rev. Mod. Phys. 2016, 88, 035009.
-
-    Parameters
-    ----------
-    nu_value: :class:`float`
-        Frequency value of the measurement used to calculate the expected
-        field value.
-
     """
 
     VALUE_G_LILIF = 2.002293
@@ -194,7 +187,8 @@ class BaselineFitting(aspecd.analysis.SingleAnalysisStep):
             math.ceil(number_of_points * self.parameters["percentage"] / 100.0)
         dataset_copy_y = copy.deepcopy(self.dataset.data.data)
         data_list_y = dataset_copy_y.tolist()
-        data_list_x = (copy.deepcopy(self.dataset.data.axes[0].values)).tolist()
+        data_list_x = \
+            (copy.deepcopy(self.dataset.data.axes[0].values)).tolist()
         points_to_use_x = \
             self._get_points_to_use(data_list_x, points_per_side)
         points_to_use_y = \
@@ -238,13 +232,6 @@ class IntegrationIndefinite(aspecd.analysis.SingleAnalysisStep):
 
     Indefinite integration yields a new array of y values of the integrated
     function.
-
-    Attributes
-    ----------
-    y: :class:`list`
-        y values to use for the integration. If this is omitted the y values
-        of the dataset are used.
-
     """
 
     def __init__(self):
@@ -262,14 +249,7 @@ class IntegrationIndefinite(aspecd.analysis.SingleAnalysisStep):
 
 
 class IntegrationDefinite(aspecd.analysis.SingleAnalysisStep):
-    """Makes a definite integration, i.e. calculates the area under the curve.
-
-    Attributes
-    ----------
-    y: :class:`list`
-        y values to use for the integration.
-
-    """
+    """Make definite integration, i.e. calculates the area under the curve."""
 
     def __init__(self):
         super().__init__()
@@ -326,10 +306,13 @@ class IntegrationVerification(aspecd.analysis.SingleAnalysisStep):
         The result is a boolean: Is the integral lower than the threshold?
 
         """
-        number_of_points = math.ceil(len(self.y) * self.percentage / 100.0)
-        points_y = self.parameters["y"][len(self.parameters["y"]) - number_of_points - 1:]
+        number_of_points = math.ceil(len(self.parameters["y"]) *
+                                     self.percentage / 100.0)
+        points_y = self.parameters["y"][len(self.parameters["y"]) -
+                                        number_of_points - 1:]
         points_x = \
-            self.dataset.data.axes[0].values[len(self.parameters["y"]) - number_of_points - 1:]
+            self.dataset.data.axes[0].values[len(self.parameters["y"]) -
+                                             number_of_points - 1:]
         integral = np.trapz(points_y, points_x)
         self.result = (integral < self.threshold)
 
@@ -414,8 +397,8 @@ class CommonspaceAndDelimiters(aspecd.analysis.SingleAnalysisStep):
         """
         if len(self.parameters["datasets"]) < 2:
             raise NotEnoughDatasetsError(
-                "Number of datasets( " + str(len(self.parameters["datasets"])) +
-                ") is too low!")
+                "Number of datasets( " + str(len(self.parameters["datasets"]))
+                + ") is too low!")
         self._acquire_data()
         self._check_commonspace_for_all()
         self.result = self._find_all_delimiter_points()
@@ -446,7 +429,8 @@ class CommonspaceAndDelimiters(aspecd.analysis.SingleAnalysisStep):
                 self.minimum = x_coords[0]
             if self.maximum is None or x_coords[-1] > self.maximum:
                 self.maximum = x_coords[-1]
-            if self.minimal_width is None or (x_coords[-1] - x_coords[0]) < self.minimal_width:
+            if (self.minimal_width is None or (x_coords[-1] - x_coords[0]) <
+                    self.minimal_width):
                 self.minimal_width = x_coords[-1] - x_coords[0]
 
     def check_commonspace_for_two(self, index1, index2):
@@ -479,10 +463,12 @@ class CommonspaceAndDelimiters(aspecd.analysis.SingleAnalysisStep):
         width1 = self.end_points[index1] - self.start_points[index1]
         width2 = self.end_points[index2] - self.start_points[index2]
         width_delta = math.fabs(width1 - width2)
-        if (math.fabs(self.start_points[index1] - self.start_points[index2]) > (
-                width_delta + self.parameters["threshold"] * (min(width1, width2)))) or (
+        if (math.fabs(self.start_points[index1] - self.start_points[index2])
+            > (width_delta + self.parameters["threshold"] *
+                (min(width1, width2)))) or (
             math.fabs(self.end_points[index1] - self.end_points[index2]) > (
-                width_delta + self.parameters["threshold"] * (min(width1, width2)))):
+                width_delta + self.parameters["threshold"] *
+                (min(width1, width2)))):
             name1 = self.parameters["datasets"][index1].id
             name2 = self.parameters["datasets"][index1].id
             errormessage = ("Datasets " + name1 + " and " + name2 +
@@ -520,7 +506,7 @@ class CommonspaceAndDelimiters(aspecd.analysis.SingleAnalysisStep):
         delimiter_points = self.start_points
         delimiter_points.extend(self.end_points)
         points_close_to_edge = list()
-        for data_value, data_index in enumerate(delimiter_points):
+        for data_index, data_value in enumerate(delimiter_points):
             if (math.fabs(data_value - self.minimum) <
                 0.03 * self.minimal_width) or (
                     math.fabs(data_value - self.maximum) <
@@ -615,7 +601,7 @@ class LinewidthFWHM(aspecd.analysis.SingleAnalysisStep):
         index_max = np.argmax(self.dataset.data.axes[0].values)
         spectral_data = copy.deepcopy(self.dataset.data.data)
         maximum = self.dataset.data.axes[0].values[index_max]
-        for data_value, data_index in enumerate(spectral_data):
+        for data_index, data_value in enumerate(spectral_data):
             data_value -= maximum / 2
             if data_value < 0:
                 data_value *= -1
@@ -655,7 +641,7 @@ class SignalToNoise(aspecd.analysis.SingleAnalysisStep):
         """
         data_copy = copy.deepcopy(self.dataset.data.data)
         data_list_absolute = data_copy.to_list()
-        for data_value, data_index in enumerate(data_list_absolute):
+        for data_index, data_value in enumerate(data_list_absolute):
             if data_value < 0:
                 data_list_absolute[data_index] *= -1
         signal_max = max(data_list_absolute)

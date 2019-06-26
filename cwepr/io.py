@@ -264,17 +264,17 @@ class ParserDSC:
 
         Parameters
         ----------
-        parsed_dsc_data: :class:`dict`
+        parsed_dsc_data: :class:`list`
             Original data.
 
         Returns
         -------
-        parsed_dsc_data: :class:`dict`
+        parsed_dsc_data: :class:`list`
             Data with units added.
 
         """
-        parsed_dsc_data[0]["Data Ranges and Resolutions:"]["XMIN"] += " Gs"
-        parsed_dsc_data[0]["Data Ranges and Resolutions:"]["XWID"] += " Gs"
+        parsed_dsc_data[0]["Data Ranges and Resolutions:"]["XMIN"] += " G"
+        parsed_dsc_data[0]["Data Ranges and Resolutions:"]["XWID"] += " G"
         return parsed_dsc_data
 
     @staticmethod
@@ -396,7 +396,8 @@ class ParserDSC:
                             param_count += 1
                         else:
                             break
-                    final_delimiter = (delimiter_width - param_count) * delimiter
+                    final_delimiter = (delimiter_width - param_count) * \
+                        delimiter
                 else:
                     final_delimiter = delimiter
                 line_split = line.split(final_delimiter)
@@ -548,7 +549,7 @@ class ParserDSC:
         """
         dsc_mapper = aspecd.metadata.MetadataMapper()
         mapped_data = []
-        for data_part, data_index in enumerate(dsc_data):
+        for data_index, data_part in enumerate(dsc_data):
             dsc_mapper.metadata = data_part
             if data_index == 0:
                 mapped_data.append(self._map_descriptor(dsc_mapper))
@@ -721,7 +722,7 @@ class ParserPAR:
                         break
             line_content = line.split(" ", separating_whitespace)
             parts_to_remove = list()
-            for data_value, data_index in enumerate(line_content):
+            for data_index, data_value in enumerate(line_content):
                 if data_value == "":
                     parts_to_remove.append(data_index)
             parts_to_remove.reverse()
@@ -880,6 +881,6 @@ class ExporterASCII(aspecd.io.DatasetExporter):
         for key, value in dictionary.items():
             if isinstance(value, dict):
                 dictionary[key] = self._remove_arrays(value)
-            if type(value) == np.array:
+            if isinstance(value, np.ndarray):
                 dictionary[key].to_list()
         return dictionary

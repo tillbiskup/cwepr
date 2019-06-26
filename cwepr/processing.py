@@ -158,7 +158,8 @@ class BaselineCorrection(aspecd.processing.ProcessingStep):
         values_to_subtract = np.polyval(
             np.poly1d(self.parameters["coeffs"]), x_coords)
         for data_index in range(len(list(self.dataset.data.data))):
-            self.dataset.data.data[data_index] -= values_to_subtract[data_index]
+            self.dataset.data.data[data_index] -= \
+                values_to_subtract[data_index]
 
 
 class BaselineCorrectionWithClcdDataset(aspecd.processing.ProcessingStep):
@@ -184,7 +185,8 @@ class BaselineCorrectionWithClcdDataset(aspecd.processing.ProcessingStep):
         """
         values_to_subtract = self.parameters["baseline_dataset"].data.data
         for data_index in range(len(list(self.dataset.data.data))):
-            self.dataset.data.data[data_index] -= values_to_subtract[data_index]
+            self.dataset.data.data[data_index] -= \
+                values_to_subtract[data_index]
 
 
 class SubtractSpectrum(aspecd.processing.ProcessingStep):
@@ -385,5 +387,6 @@ class IntegrationIndefinite(aspecd.processing.ProcessingStep):
         x_coords = self.dataset.data.axes[0].values
         y_coords = self.dataset.data.data
 
-        integral_values = scipy.integrate.cumtrapz(y_coords, x_coords, initial=0)
+        integral_values = \
+            scipy.integrate.cumtrapz(y_coords, x_coords, initial=0)
         self.dataset.data.data = integral_values

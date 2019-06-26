@@ -188,33 +188,42 @@ class BFieldData(aspecd.metadata.Metadata):
         units_errormessage = "Quantities with different units provided."
         if self.can_calculate():
             self.step_count = int(self.step_count)
-            if self.field_width.value == 0.:
-                if self.field_max.unit != self.field_min.unit:
-                    raise UnequalUnitsError(units_errormessage)
-                self.field_width.value = self.field_max.value - \
-                    self.field_min.value
-                self.field_width.unit = self.field_max.unit
-            if self.field_max.value == 0.:
-                if self.field_width.unit != self.field_min.unit:
-                    raise UnequalUnitsError(units_errormessage)
-                self.field_max.value = self.field_min.value + \
-                    self.field_width.value
-                self.field_max.unit = self.field_min.unit
-            if self.field_min.value == 0.:
-                if self.field_max.unit != self.field_width.unit:
-                    raise UnequalUnitsError(units_errormessage)
-                self.field_min.value = self.field_max.value - \
-                    self.field_width.value
-                self.field_min.unit = self.field_max.unit
-            if self.step_count == 0:
-                if self.field_width.unit != self.step_width.unit:
-                    raise UnequalUnitsError(units_errormessage)
-                self.step_count = int(round((self.field_width.value /
-                                             self.step_width.value), 0)) + 1
-            if self.step_width.value == 0.:
-                self.step_width.value = self.field_width.value / \
-                    (self.step_count - 1)
-                self.step_width.unit = self.field_max.unit
+            self._calc_field_width(units_errormessage)
+            self._calc_field_limits(units_errormessage)
+            self._calc_step_data(units_errormessage)
+
+    def _calc_field_width(self, units_errormessage):
+        if self.field_width.value == 0.:
+            if self.field_max.unit != self.field_min.unit:
+                raise UnequalUnitsError(units_errormessage)
+            self.field_width.value = self.field_max.value - \
+                self.field_min.value
+            self.field_width.unit = self.field_max.unit
+
+    def _calc_field_limits(self, units_errormessage):
+        if self.field_max.value == 0.:
+            if self.field_width.unit != self.field_min.unit:
+                raise UnequalUnitsError(units_errormessage)
+            self.field_max.value = self.field_min.value + \
+                self.field_width.value
+            self.field_max.unit = self.field_min.unit
+        if self.field_min.value == 0.:
+            if self.field_max.unit != self.field_width.unit:
+                raise UnequalUnitsError(units_errormessage)
+            self.field_min.value = self.field_max.value - \
+                self.field_width.value
+            self.field_min.unit = self.field_max.unit
+
+    def _calc_step_data(self, units_errormessage):
+        if self.step_count == 0:
+            if self.field_width.unit != self.step_width.unit:
+                raise UnequalUnitsError(units_errormessage)
+            self.step_count = int(round((self.field_width.value /
+                                         self.step_width.value), 0)) + 1
+        if self.step_width.value == 0.:
+            self.step_width.value = self.field_width.value / \
+                (self.step_count - 1)
+            self.step_width.unit = self.field_max.unit
 
     def gauss_to_millitesla(self):
         """Transform magnetic field parameters from gauss to millitesla."""

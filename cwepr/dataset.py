@@ -7,6 +7,7 @@ import numpy as np
 import aspecd
 import aspecd.metadata
 
+import cwepr.io
 import cwepr.metadata
 
 

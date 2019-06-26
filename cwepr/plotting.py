@@ -82,18 +82,10 @@ class BaselineControlPlotter(aspecd.plotting.SinglePlotter):
 
 
 class SimpleSpectrumPlotter(aspecd.plotting.SinglePlotter):
-    """Simple but highly customizable plotter for a single spectrum.
-
-    Attributes
-    ----------
-    settings: :class:`dict`
-        Values used for customization.
-
-    """
+    """Simple but highly customizable plotter for a single spectrum."""
 
     def __init__(self):
         super().__init__()
-        #self.settings = dict()
         self._set_defaults()
 
     def _set_defaults(self):
@@ -105,6 +97,7 @@ class SimpleSpectrumPlotter(aspecd.plotting.SinglePlotter):
         self.set_zeroline_thickness(0.5)
         self.set_zeroline_color("black")
         self.set_fit_axis_to_spectrum(True)
+        # noinspection PyTypeChecker
         self.set_x_axis_limits(None, None)
 
     def set_color(self, color):
@@ -243,14 +236,15 @@ class SimpleSpectrumPlotter(aspecd.plotting.SinglePlotter):
 
         Parameters
         ----------
-        x: :class:`list`
+        x_coords: :class:`list`
             x values for plotting
-        y: :class:`list`
+        y_coords: :class:`list`
             y values for plotting
 
         """
         if self.parameters["draw_zero"]:
-            plt.plot(x_coords, 0 * x_coords, lw=self.parameters["zero_thickness"],
+            plt.plot(x_coords, 0 * x_coords,
+                     lw=self.parameters["zero_thickness"],
                      color=self.parameters["zero_color"])
         plt.plot(x_coords, y_coords, label=self.parameters["curve_name"],
                  color=self.parameters["color"])
@@ -264,7 +258,7 @@ class SimpleSpectrumPlotter(aspecd.plotting.SinglePlotter):
 
         Parameters
         ----------
-        x: :class:`list`
+        x_coords: :class:`list`
             x values to plot. These are necessary for determining the
             correct limits.
 
@@ -377,7 +371,8 @@ class SpectrumAndIntegralPlotter(SimpleSpectrumPlotter):
 
         """
         if self.parameters["draw_zero"]:
-            plt.plot(x_coords, 0 * x_coords, lw=self.parameters["zero_thickness"],
+            plt.plot(x_coords, 0 * x_coords,
+                     lw=self.parameters["zero_thickness"],
                      color=self.parameters["zero_color"])
         plt.plot(x_coords, y_coords, label=self.parameters["curve_name"],
                  color=self.parameters["color"])
@@ -415,7 +410,6 @@ class Multiplotter(aspecd.plotting.MultiPlotter):
         self.integrals = integrals
         if self.integrals is None:
             self.integrals = list()
-        #self.settings = dict()
         self._set_defaults()
 
     def _set_defaults(self):
@@ -552,7 +546,8 @@ class Multiplotter(aspecd.plotting.MultiPlotter):
         x_axes = list()
         self._make_labels()
         for curve_index in range(len(self.parameters["datasets"])):
-            x_coords = self.parameters["datasets"][curve_index].data.axes[0].values
+            x_coords = \
+                self.parameters["datasets"][curve_index].data.axes[0].values
             y_coords = self.parameters["datasets"][curve_index].data.data
             x_axes.append(x_coords)
             self._plot_lines(x_coords, y_coords, curve_index)
@@ -594,9 +589,9 @@ class Multiplotter(aspecd.plotting.MultiPlotter):
 
         Parameters
         ----------
-        x: :class:`list`
+        x_coords: :class:`list`
             x values for plotting
-        y: :class:`list`
+        y_coords: :class:`list`
             y values for plotting
 
         """
@@ -644,7 +639,7 @@ class PlotSaver(aspecd.plotting.Saver):
 
         Parameters
         ----------
-        res: :class:`str`
+        res: :class:`int`
             Resolution (dpi)
 
         """

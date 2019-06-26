@@ -18,6 +18,7 @@ setuptools.setup(
     author_email='till@till-biskup.de',
     url='https://www.cwepr.de/',
     packages=setuptools.find_packages(exclude=('tests', 'docs')),
+    license='BSD',
     keywords=[
         'EPR spectroscopy',
     ],
