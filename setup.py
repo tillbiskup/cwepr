@@ -15,8 +15,8 @@ setuptools.setup(
     long_description=readme,
     long_description_content_type='text/x-rst',
     author='Pascal Kirchner, Till Biskup',
-    author_email='',
-    url='',
+    author_email='till@till-biskup.de',
+    url='https://www.cwepr.de/',
     packages=setuptools.find_packages(exclude=('tests', 'docs')),
     keywords=[
         'EPR spectroscopy',
