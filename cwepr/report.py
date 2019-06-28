@@ -2,7 +2,8 @@
 
 This class is needed because....
 
-..todo Why IS it needed?
+.. todo::
+    Why IS it needed?
 """
 
 

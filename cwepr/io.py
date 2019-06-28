@@ -1,10 +1,8 @@
 """Importers (Preparing raw data for processing)"""
 
-
 import os.path
 import collections as col
 import re
-
 
 import numpy as np
 import aspecd.io
@@ -12,7 +10,6 @@ import aspecd.infofile
 import aspecd.metadata
 import aspecd.utils
 import aspecd.dataset
-
 
 from cwepr.utils import are_intensity_values_plausible
 
@@ -91,9 +88,8 @@ class ImportMetadataOnlyError(Error):
 class ExperimentTypeError(Error):
     """Exception raised in case of problems with designated experiment type.
 
-    This inlcudes to cases: 1) when the data provided does not correspond
-    to a continuous wave experiment or 2) the experiment type cannot be
-    determined.
+    This inlcudes to cases: 1) when the data provided does not correspond to a
+    continuous wave experiment or 2) the experiment type cannot be determined.
 
     Attributes
     ----------
@@ -110,25 +106,24 @@ class ExperimentTypeError(Error):
 class ImporterEPRGeneral(aspecd.io.DatasetImporter):
     """Importer super class
 
-    This class will determine the correct specialized importer for a format.
+    Determine the correct specialized importer for a format.
 
     Attributes
     ----------
     data_format
-        The format of the data to import. Is set manually or
-        determined automatically.
+        The format of the data to import. Is set manually or determined
+        automatically.
     importers_for_formats
         Map of the specialized importers for different formats.
 
     Raises
     ------
     UnsupportedDataFormatError
-        Raised if a format is set but does not match any of the
-        supported formats
+        Raised if a format is set but does not match any of the supported
+        formats
     NoMatchingFilePairError
-        Raised if no pair of files matching any one supported format
-        can be found. Currently Bruker BES3T, EMX and ESP/ECS formats
-        are supported.
+        Raised if no pair of files matching any one supported format can be
+        found. Currently Bruker BES3T, EMX and ESP/ECS formats are supported.
 
     """
 
@@ -148,11 +143,10 @@ class ImporterEPRGeneral(aspecd.io.DatasetImporter):
         MissingInfoFileError
             Raised if no user made info file is provided.
         ImportMetadataOnlyError
-            Raised when no format specific importer is initialized.
-            This should happen and only happen, when the method is
-            called without first importing the experimental data,
-            because :meth:'_import' creates an instance of a
-            format specific importer.
+            Raised when no format specific importer is initialized. This should
+            happen and only happen, when the method is called without first
+            importing the experimental data, because :meth:'_import' creates an
+            instance of a format specific importer.
 
         """
         if not os.path.isfile((self.source + ".info")):
@@ -183,8 +177,8 @@ class ImporterBES3T(ImporterEPRGeneral):
     def _import(self):
         """Import data file in BES3T format.
 
-        The data is checked for plausibility; if values are
-        too large or too small the byte order is changed.
+        The data is checked for plausibility; if values are too large or too
+        small the byte order is changed.
 
         Returns
         -------
@@ -225,8 +219,8 @@ class ParserDSC:
     def parse_dsc(self, file_content):
         r"""Main method for parsing a \*.DSC.
 
-        The is split into its
-        three parts and each of the three parts into a dictionary
+        The is split into its three parts and each of the three parts into a
+        dictionary
 
         Parameters
         ----------
@@ -237,9 +231,9 @@ class ParserDSC:
         -------
         three_parts_processed : :class:`list`
             The three parts of the file, each represented by a dictionary
-            containing pairs of keys (parameter names) and values
-            (parameter values) The dictionaries of part one and three are
-            additionally subdivided based on headlines.
+            containing pairs of keys (parameter names) and values (parameter
+            values) The dictionaries of part one and three are additionally
+            subdivided based on headlines.
 
         """
         three_parts = self._get_three_parts(file_content)
@@ -281,11 +275,11 @@ class ParserDSC:
     def _get_three_parts(file_content):
         r"""Split a \*.DSC file into three parts.
 
-        The three parts are: Descriptor Information,
-        Standard Parameter Layer and Device Specific Layer.
+        The three parts are: Descriptor Information, Standard Parameter Layer
+        and Device Specific Layer.
 
-        The file is split at the second and third headline which
-        start with convenient markers.
+        The file is split at the second and third headline which start with
+        convenient markers.
 
         Parameters
         ----------
@@ -309,16 +303,15 @@ class ParserDSC:
     def _subdivide_part1(part1):
         r"""Pre process the first part of a \*.DSC file.
 
-        First part corresponds to "Descriptor Information.
-        The crude string is split into subdivisions; the delimiter
-        employed allows to detect the different headlines made up
-        of three lines starting with asterisks, the center line
-        containing additional text.
+        First part corresponds to "Descriptor Information. The crude string is
+        split into subdivisions; the delimiter employed allows to detect the
+        different headlines made up of three lines starting with asterisks,
+        the center line containing additional text.
 
-        Each subdivision is then transformed into a dict entry
-        with the headline, stripped of the first two characters
-        (*\t) as key and the remaining information as value.
-        Lines containing an asterisk only are removed.
+        Each subdivision is then transformed into a dict entry with the
+        headline, stripped of the first two characters (*\t) as key and the
+        remaining information as value. Lines containing an asterisk only are
+        removed.
 
         Parameters
         ----------
@@ -328,9 +321,8 @@ class ParserDSC:
         Returns
         -------
         part1_clean: :class:`dict`
-            All subdivisions from the file with headlines as keys
-            and list of lines as values; lines devoid of information
-            removed.
+            All subdivisions from the file with headlines as keys and list of
+            lines as values; lines devoid of information removed.
 
         """
         lines = part1.split("\n")
@@ -351,38 +343,38 @@ class ParserDSC:
         r"""Create a dict from the first or third part () of a \*.DSC file.
 
         First part corresponds to "Descriptor Information, third part
-        corresponds to "Device Specific Layer"
-        For every subdivision. lines are split at tabs. The method
-        accounts for lines containing only a parameter name with no
-        corresponding value.
+        corresponds to "Device Specific Layer" For every subdivision. lines are
+        split at tabs. The method accounts for lines containing only a
+        parameter name with no corresponding value.
 
-        Note: The format of part 3 of a \*.DSC file does not work with tabs,
-        but rather with with a variable number of spaces.
+        .. note::
+            The format of part 3 of a \*.DSC file does not work with tabs,
+            but rather with with a variable number of spaces.
 
         Parameters
         ----------
         p1p3_split: :class:`dict`
-            Preprocessed first or third part of a file, split into
-            subdivisions with the headline as key. Subdivisions split into
-            lines with lines devoid of information removed.
+            Preprocessed first or third part of a file, split into subdivisions
+            with the headline as key. Subdivisions split into lines with lines
+            devoid of information removed.
 
         delimiter: :class:`str`
             Delimiter separating parameter name and value in one line.
 
         delimiter_width: :class:`int`
-            Used to split at a variable number of spaces (could be used
-            for other delimiters, too, though). The method will count
-            all characters before the first delimiter character and determine
-            the number of delimiter characters from the difference to the value
-            of delimiter width. If set to zero a single character
-            delimiter will be applied.
+            Used to split at a variable number of spaces (could be used for
+            other delimiters, too, though). The method will count all
+            characters before the first delimiter character and determine the
+            number of delimiter characters from the difference to the value of
+            delimiter width. If set to zero a single character delimiter will
+            be applied.
 
         Returns
         -------
         p1p3_dict: :class:`dict`
-            Data from the input as pairs of key (subdivision name) and
-            value (subdivision info). Each subdivision info is also a dict
-            with keys (parameter names) and values (parameter values).
+            Data from the input as pairs of key (subdivision name) and value
+            (subdivision info). Each subdivision info is also a dict with keys
+            (parameter names) and values (parameter values).
 
         """
         p1p3_dict = col.OrderedDict()
@@ -413,17 +405,18 @@ class ParserDSC:
     def _subdivide_part2(part2):
         r"""Pre process the second part of a \*.DSC file.
 
-        Second part corresponds to the "Standard parameter layer"
-        The crude string is split into lines; lines devoid of
-        information (e.g. containing only an asterisk) are
-        removed.
+        Second part corresponds to the "Standard parameter layer" The crude
+        string is split into lines; lines devoid of information (e.g.
+        containing only an asterisk) are removed.
 
-        Note: every line containing asterisks is removed as
-        these appear only in headlines and as delimiters.
+        .. note::
+            every line containing asterisks is removed as these appear only
+            in headlines and as delimiters.
 
-        Note: For reasons that will probably never be known,
-        in this part, parameter names are separated from the
-        values by four spaces instead of a tab.
+        .. note::
+            For reasons that will probably never be known, in this part,
+            parameter names are separated from the values by four spaces
+            instead of a tab.
 
         Parameters
         ----------
@@ -433,8 +426,7 @@ class ParserDSC:
         Returns
         -------
         entries_clean: :class:`list`
-            All lines from the file part except those devoid of
-            information.
+            All lines from the file part except those devoid of information.
 
         """
         entries_param = part2.split("\n")
@@ -448,29 +440,27 @@ class ParserDSC:
     def _create_dict_part2(part2_split):
         r"""Create a dict from the second part of a \*.DSC file.
 
-        Second part corresponds to the "Standard parameter layer"
-        Lines are split at tabs. The method accounts for lines
-        containing only a parameter name with no corresponding
-        value.
+        Second part corresponds to the "Standard parameter layer" Lines are
+        split at tabs. The method accounts for lines containing only a
+        parameter name with no corresponding value.
 
         Parameters
         ----------
         part2_split: :class:`list`
-            Preprocessed second part of a file, split into lines,
-            with lines devoid of information already removed.
+            Preprocessed second part of a file, split into lines, with lines
+            devoid of information already removed.
 
         Raises
         ------
         ExperimentTypeError:
-            raised when the type of the experiment file cannot
-            be determined from the parameter file or if it is
-            not CW.
+            raised when the type of the experiment file cannot be determined
+            from the parameter file or if it is not CW.
 
         Returns
         -------
         part2_dict: :class:`dict`
-            Data from the input as pairs of key (parameter name) and
-            value (parameter value).
+            Data from the input as pairs of key (parameter name) and value
+            (parameter value).
 
         """
         part2_dict = col.OrderedDict()
@@ -492,13 +482,12 @@ class ParserDSC:
     def _subdivide_part3(part3):
         r"""Pre process the third part of a \*.DSC file.
 
-        Third part corresponds to the "Device Specific Layer"
-        The crude string is split into subdivisions, which start
-        with a headline containing the fragment ".DVC"
-        Each subdivision is then transformed into a dict entry
-        with the headline, stripped of the first eight characters
-        (".DVC    ") as key and the remaining information as value.
-        Lines containing asterisks are removed.
+        Third part corresponds to the "Device Specific Layer" The crude string
+        is split into subdivisions, which start with a headline containing the
+        fragment ".DVC" Each subdivision is then transformed into a dict entry
+        with the headline, stripped of the first eight characters (".DVC")
+        as key and the remaining information as value. Lines containing
+        asterisks are removed.
 
         Parameters
         ----------
@@ -508,9 +497,8 @@ class ParserDSC:
         Returns
         -------
         subparts_clean: :class:`dict`
-            All subdivisions from the file with headlines as keys
-            and list of lines as values; lines devoid of information
-            removed.
+            All subdivisions from the file with headlines as keys and list of
+            lines as values; lines devoid of information removed.
 
         """
         lines = part3.split("\n")
@@ -543,8 +531,8 @@ class ParserDSC:
         Returns
         -------
         mapped_data: :class:`list`
-            data with the necessary modifications applied to allow
-            for addition to the metadata.
+            data with the necessary modifications applied to allow for addition
+            to the metadata.
 
         """
         dsc_mapper = aspecd.metadata.MetadataMapper()
@@ -564,8 +552,8 @@ class ParserDSC:
         Parameters
         ----------
         mapper : :obj:`aspecd.metadata.MetadataMapper`
-            metadata mapper containing the respective first part of the
-            dsc file as metadata.
+            metadata mapper containing the respective first part of the dsc
+            file as metadata.
 
         """
         mapper.mappings = [
@@ -610,8 +598,8 @@ class ImporterEMXandESP(ImporterEPRGeneral):
     def _import(self):
         """Import data file in BES3T format.
 
-        The data is checked for plausibility; if values are
-        too large or too small the byte order is changed.
+        The data is checked for plausibility; if values are too large or too
+        small the byte order is changed.
 
         Returns
         -------
@@ -779,15 +767,14 @@ class ImporterFactoryEPR(aspecd.io.DatasetImporterFactory):
     def _get_importer(self, source):
         """Main method returning the importer instance.
 
-        Call the correct importer for the data format set.
-        If no format is set, it is automatically determined
-        from the given filename.
+        Call the correct importer for the data format set. If no format is set,
+        it is automatically determined from the given filename.
 
         Raises
         ------
         UnsupportedDataFormatError
-            Raised if a format is set but does not match any of
-            the supported formats
+            Raised if a format is set but does not match any of the supported
+            formats
 
         """
         self.data_format = self._find_format(source)
@@ -798,9 +785,8 @@ class ImporterFactoryEPR(aspecd.io.DatasetImporterFactory):
     def _find_format(self, source):
         """Find out the format of the given file.
 
-        Determine the format of the given filename by checking
-        if a data and metadata file matching any supported
-        format are present.
+        Determine the format of the given filename by checking if a data and
+        metadata file matching any supported format are present.
 
         Determination is performed by checking if files with the correct name
         and extension are present.
@@ -808,9 +794,8 @@ class ImporterFactoryEPR(aspecd.io.DatasetImporterFactory):
         Raises
         ------
         NoMatchingFilePairError
-            Raised if no pair of files matching any one supported
-            format can be found. Currently only Bruker BES3T format
-            is supported.
+            Raised if no pair of files matching any one supported format can be
+            found. Currently only Bruker BES3T format is supported.
 
         """
         for key, value in self.supported_formats.items():
@@ -826,9 +811,9 @@ class ImporterFactoryEPR(aspecd.io.DatasetImporterFactory):
 class ExporterASCII(aspecd.io.DatasetExporter):
     """Export a dataset in ASCII format.
 
-    Exports the complete dataset to an ASCII file. At the same time,
-    the respective metadata is exported into a YAML file using the
-    functionality provided by aspecd.
+    Exports the complete dataset to an ASCII file. At the same time, the
+    respective metadata is exported into a YAML file using the functionality
+    provided by aspecd.
     """
 
     def __init__(self):
@@ -845,9 +830,8 @@ class ExporterASCII(aspecd.io.DatasetExporter):
     def _get_and_prepare_metadata(self):
         """Prepare the dataset's metadata to be imported.
 
-        Transforms the metadata to a dict and subsequently eliminates
-        all instances of numpy.array by transforming them into lists
-        (vide infra).
+        Transforms the metadata to a dict and subsequently eliminates all
+        instances of numpy.array by transforming them into lists (vide infra).
 
         Returns
         -------
@@ -865,7 +849,8 @@ class ExporterASCII(aspecd.io.DatasetExporter):
         Numpy arrays may interfere with the YAML functionality used for the
         export.
 
-        This is a cascading method that also works on nested dicts.
+        .. note::
+            This is a cascading method that also works on nested dicts.
 
         Parameters
         ----------

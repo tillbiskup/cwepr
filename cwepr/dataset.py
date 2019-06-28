@@ -15,12 +15,11 @@ class Dataset(aspecd.dataset.ExperimentalDataset):
     """Set of data uniting all relevant information.
 
     The unity of numerical and metadata is indispensable for the
-    reproducibility of data and is possible by saving all information
-    available for one set of measurement data in a single instance of
-    this class.
+    reproducibility of data and is possible by saving all information available
+    for one set of measurement data in a single instance of this class.
     """
 
-    mappings = [
+    MAPPINGS = [
         ["GENERAL", "combine_items", [["Date start", "Time start"],
                                       "Start", " "]],
         ["GENERAL", "combine_items", [["Date end", "Time end"],
@@ -36,8 +35,8 @@ class Dataset(aspecd.dataset.ExperimentalDataset):
     def import_from_file(self, filename):
         """Import data and metadata for a given filename.
 
-        The appropriate importer automatically checks whether
-        data and metadata files exist, matching a single format
+        The appropriate importer automatically checks whether data and metadata
+        files exist, matching a single format
 
         Parameters
         ----------
@@ -61,9 +60,9 @@ class Dataset(aspecd.dataset.ExperimentalDataset):
     def map_metadata_and_check_for_overrides(self, metadata):
         """Perform some operations to yield the final set of metadata.
 
-        Modifies names of metadata information as necessary, combines
-        data from the INFO file and the spectrometer parameter file and checks
-        for possible overrides.
+        Modifies names of metadata information as necessary, combines data from
+        the infofile and the spectrometer parameter file and checks for
+        possible overrides.
 
         Parameters
         ----------
@@ -74,7 +73,7 @@ class Dataset(aspecd.dataset.ExperimentalDataset):
         """
         metadata_mapper = aspecd.metadata.MetadataMapper()
         metadata_mapper.metadata = metadata[0]
-        metadata_mapper.mappings = self.mappings
+        metadata_mapper.mappings = self.MAPPINGS
         metadata_mapper.map()
         self.metadata.from_dict(metadata_mapper.metadata)
         param_data_mapped = metadata[1]
@@ -86,13 +85,12 @@ class Dataset(aspecd.dataset.ExperimentalDataset):
         """Check if metadata from info file is overridden by parameter file.
 
         Compare the keys in the info file dict with those in each part of the
-        dsc/par file to find overrides. Any matching keys are considered to be
-        overriden and a respective note is added to
+        DSC/PAR file to find overrides. Any matching keys are considered to be
+        overridden and a respective note is added to
         :attr:`cwepr.metadata.DatasetMetadata.metadata_modifications`.
-        The method cascades through nested dicts returning a
-        'path' of the potential overrides.
-        E.g., when the key 'a' in the sub dict 'b' is found in both dicts the
-        path will be '/b/a'.
+        The method cascades through nested dicts returning a 'path' of the
+        potential overrides. E.g., when the key 'a' in the sub dict 'b' is
+        found in both dicts the path will be '/b/a'.
 
         Parameters
         ----------
@@ -103,19 +101,19 @@ class Dataset(aspecd.dataset.ExperimentalDataset):
             Data that is added to the original dict.
 
         name: :class:`str`
-            Used in the cascade to keep track of the path. This should not
-            be set to anything other than the default value.
+            Used in the cascade to keep track of the path. This should not be
+            set to anything other than the default value.
 
         """
-        toplevel = False
+        top_level = False
         for entry in list(data1.keys()):
             data1[entry.lower()] = data1.pop(entry)
         for entry in data1.keys():
             if isinstance(data1[entry], col.OrderedDict):
-                toplevel = True
+                top_level = True
         for entry in data1.keys():
             if entry in data2.keys():
-                if toplevel:
+                if top_level:
                     if name.split("/")[-1] != entry:
                         name = ""
                     name = name + "/" + entry
@@ -129,8 +127,8 @@ class Dataset(aspecd.dataset.ExperimentalDataset):
     def _import_metadata(importer=None):
         """Import metadata using a selected importer.
 
-        The appropriate importer automatically checks whether
-        data and metadata files exist, matching a single format
+        The appropriate importer automatically checks whether data and metadata
+        files exist, matching a single format
 
         Parameters
         ----------

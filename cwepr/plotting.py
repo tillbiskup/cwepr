@@ -38,12 +38,11 @@ class BaselineControlPlotter(aspecd.plotting.SinglePlotter):
 
     Attributes
     ----------
-    coeffs: :class:`list`
-        List containing any number of other lists each containing
-        a set of polynomial coefficients for a polynomial that might
-        be used for the baseline correction. The order of the coefficients
-        is considered to highest to lowest as returned by
-        :meth:`numpy.polyfit`.
+    coefficients: :class:`list`
+        List containing any number of other lists each containing a set of
+        polynomial coefficients for a polynomial that might be used for the
+        baseline correction. The order of the coefficients is considered to
+        highest to lowest as returned by :meth:`numpy.polyfit`.
 
     data: :class:`numpy.array`
         Array containing the x (field) and y (intensity) values of the
@@ -51,9 +50,9 @@ class BaselineControlPlotter(aspecd.plotting.SinglePlotter):
 
     """
 
-    def __init__(self, data, coeffs):
+    def __init__(self, data, coefficients):
         super().__init__()
-        self.parameters["coeffs"] = coeffs
+        self.parameters["coefficients"] = coefficients
         self.parameters["data"] = data
 
     def _create_plot(self):
@@ -64,18 +63,19 @@ class BaselineControlPlotter(aspecd.plotting.SinglePlotter):
         their order. The final diagram is displayed.
         """
         data = self.parameters["data"]
-        coeffs_list = self.parameters["coeffs"]
-        x_coords = data.axes[0].values
-        y_coords = data.data
+        coefficients_list = self.parameters["coefficients"]
+        x_coordinates = data.axes[0].values
+        y_coordinates = data.data
 
         plt.title("Baseline Comparison")
         plt.xlabel("$B_0$ / mT")
         plt.ylabel("$Intensity\\ Change and possible baselines$")
 
-        plt.plot(x_coords, y_coords, label="Spectrum")
-        for coeffs in coeffs_list:
-            plt.plot(x_coords, np.polyval(np.poly1d(coeffs), x_coords),
-                     label=str(len(coeffs) - 1))
+        plt.plot(x_coordinates, y_coordinates, label="Spectrum")
+        for coefficients in coefficients_list:
+            plt.plot(x_coordinates,
+                     np.polyval(np.poly1d(coefficients), x_coordinates),
+                     label=str(len(coefficients) - 1))
 
         plt.legend()
         plt.show()
@@ -202,7 +202,8 @@ class SimpleSpectrumPlotter(aspecd.plotting.SinglePlotter):
     def set_x_axis_limits(self, left, right):
         """Sets the limits of the x axis.
 
-        Note: Using None as a limit will leave the respective limit unchanged.
+        .. note::
+            Using None as a limit will leave the respective limit unchanged.
 
         Parameters
         ----------
@@ -220,51 +221,51 @@ class SimpleSpectrumPlotter(aspecd.plotting.SinglePlotter):
 
         The plot settings are put into the parameter attribute.
         """
-        x_coords = self.dataset.data.axes[0].values
-        y_coords = self.dataset.data.data
+        x_coordinates = self.dataset.data.axes[0].values
+        y_coordinates = self.dataset.data.data
         self._make_labels_and_title()
-        self._plot_lines(x_coords, y_coords)
-        self._make_axis_limits(x_coords)
+        self._plot_lines(x_coordinates, y_coordinates)
+        self._make_axis_limits(x_coordinates)
         plt.legend()
 
     def _make_labels_and_title(self):
         """Create the title as well as the labels for the axes."""
         plt.title(self.parameters["title"])
 
-    def _plot_lines(self, x_coords, y_coords):
+    def _plot_lines(self, x_coordinates, y_coordinates):
         """Draw the spectrum curve and the zero line (if necessary).
 
         Parameters
         ----------
-        x_coords: :class:`list`
+        x_coordinates: :class:`list`
             x values for plotting
-        y_coords: :class:`list`
+        y_coordinates: :class:`list`
             y values for plotting
 
         """
         if self.parameters["draw_zero"]:
-            plt.plot(x_coords, 0 * x_coords,
+            plt.plot(x_coordinates, 0 * x_coordinates,
                      lw=self.parameters["zero_thickness"],
                      color=self.parameters["zero_color"])
-        plt.plot(x_coords, y_coords, label=self.parameters["curve_name"],
+        plt.plot(x_coordinates, y_coordinates,
+                 label=self.parameters["curve_name"],
                  color=self.parameters["color"])
 
-    def _make_axis_limits(self, x_coords):
+    def _make_axis_limits(self, x_coordinates):
         """Set the limits of the x axis.
 
-        The limits are first fitted to the width of the spectrum
-        (if necessary),then overridden with user specified values
-        (if applicable).
+        The limits are first fitted to the width of the spectrum (if
+        necessary),then overridden with user specified values (if applicable).
 
         Parameters
         ----------
-        x_coords: :class:`list`
-            x values to plot. These are necessary for determining the
-            correct limits.
+        x_coordinates: :class:`list`
+            x values to plot. These are necessary for determining the correct
+            limits.
 
         """
         if self.parameters["fit_axis"]:
-            self.axes.set_xlim(x_coords[0], x_coords[-1])
+            self.axes.set_xlim(x_coordinates[0], x_coordinates[-1])
         self.axes.set_xlim(self.parameters["limit_left"],
                            self.parameters["limit_right"])
 
@@ -350,18 +351,18 @@ class SpectrumAndIntegralPlotter(SimpleSpectrumPlotter):
         """
         self.parameters["integral2_name"] = name
 
-    def _plot_lines(self, x_coords, y_coords):
+    def _plot_lines(self, x_coordinates, y_coordinates):
         """Perform the actual plot for spectrum and integral(s).
 
-        Draw the spectrum curve and the zero line (if necessary).
-        Additionally draw one or both integral curves. Either one of the
-        integral curves can be omitted but NOT BOTH.
+        Draw the spectrum curve and the zero line (if necessary). Additionally
+        draw one or both integral curves. Either one of the integral curves can
+        be omitted but NOT BOTH.
 
         Parameters
         ----------
-        x_coords: :class:`list`
+        x_coordinates: :class:`list`
             x values for plotting
-        y_coords: :class:`list`
+        y_coordinates: :class:`list`
             y values for plotting
 
         Raises
@@ -371,21 +372,22 @@ class SpectrumAndIntegralPlotter(SimpleSpectrumPlotter):
 
         """
         if self.parameters["draw_zero"]:
-            plt.plot(x_coords, 0 * x_coords,
+            plt.plot(x_coordinates, 0 * x_coordinates,
                      lw=self.parameters["zero_thickness"],
                      color=self.parameters["zero_color"])
-        plt.plot(x_coords, y_coords, label=self.parameters["curve_name"],
+        plt.plot(x_coordinates, y_coordinates,
+                 label=self.parameters["curve_name"],
                  color=self.parameters["color"])
         if (self.parameters["integral_1"] is None and
                 self.parameters["integral_2"] is None):
             raise NoIntegralDataProvidedError(""""Neither first nor second 
 integration data points have been provided for integral plotting.""")
         if self.parameters["integral_1"] is not None:
-            plt.plot(x_coords, self.parameters["integral_1"],
+            plt.plot(x_coordinates, self.parameters["integral_1"],
                      label=self.parameters["integral1_name"],
                      color=self.parameters["integral1_color"])
         if self.parameters["integral_2"] is not None:
-            plt.plot(x_coords, self.parameters["integral_2"],
+            plt.plot(x_coordinates, self.parameters["integral_2"],
                      label=self.parameters["integral2_name"],
                      color=self.parameters["integral2_color"])
 
@@ -546,11 +548,11 @@ class Multiplotter(aspecd.plotting.MultiPlotter):
         x_axes = list()
         self._make_labels()
         for curve_index in range(len(self.parameters["datasets"])):
-            x_coords = \
+            x_coordinates = \
                 self.parameters["datasets"][curve_index].data.axes[0].values
-            y_coords = self.parameters["datasets"][curve_index].data.data
-            x_axes.append(x_coords)
-            self._plot_lines(x_coords, y_coords, curve_index)
+            y_coordinates = self.parameters["datasets"][curve_index].data.data
+            x_axes.append(x_coordinates)
+            self._plot_lines(x_coordinates, y_coordinates, curve_index)
         x_axis_limits = self.get_x_axis_limits(x_axes)
         if self.parameters["draw_zero"]:
             zeroline_values = np.linspace(x_axis_limits[0],
@@ -584,14 +586,14 @@ class Multiplotter(aspecd.plotting.MultiPlotter):
         plt.xlabel(self.parameters["x_name"])
         plt.ylabel(self.parameters["y_name"])
 
-    def _plot_lines(self, x_coords, y_coords, curve_index):
+    def _plot_lines(self, x_coordinates, y_coordinates, curve_index):
         """Draw the spectrum curve.
 
         Parameters
         ----------
-        x_coords: :class:`list`
+        x_coordinates: :class:`list`
             x values for plotting
-        y_coords: :class:`list`
+        y_coordinates: :class:`list`
             y values for plotting
 
         """
@@ -599,21 +601,21 @@ class Multiplotter(aspecd.plotting.MultiPlotter):
         if self.integrals and self.parameters["show_integrals"]:
             curve_name += "; Integral: "
             curve_name += str(round(self.integrals[curve_index], 6))
-        plt.plot(x_coords, y_coords, label=curve_name,
+        plt.plot(x_coordinates, y_coordinates, label=curve_name,
                  color=self.parameters["colors"][curve_index])
 
-    def _make_axis_limits(self, x_coords):
+    def _make_axis_limits(self, x_coordinates):
         """Set the limits of the x axis.
 
         Parameters
         ----------
-        x_coords: :class:`list`
-            x values to plot. These are necessary for determining the
-            correct limits.
+        x_coordinates: :class:`list`
+            x values to plot. These are necessary for determining the correct
+            limits.
 
         """
         if self.parameters["fit_axis"]:
-            self.axes.set_xlim(x_coords[0], x_coords[1])
+            self.axes.set_xlim(x_coordinates[0], x_coordinates[1])
 
 
 class PlotSaver(aspecd.plotting.Saver):
@@ -623,16 +625,16 @@ class PlotSaver(aspecd.plotting.Saver):
         super().__init__(filename=filename)
         self.set_defaults()
 
-    def set_format(self, dataformat):
+    def set_format(self, data_format):
         """Sets the data format to save to (Default: .png).
 
         Parameters
         ----------
-        dataformat: :class:`str`
+        data_format: :class:`str`
             File extension
 
         """
-        self.parameters["format"] = dataformat
+        self.parameters["format"] = data_format
 
     def set_res(self, res):
         """Sets the resolution for the saved image (Default: 300 dpi).

@@ -1,8 +1,7 @@
 """Metadata
 
-Supplementary data for a dataset, i.e. everything that is not
-part of the literal experimental results, such as identifier,
-date of the experiment...
+Supplementary data for a dataset, i.e. everything that is not part of the
+literal experimental results, such as identifier, date of the experiment...
 """
 
 
@@ -34,7 +33,7 @@ class NotEnoughValuesError(Error):
 
 
 class UnequalUnitsError(Error):
-    """Exception raised when summands have unequal units.
+    """Exception raised when addends have unequal units.
 
     This is relevant when two physical quantities that shall be added or
     subtracted do not have the same unit.
@@ -57,32 +56,28 @@ class DatasetMetadata(aspecd.metadata.ExperimentalDatasetMetadata):
     Attributes
     ----------
     experiment: :obj:`cwepr.metadata.Experiment`
-        Metadata object containing information such as the type of
-        the experiment performed.
+        Metadata object containing information such as the type of the
+        experiment performed.
 
     spectrometer: :obj:`cwepr.metadata.Spectrometer`
-        Metadata object containing information on the spectrometer
-        used.
+        Metadata object containing information on the spectrometer used.
 
     magnetic_field: :obj:`cwepr.metadata.BFieldData`
-        Metadata object containing information on the magnetic
-        field applied in the experiment.
+        Metadata object containing information on the magnetic field applied in
+        the experiment.
 
     bridge: :obj:`cwepr.metadata.Brige`
-        Metadata object containing information on the microwave
-        bridge used.
+        Metadata object containing information on the microwave bridge used.
 
     signal_channel: :obj:`cwepr.metadata.SignalChannel`
-        Metadata object containing information on the signal
-        channel applied.
+        Metadata object containing information on the signal channel applied.
 
     probehead: :obj:`cwepr.metadata.Probehead`
-        Metadata object containing information on the probehead
-        used in the experiment.
+        Metadata object containing information on the probehead used in the
+        experiment.
 
     metadata_modifications : :class:`list`
-        List of all modifications performed on the metadata,
-        e.g, overrides.
+        List of all modifications performed on the metadata, e.g, overrides.
 
     """
 
@@ -125,21 +120,19 @@ class BFieldData(aspecd.metadata.Metadata):
     def can_calculate(self):
         """Check if enough data is present to determine field values.
 
-        Checks if enough different pieces of information
-        are provided to calculate all information concerning
-        the field sector and sweeping steps.
+        Checks if enough different pieces of information are provided to
+        calculate all information concerning the field sector and sweeping
+        steps.
 
         .. note::
-            Currently, the possibility of calculating the
-            sector width from the width and the number of steps is not
-            accounted for.
+            Currently, the possibility of calculating the sector width from the
+            width and the number of steps is not accounted for.
 
         Raises
         ------
         NotEnoughValuesError
-            Raised when not enough different pieces of
-            information are provided to determine the other
-            variables.
+            Raised when not enough different pieces of information are provided
+            to determine the other variables.
 
         """
         sector_def = False
@@ -170,54 +163,53 @@ class BFieldData(aspecd.metadata.Metadata):
     def calculate_values(self):
         """Perform the calculation of all field values left out.
 
-        Calculate the different values concerning the sector and
-        sweeping steps of the magnetic field.
+        Calculate the different values concerning the sector and sweeping steps
+        of the magnetic field.
 
         .. note::
-            Currently, the possibility of calculating the
-            sector width from the with and the number of steps is not
-            accounted for.
+            Currently, the possibility of calculating the sector width from the
+            with and the number of steps is not accounted for.
 
         Raises
         ------
         UnequalUnitsError :
-            Raised, when two physical quantities shall be added or
-            subtracted that have unequal units.
+            Raised, when two physical quantities shall be added or subtracted
+            that have unequal units.
 
         """
-        units_errormessage = "Quantities with different units provided."
+        units_error_message = "Quantities with different units provided."
         if self.can_calculate():
             self.step_count = int(self.step_count)
-            self._calc_field_width(units_errormessage)
-            self._calc_field_limits(units_errormessage)
-            self._calc_step_data(units_errormessage)
+            self._calc_field_width(units_error_message)
+            self._calc_field_limits(units_error_message)
+            self._calc_step_data(units_error_message)
 
-    def _calc_field_width(self, units_errormessage):
+    def _calc_field_width(self, units_error_message):
         if self.field_width.value == 0.:
             if self.field_max.unit != self.field_min.unit:
-                raise UnequalUnitsError(units_errormessage)
+                raise UnequalUnitsError(units_error_message)
             self.field_width.value = self.field_max.value - \
                 self.field_min.value
             self.field_width.unit = self.field_max.unit
 
-    def _calc_field_limits(self, units_errormessage):
+    def _calc_field_limits(self, units_error_message):
         if self.field_max.value == 0.:
             if self.field_width.unit != self.field_min.unit:
-                raise UnequalUnitsError(units_errormessage)
+                raise UnequalUnitsError(units_error_message)
             self.field_max.value = self.field_min.value + \
                 self.field_width.value
             self.field_max.unit = self.field_min.unit
         if self.field_min.value == 0.:
             if self.field_max.unit != self.field_width.unit:
-                raise UnequalUnitsError(units_errormessage)
+                raise UnequalUnitsError(units_error_message)
             self.field_min.value = self.field_max.value - \
                 self.field_width.value
             self.field_min.unit = self.field_max.unit
 
-    def _calc_step_data(self, units_errormessage):
+    def _calc_step_data(self, units_error_message):
         if self.step_count == 0:
             if self.field_width.unit != self.step_width.unit:
-                raise UnequalUnitsError(units_errormessage)
+                raise UnequalUnitsError(units_error_message)
             self.step_count = int(round((self.field_width.value /
                                          self.step_width.value), 0)) + 1
         if self.step_width.value == 0.:
@@ -275,9 +267,8 @@ class SignalChannel(aspecd.metadata.Metadata):
     .. todo::
         Currently aspecd crashes when the creation of an instance of
         :class:`aspecd.metadata.PhysicalQuantity` is attempted from an empty
-        parameter field (such as time_constant).
-        Find a workaround or make the supervisor of aspecd
-        find one.
+        parameter field (such as time_constant). Find a workaround or make the
+        supervisor of aspecd find one.
     """
 
     def __init__(self):

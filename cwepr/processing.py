@@ -1,7 +1,7 @@
 """Module containing all processing steps.
 
 A processing step is anything that modifies the dataset without giving an
-a independent result. E.g., Field Correction or Baseline correction.
+independent result. E.g., Field Correction or Baseline correction.
 """
 
 import numpy as np
@@ -14,8 +14,8 @@ import aspecd.processing
 class FieldCorrection(aspecd.processing.ProcessingStep):
     """Processing step for field correction.
 
-    Perform a linear field correction of the data with a correction
-    value previously determined.
+    Perform a linear field correction of the data with a correction value
+    previously determined.
 
     Parameters
     ----------
@@ -31,6 +31,7 @@ class FieldCorrection(aspecd.processing.ProcessingStep):
 
     def _perform_task(self):
         """Shift all field axis data points by the correction value."""
+        print(self.parameters["correction_value"])
         round(self.parameters["correction_value"], 6)
         for data_index in range(len(self.dataset.data.data)):
             self.dataset.data.axes[0].values[data_index] += \
@@ -38,7 +39,7 @@ class FieldCorrection(aspecd.processing.ProcessingStep):
 
 
 class FrequencyCorrection(aspecd.processing.ProcessingStep):
-    """Converts data of a given frequency to another given frequency.
+    """Convert data of a given frequency to another given frequency.
 
     This is used to make spectra comparable.
 
@@ -85,9 +86,9 @@ class FrequencyCorrection(aspecd.processing.ProcessingStep):
     def _perform_task(self):
         """Perform the actual transformation / correction.
 
-        For the conversion the x axis data is first converted to
-        an axis in units of using the given frequency, then converted back
-        using target frequency.
+        For the conversion the x axis data is first converted to an axis in
+        units of using the given frequency, then converted back using target
+        frequency.
         """
         for data_index in range(len(self.dataset.data.data)):
             self.dataset.data.data[data_index] = self._transform_to_g(
@@ -97,7 +98,7 @@ class FrequencyCorrection(aspecd.processing.ProcessingStep):
                 self.dataset.data.data[data_index])
 
     def _transform_to_g(self, value):
-        """Transforms a field (B) axis value to a g axis value.
+        """Transform a field (B) axis value to a g axis value.
 
         Parameters
         ----------
@@ -115,7 +116,7 @@ class FrequencyCorrection(aspecd.processing.ProcessingStep):
         return g_value
 
     def _transform_to_b(self, value):
-        """Transforms a g axis value to a field (B) axis value.
+        """Transform a g axis value to a field (B) axis value.
 
         Parameters
         ----------
@@ -134,36 +135,37 @@ class FrequencyCorrection(aspecd.processing.ProcessingStep):
 
 
 class BaselineCorrection(aspecd.processing.ProcessingStep):
-    """Performs a baseline correction using a polynomial previously determined.
+    """Perform a baseline correction using a polynomial previously determined.
 
     Attributes
     ----------
-    coeffs: :class:`list`
+    coefficients: :class:`list`
         List of the polynomial coefficients of the polynomial to subtract.
 
     """
 
-    def __init__(self, coeffs):
+    def __init__(self, coefficients):
         super().__init__()
-        self.parameters["coeffs"] = coeffs
+        self.parameters["coefficients"] = coefficients
         self.description = "Subtraction of baseline polynomial"
 
     def _perform_task(self):
         """Perform the actual correction.
 
-        Baseline correction is performed by subtraction of  a
-        previously determined polynomial.
+        Baseline correction is performed by subtraction of  a previously
+        determined polynomial.
         """
-        x_coords = self.dataset.data.axes[0].values
+        x_coordinates = self.dataset.data.axes[0].values
         values_to_subtract = np.polyval(
-            np.poly1d(self.parameters["coeffs"]), x_coords)
+            np.poly1d(self.parameters["coefficients"]), x_coordinates)
         for data_index in range(len(list(self.dataset.data.data))):
             self.dataset.data.data[data_index] -= \
                 values_to_subtract[data_index]
 
 
-class BaselineCorrectionWithClcdDataset(aspecd.processing.ProcessingStep):
-    """Performs a baseline correction using a polynomial previously determined.
+class BaselineCorrectionWithCalculatedDataset(
+        aspecd.processing.ProcessingStep):
+    """Perform a baseline correction using a polynomial previously determined.
 
     Attributes
     ----------
@@ -180,8 +182,8 @@ class BaselineCorrectionWithClcdDataset(aspecd.processing.ProcessingStep):
     def _perform_task(self):
         """Perform the actual correction.
 
-        Baseline correction is performed by subtraction of  a
-        previously determined polynomial.
+        Baseline correction is performed by subtraction of  a previously
+        determined polynomial.
         """
         values_to_subtract = self.parameters["baseline_dataset"].data.data
         for data_index in range(len(list(self.dataset.data.data))):
@@ -192,19 +194,19 @@ class BaselineCorrectionWithClcdDataset(aspecd.processing.ProcessingStep):
 class SubtractSpectrum(aspecd.processing.ProcessingStep):
     """Subtract one spectrum from another.
 
-    Processing routine to subtract a given spectrum, i.e. in general
-    a background, from the processed spectrum
+    Processing routine to subtract a given spectrum, i.e. in general a
+    background, from the processed spectrum
 
     Attributes
     ----------
-    scnd_dataset: :class:`cwepr.dataset.Dataset`
+    second_dataset: :class:`cwepr.dataset.Dataset`
         Dataset containing the spectrum that should be subtracted.
 
     """
 
-    def __init__(self, scnd_dataset):
+    def __init__(self, second_dataset):
         super().__init__()
-        self.parameters["scnd_dataset"] = scnd_dataset
+        self.parameters["second_dataset"] = second_dataset
         self.description = "Subtract a spectrum"
 
     def _perform_task(self):
@@ -214,13 +216,13 @@ class SubtractSpectrum(aspecd.processing.ProcessingStep):
     def interpolate(self):
         """Perform a potentially necessary interpolation.
 
-        Interpolates the spectrum that should be subtracted from the
-        other one on the x values of this other spectrum.
+        Interpolates the spectrum that should be subtracted from the other one
+        on the x values of this other spectrum.
         """
         target_x = self.dataset.data.axes[0].values
-        x_coords = self.parameters["scnd_dataset"].data.axes[0].values
-        y_coords = self.parameters["scnd_dataset"].data.data
-        interpolated_values = np.interp(target_x, x_coords, y_coords)
+        x_coordinates = self.parameters["second_dataset"].data.axes[0].values
+        y_coordinates = self.parameters["second_dataset"].data.data
+        interpolated_values = np.interp(target_x, x_coordinates, y_coordinates)
         return interpolated_values
 
     def _subtract(self):
@@ -229,9 +231,9 @@ class SubtractSpectrum(aspecd.processing.ProcessingStep):
         The actual subtraction. The second spectrum (the one gets subtracted
         is first interpolated on the x values of the other one.
         """
-        y_interp = self.interpolate()
+        y_interpolated = self.interpolate()
         for data_index in range(len(self.dataset.data.data)):
-            self.dataset.data.data[data_index] -= y_interp[data_index]
+            self.dataset.data.data[data_index] -= y_interpolated[data_index]
 
 
 class AddSpectrum(aspecd.processing.ProcessingStep):
@@ -239,14 +241,14 @@ class AddSpectrum(aspecd.processing.ProcessingStep):
 
     Attributes
     ----------
-    scnd_dataset: :class:`cwepr.dataset.Dataset`
+    second_dataset: :class:`cwepr.dataset.Dataset`
         Dataset containing the spectrum that should be added.
 
     """
 
-    def __init__(self, scnd_dataset):
+    def __init__(self, second_dataset):
         super().__init__()
-        self.scnd_dataset = scnd_dataset
+        self.second_dataset = second_dataset
         self.description = "Add another spectrum"
 
     def _perform_task(self):
@@ -256,13 +258,13 @@ class AddSpectrum(aspecd.processing.ProcessingStep):
     def interpolate(self):
         """Perform a potentially necessary interpolation.
 
-        Interpolates the spectrum that should be added to the
-        other one on the x values of this other spectrum.
+        Interpolates the spectrum that should be added to the other one on the
+        x values of this other spectrum.
         """
         target_x = self.dataset.data.axes[0].values
-        x_coords = self.scnd_dataset.data.axes[0].values
-        y_coords = self.scnd_dataset.data.data
-        interpolated_values = np.interp(target_x, x_coords, y_coords)
+        x_coordinates = self.second_dataset.data.axes[0].values
+        y_coordinates = self.second_dataset.data.data
+        interpolated_values = np.interp(target_x, x_coordinates, y_coordinates)
         return interpolated_values
 
     def _add(self):
@@ -271,16 +273,16 @@ class AddSpectrum(aspecd.processing.ProcessingStep):
         The actual subtraction. The second spectrum (the one gets subtracted)
         is first interpolated on the x values of the other one.
         """
-        y_interp = self.interpolate()
+        y_interpolated = self.interpolate()
         for data_index in range(len(self.dataset.data.data)):
-            self.dataset.data.data[data_index] += y_interp[data_index]
+            self.dataset.data.data[data_index] += y_interpolated[data_index]
 
 
 class PhaseCorrection(aspecd.processing.ProcessingStep):
     """Processing step for phase correction.
 
-    The functionality is suitable for automatic phase correction, no
-    parameters need to be provided manually.
+    The functionality is suitable for automatic phase correction, no parameters
+    need to be provided manually.
     """
 
     def __init__(self):
@@ -291,28 +293,27 @@ class PhaseCorrection(aspecd.processing.ProcessingStep):
         """Perform the actual phase correction.
 
         The phase angle is
-        acquired from the dataset's metadata and transformed to radians
-        if necessary.
-        The phase correction is then applied and the corrected data inserted
-        into the dataset.
+        acquired from the dataset's metadata and transformed to radians if
+        necessary. The phase correction is then applied and the corrected data
+        inserted into the dataset.
         """
-        phaseangle_raw = self.dataset.metadata.signal_channel.phase
-        self.parameters["phaseangle_value"] = phaseangle_raw.value
-        self.parameters["phaseangle_unit"] = phaseangle_raw.unit
-        if self.parameters["phaseangle_unit"] == "deg":
-            self.parameters["phaseangle_value"] = (
-                np.pi * self.parameters["phaseangle_value"]) / 180
-            self.parameters["phaseangle_unit"] = "rad"
+        phase_angle_raw = self.dataset.metadata.signal_channel.phase
+        self.parameters["phase_angle_value"] = phase_angle_raw.value
+        self.parameters["phase_angle_unit"] = phase_angle_raw.unit
+        if self.parameters["phase_angle_unit"] == "deg":
+            self.parameters["phase_angle_value"] = (
+                np.pi * self.parameters["phase_angle_value"]) / 180
+            self.parameters["phase_angle_unit"] = "rad"
         data = self.dataset.data.data
-        data_imag = scipy.signal.hilbert(data)
-        data_imag = np.exp(-1j * self.parameters["phaseangle_value"]) * \
-            data_imag
-        data_real = np.real(data_imag)
+        data_imaginary = scipy.signal.hilbert(data)
+        data_imaginary = np.exp(-1j * self.parameters["phase_angle_value"]) * \
+            data_imaginary
+        data_real = np.real(data_imaginary)
         self.dataset.data.data = data_real
 
 
 class NormaliseMaximum(aspecd.processing.ProcessingStep):
-    """Normalises a spectrum concerning the height of the maximum.
+    """Normalise a spectrum concerning the height of the maximum.
 
     Should only be used on an integrated spectrum.
     """
@@ -328,7 +329,7 @@ class NormaliseMaximum(aspecd.processing.ProcessingStep):
 
 
 class NormaliseArea(aspecd.processing.ProcessingStep):
-    """Normalises a spectrum concerning the area under the curve.
+    """Normalise a spectrum concerning the area under the curve.
 
     Should only be used on an integrated spectrum.
 
@@ -350,7 +351,7 @@ class NormaliseArea(aspecd.processing.ProcessingStep):
 
 
 class NormaliseScanNumber(aspecd.processing.ProcessingStep):
-    """Normalises a spectrum concerning the number of scans used.
+    """Normalise a spectrum concerning the number of scans used.
 
     This is necessary to make spectra where the intensity of different scans
     is added comparable to ones where it is averaged.
@@ -361,10 +362,11 @@ class NormaliseScanNumber(aspecd.processing.ProcessingStep):
         self.description = "Normalisation to scan number"
 
     def _perform_task(self):
-        self.parameters["scannumber"] = \
+        self.parameters["scan_number"] = \
             self.dataset.metadata.signal_channel.accumulations
         for data_index in range(len(self.dataset.data.data)):
-            self.dataset.data.data[data_index] /= self.parameters["scannumber"]
+            self.dataset.data.data[data_index] /= \
+                self.parameters["scan_number"]
 
 
 class IntegrationIndefinite(aspecd.processing.ProcessingStep):
@@ -381,12 +383,12 @@ class IntegrationIndefinite(aspecd.processing.ProcessingStep):
         """Perform the actual integration.
 
         Perform the actual integration using trapezoidal integration
-        functionality from scipy. The keyword argument initial=0 is used
-        to yield a list of length identical to the original one.
+        functionality from scipy. The keyword argument initial=0 is used to
+        yield a list of length identical to the original one.
         """
-        x_coords = self.dataset.data.axes[0].values
-        y_coords = self.dataset.data.data
+        x_coordinates = self.dataset.data.axes[0].values
+        y_coordinates = self.dataset.data.data
 
         integral_values = \
-            scipy.integrate.cumtrapz(y_coords, x_coords, initial=0)
+            scipy.integrate.cumtrapz(y_coordinates, x_coordinates, initial=0)
         self.dataset.data.data = integral_values

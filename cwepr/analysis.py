@@ -1,14 +1,13 @@
 """Module containing all analysis steps
 
-An analysis step is everything that operates on a dataset and yields a
-result largely independent of this dataset. E.g., integration or determination
-of a field correction value.
+An analysis step is everything that operates on a dataset and yields a result
+largely independent of this dataset. E.g., integration or determination of a
+field correction value.
 """
 
 import copy
 import math
 import numpy as np
-
 
 import aspecd.analysis
 
@@ -128,10 +127,10 @@ class FieldCorrectionValueFinding(aspecd.analysis.SingleAnalysisStep):
     def get_field_correction_value(self):
         """Calculates a field correction value.
 
-        Finds the approximate maximum of the peak in a field standard
-        spectrum by using the difference between minimum and maximum in
-        the derivative. This value is subtracted from the the expected
-        field value for the MW frequency provided.
+        Finds the approximate maximum of the peak in a field standard spectrum
+        by using the difference between minimum and maximum in the derivative.
+        This value is subtracted from the the expected field value for the MW
+        frequency provided.
 
         Returns
         -------
@@ -144,9 +143,9 @@ class FieldCorrectionValueFinding(aspecd.analysis.SingleAnalysisStep):
         experimental_field = (
             self.dataset.data.data[index_max] -
             self.dataset.data.data[index_min]) / 2.0
-        calcd_field = \
+        calculated_field = \
             self.VALUE_H * self.nu_value / self.VALUE_G_LILIF / self.VALUE_MuB
-        delta_b0 = calcd_field - experimental_field
+        delta_b0 = calculated_field - experimental_field
         return delta_b0
 
 
@@ -159,9 +158,8 @@ class BaselineFitting(aspecd.analysis.SingleAnalysisStep):
         Order of the polynomial to create
 
     percentage: :class:`int`
-        Percentage of the spectrum to consider as baseline on
-        EACH SIDE of the spectrum. I.e. 10% means 10% left and
-        10 % right.
+        Percentage of the spectrum to consider as baseline on EACH SIDE of the
+        spectrum. I.e. 10% means 10% left and 10 % right.
 
     """
 
@@ -173,14 +171,14 @@ class BaselineFitting(aspecd.analysis.SingleAnalysisStep):
 
     def _perform_task(self):
         """Wrapper around polynomial determination."""
-        coeffs = self._find_polynome_by_fit()
-        self.result = coeffs
+        coefficients = self._find_polynomial_by_fit()
+        self.result = coefficients
 
-    def _find_polynome_by_fit(self):
+    def _find_polynomial_by_fit(self):
         """Perform a polynomial fit on the baseline.
 
-        This method assembles the data points of the spectrum to consider
-        and uses a numpy polynomial fit on these points.
+        Assemble the data points of the spectrum to consider and use a numpy
+        polynomial fit on these points.
         """
         number_of_points = len(self.dataset.data.data)
         points_per_side = \
@@ -202,8 +200,8 @@ class BaselineFitting(aspecd.analysis.SingleAnalysisStep):
     def _get_points_to_use(data, points_per_side):
         """Get a number of points from the spectrum to use for a fit.
 
-        Slices the list of all data points to have a list of
-        points from each side of the spectrum to use for polynomial fitting.
+        Slice the list of all data points to have a list of points from each
+        side of the spectrum to use for polynomial fitting.
 
         Parameters
         ----------
@@ -227,49 +225,27 @@ class BaselineFitting(aspecd.analysis.SingleAnalysisStep):
         return points_to_use
 
 
-class IntegrationIndefinite(aspecd.analysis.SingleAnalysisStep):
-    """Performs an indefinite integration.
-
-    Indefinite integration yields a new array of y values of the integrated
-    function.
-    """
+class IntegrationDefinite(aspecd.analysis.SingleAnalysisStep):
+    """Make definite integration, i.e. calculate the area under the curve."""
 
     def __init__(self):
         super().__init__()
-        self.description = "Indefinite Integration"
+        self.description = "Definite integration / area und the curve"
 
     def _perform_task(self):
         """Perform the actual integration.
 
-        Perform the actual integration using trapezoidal integration
-        functionality from scipy. The keyword argument initial=0 is used
-        to yield a list of length identical to the original one.
-        """
-        self.result = copy.deepcopy(self.dataset)
-
-
-class IntegrationDefinite(aspecd.analysis.SingleAnalysisStep):
-    """Make definite integration, i.e. calculates the area under the curve."""
-
-    def __init__(self):
-        super().__init__()
-        self.description = "Definite Integration / Area und the curve"
-
-    def _perform_task(self):
-        """Performs the actual integration.
-
         The x values from the dataset are used.
-
         """
-        x_coords = self.dataset.data.axes[0].values
-        y_coords = self.dataset.data.data
+        x_coordinates = self.dataset.data.axes[0].values
+        y_coordinates = self.dataset.data.data
 
-        integral = np.trapz(y_coords, x_coords)
+        integral = np.trapz(y_coordinates, x_coordinates)
         self.result = integral
 
 
 class IntegrationVerification(aspecd.analysis.SingleAnalysisStep):
-    """Verifies, if the spectrum was correctly preprocessed.
+    """Verify whether the spectrum was correctly preprocessed.
 
     In the case of a correct preprocessing, the curve after the first
     integration should be close to zero on the rightmost part of the spectrum,
@@ -284,8 +260,8 @@ class IntegrationVerification(aspecd.analysis.SingleAnalysisStep):
         Percentage of the spectrum to consider
 
     threshold: :class:`float`
-        Threshold for the integral. If the integral determined is smaller
-        the preprocessing is considered to have been successful.
+        Threshold for the integral. If the integral determined is smaller the
+        preprocessing is considered to have been successful.
 
     """
 
@@ -299,9 +275,8 @@ class IntegrationVerification(aspecd.analysis.SingleAnalysisStep):
     def _perform_task(self):
         """Perform the actual verification.
 
-        Performs the actual integration on a certain percentage of the
-        points from the right part of the spectrum and compares them to the
-        threshold.
+        Perform the actual integration on a certain percentage of the points
+        from the right part of the spectrum and compare them to the threshold.
 
         The result is a boolean: Is the integral lower than the threshold?
 
@@ -318,7 +293,7 @@ class IntegrationVerification(aspecd.analysis.SingleAnalysisStep):
 
 
 class CommonspaceAndDelimiters(aspecd.analysis.SingleAnalysisStep):
-    """Determination of common definition ranges.
+    """Determine the common definition ranges.
 
     If the common range is inferior to a certain value, an exception is raised.
     This can be transformed to a warning on a higher level application. In this
@@ -358,9 +333,9 @@ class CommonspaceAndDelimiters(aspecd.analysis.SingleAnalysisStep):
         Exception raised when less than two datasets are provided.
 
     WrongOrderError
-        Exception raised when any given x axis does not start with the
-        smallest and end with the highest value (determined by comparison
-        of the first and last value).
+        Exception raised when any given x axis does not start with the smallest
+        and end with the highest value (determined by comparison of the first
+        and last value).
 
     NoCommonspaceError
         Exception raised when the size of the common definition range is
@@ -384,8 +359,7 @@ class CommonspaceAndDelimiters(aspecd.analysis.SingleAnalysisStep):
 
         To find the common definition ranges first all relevant data points
         are collected. Subsequently the common ranges are determined and
-        finally the delimiter points between different ranges are
-        determined.
+        finally the delimiter points between different ranges are determined.
         These points are returned as result to possibly display them in a plot
         using multiple spectra.
 
@@ -415,32 +389,32 @@ class CommonspaceAndDelimiters(aspecd.analysis.SingleAnalysisStep):
 
         """
         for dataset in self.parameters["datasets"]:
-            x_coords = dataset.data.axes[0].values
-            if x_coords[-1] < x_coords[0]:
+            x_coordinates = dataset.data.axes[0].values
+            if x_coordinates[-1] < x_coordinates[0]:
                 dataset_name = dataset.id
                 raise WrongOrderError("Dataset " + dataset_name +
                                       " has x values in the wrong order.")
-
         for dataset in self.parameters["datasets"]:
-            x_coords = dataset.data.axes[0].values
-            self.start_points.append(x_coords[0])
-            self.end_points.append(x_coords[-1])
-            if self.minimum is None or x_coords[0] < self.minimum:
-                self.minimum = x_coords[0]
-            if self.maximum is None or x_coords[-1] > self.maximum:
-                self.maximum = x_coords[-1]
-            if (self.minimal_width is None or (x_coords[-1] - x_coords[0]) <
-                    self.minimal_width):
-                self.minimal_width = x_coords[-1] - x_coords[0]
+            x_coordinates = dataset.data.axes[0].values
+            self.start_points.append(x_coordinates[0])
+            self.end_points.append(x_coordinates[-1])
+            if self.minimum is None or x_coordinates[0] < self.minimum:
+                self.minimum = x_coordinates[0]
+            if self.maximum is None or x_coordinates[-1] > self.maximum:
+                self.maximum = x_coordinates[-1]
+            if (self.minimal_width is None or
+                    (x_coordinates[-1] - x_coordinates[0])
+                    < self.minimal_width):
+                self.minimal_width = x_coordinates[-1] - x_coordinates[0]
 
     def check_commonspace_for_two(self, index1, index2):
-        """Compares the definition ranges of two datasets.
+        """Compare the definition ranges of two datasets.
 
-        Determines whether or not the common definition range of two specta
+        Determine whether or not the common definition range of two spectra
         is considered large enough. This is determined by measuring the
-        distance between the start and end points of the spectra x axis.
-        Two factors considered are the difference in length between the axes
-        as well as the user provided threshold value.
+        distance between the start and end points of the spectra x axis. Two
+        factors considered are the difference in length between the axes as
+        well as the user provided threshold value.
 
         The maximum distance allowed on either end is
             length_difference + threshold*smaller width
@@ -552,10 +526,10 @@ class PeakToPeakLinewidth(aspecd.analysis.SingleAnalysisStep):
         self.description = "Determine peak-to-peak linewidth"
 
     def _perform_task(self):
-        self.result = self.get_p2p_linewidth()
+        self.result = self.get_peak_to_peak_linewidth()
 
-    def get_p2p_linewidth(self):
-        """Calculates the peak-to-peak line width.
+    def get_peak_to_peak_linewidth(self):
+        """Calculates the peak-to-peak linewidth.
 
         This is done by determining the distance between the maximum and the
         minimum in the derivative spectrum which should yield acceptable
@@ -635,8 +609,11 @@ class SignalToNoise(aspecd.analysis.SingleAnalysisStep):
     def _perform_task(self):
         """Determine signal to noise ratio.
 
-        Call method to get the maximum of the noise, compare it to the
-        absolute maximum and set a result.
+        Call method to get the amplitude of the noise, compare it to the
+        absolute amplitude and set a result.
+
+        .. todo::
+            numpy.abs or similar should do the trick for absolute values...
 
         """
         data_copy = copy.deepcopy(self.dataset.data.data)
@@ -644,11 +621,11 @@ class SignalToNoise(aspecd.analysis.SingleAnalysisStep):
         for data_index, data_value in enumerate(data_list_absolute):
             if data_value < 0:
                 data_list_absolute[data_index] *= -1
-        signal_max = max(data_list_absolute)
-        noise_max = self._get_noise_maximum(data_list_absolute)
-        self.result = signal_max / noise_max
+        signal_amplitude = max(data_list_absolute)
+        noise_amplitude = self._get_noise_amplitude(data_list_absolute)
+        self.result = signal_amplitude / noise_amplitude
 
-    def _get_noise_maximum(self, data_absolute):
+    def _get_noise_amplitude(self, data_absolute):
         """Find the maximum of the noise.
 
         This method assembles the data points of the spectrum to consider as
@@ -660,15 +637,15 @@ class SignalToNoise(aspecd.analysis.SingleAnalysisStep):
             math.ceil(number_of_points * self.parameters["percentage"] / 100.0)
         points_to_use_y = \
             self._get_points_to_use(data_absolute, points_per_side)
-        maximum = max(points_to_use_y)
-        return maximum
+        amplitude = max(points_to_use_y)
+        return amplitude
 
     @staticmethod
     def _get_points_to_use(data, points_per_side):
         """Get a number of points from the spectrum to use for a fit.
 
-        Slices the list of all data points to have a list of
-        points from each side of the spectrum to consider as noise.
+        Slices the list of all data points to have a list of points from each
+        side of the spectrum to consider as noise.
 
         WARNING: The spectral data needs to be provided and/or the percentage
         to use set in a way that no actual peak lies in this range.

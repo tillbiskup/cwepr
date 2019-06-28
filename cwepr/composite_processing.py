@@ -3,12 +3,20 @@
 In the definition of this package, a composite processing step includes both,
 processing and analysis. Generally this is the case if a processing step is
 performed which uses parameters obtained through an analysis step.
+
+This module exists for logical as well as technical reasons:
+1) It is not sensible to put combined processing and analysis in either of
+those modules.
+2) Both processing and analysis importing each other leads to infinite
+recursion.
 """
+
+from copy import deepcopy
 
 import numpy as np
 
-
 import aspecd.processing
+import aspecd.analysis
 import cwepr.analysis
 import cwepr.processing
 
@@ -17,8 +25,8 @@ class BaselineCorrectionComplete(aspecd.processing.ProcessingStep):
     """Perform fit on spectral data and subtract baseline.
 
     Wrapper around :class:`cwepr.analysis.BaselineFitting` and
-    :class:`cwepr.processing.BaselineCorrectionWithClcdDataset` to fit a
-    polynomial on the baseline and subtract it.
+    :class:`cwepr.processing.BaselineCorrectionWithCalculatedDataset`
+    to fit a polynomial on the baseline and subtract it.
 
     Attributes
     ----------
@@ -26,6 +34,8 @@ class BaselineCorrectionComplete(aspecd.processing.ProcessingStep):
         order of the polynomial to be fitted
     percentage: :class:`int`
         percentage of the data to be used for the fit
+
+        default is 10% (per side)
 
     """
 
@@ -41,12 +51,13 @@ class BaselineCorrectionComplete(aspecd.processing.ProcessingStep):
         baseline_analysis = self.dataset.analyse(baseline_fit_step)
         self.parameters["baseline_coefficients"] = baseline_analysis.result
         baseline = aspecd.dataset.CalculatedDataset()
-        x_coords = self.dataset.data.axes[0].values
-        baseline.data.axes[0].values = x_coords
+        x_coordinates = self.dataset.data.axes[0].values
+        baseline.data.axes[0].values = x_coordinates
         baseline.data.data = np.polyval(np.poly1d(self.parameters[
-                                        "baseline_coefficients"]), x_coords)
+                                        "baseline_coefficients"]),
+                                        x_coordinates)
         baseline_correct_step = \
-            cwepr.processing.BaselineCorrectionWithClcdDataset(baseline)
+            cwepr.processing.BaselineCorrectionWithCalculatedDataset(baseline)
         self.dataset.process(baseline_correct_step)
 
 
@@ -79,3 +90,26 @@ class FieldCorrectionComplete(aspecd.processing.ProcessingStep):
             cwepr.processing.FieldCorrection(self.parameters[
                                              "correction_value"])
         self.dataset.process(correction_step)
+
+
+class IntegrationIndefinite(aspecd.analysis.SingleAnalysisStep):
+    """Performs an indefinite integration.
+
+    Yield the integral function as new dataset.
+    """
+
+    def __init__(self):
+        super().__init__()
+        self.description = "Indefinite Integration"
+
+    def _perform_task(self):
+        """Perform the actual integration.
+
+        Perform the actual integration using trapezoidal integration
+        functionality from scipy. The keyword argument initial=0 is used to
+        yield a list of length identical to the original one.
+        """
+        integral_dataset = deepcopy(self.dataset)
+        integration_step = cwepr.processing.IntegrationIndefinite()
+        integral_dataset.process(integration_step)
+        self.result = integral_dataset
