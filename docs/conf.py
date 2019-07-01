@@ -82,12 +82,13 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 pygments_style = 'sphinx'
 
 # Autodoc configuration
-autodoc_default_flags = [
-    'members',
-    'undoc-members',
-    'show-inheritance',
-    'private-members',
-]
+autodoc_default_options = {
+    'members': True,
+    'member-order': 'bysource',
+    'undoc-members': True,
+    'private-members': True,
+    'show-inheritance': True,
+}
 
 # -- Options for HTML output -------------------------------------------------
 
@@ -120,7 +121,7 @@ html_logo = './cwepr-logo.png'
 # The name of an image file (relative to this directory) to use as a favicon of
 # the docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
 # pixels large.
-#html_favicon = None
+html_favicon = './cwepr-favicon.ico'
 
 
 # Add any paths that contain custom static files (such as style sheets) here,
@@ -219,7 +220,11 @@ epub_exclude_files = ['search.html']
 # -- Options for intersphinx extension ---------------------------------------
 
 # Example configuration for intersphinx: refer to the Python standard library.
-intersphinx_mapping = {'https://docs.python.org/': None}
+intersphinx_mapping = {
+    'python': ('https://docs.python.org/3', None),
+    'matplotlib': ('https://matplotlib.org/', None),
+    'aspecd': ('https://docs.aspecd.de', None),
+}
 
 # -- Options for todo extension ----------------------------------------------
 

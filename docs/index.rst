@@ -22,4 +22,7 @@ Indices and tables
 * :ref:`search`
 
 
+A note on the logo
+------------------
 
+The snake (a python) resembles the lines of a cw-EPR spectrum, with additional hyperfine splitting visible at the high-field component. The copyright of the logo belongs to J. Popp.
