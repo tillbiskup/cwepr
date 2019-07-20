@@ -189,7 +189,7 @@ class ImporterBES3T(ImporterEPRGeneral):
         complete_filename = self.source + ".DTA"
         raw_data = np.fromfile(complete_filename)
         if not are_intensity_values_plausible(raw_data):
-            raw_data.byteswap()
+            raw_data = raw_data.byteswap()
         self.dataset.data.data = raw_data
         metadata = self.import_metadata()
         self.dataset.map_metadata_and_check_for_overrides(metadata)

@@ -26,7 +26,10 @@ docs/_build
 docs/_static
 docs/_templates
 
-#test run module
+# test run module
 cwepr/run.py
 cwepr/Dataset
 cwepr/dataset_metadata
+
+# Output from tests
+*pdf

@@ -19,6 +19,6 @@ def are_intensity_values_plausible(array):
 
     """
     for value in array:
-        if value > 10 ** 4 or value < 10 ** -10:
+        if value > 10 ** 40 or value < 10 ** -40:
             return False
     return True

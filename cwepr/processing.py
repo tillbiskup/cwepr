@@ -31,8 +31,6 @@ class FieldCorrection(aspecd.processing.ProcessingStep):
 
     def _perform_task(self):
         """Shift all field axis data points by the correction value."""
-        print(self.parameters["correction_value"])
-        round(self.parameters["correction_value"], 6)
         for data_index in range(len(self.dataset.data.data)):
             self.dataset.data.axes[0].values[data_index] += \
                 self.parameters["correction_value"]
@@ -144,7 +142,7 @@ class BaselineCorrection(aspecd.processing.ProcessingStep):
 
     """
 
-    def __init__(self, coefficients):
+    def __init__(self, coefficients=None):
         super().__init__()
         self.parameters["coefficients"] = coefficients
         self.description = "Subtraction of baseline polynomial"
