@@ -21,10 +21,10 @@ import cwepr.analysis
 import cwepr.processing
 
 
-class BaselineCorrectionComplete(aspecd.processing.ProcessingStep):
+class BaselineCorrection(aspecd.processing.ProcessingStep):
     """Perform fit on spectral data and subtract baseline.
 
-    Wrapper around :class:`cwepr.analysis.BaselineFitting` and
+    Wrapper around :class:`cwepr.analysis.PolynomialBaselineFitting` and
     :class:`cwepr.processing.BaselineCorrectionWithCalculatedDataset`
     to fit a polynomial on the baseline and subtract it.
 
@@ -46,7 +46,7 @@ class BaselineCorrectionComplete(aspecd.processing.ProcessingStep):
         self.description = "Complete baseline correction"
 
     def _perform_task(self):
-        baseline_fit_step = cwepr.analysis.BaselineFitting(
+        baseline_fit_step = cwepr.analysis.PolynomialBaselineFitting(
             self.parameters["order"], self.parameters["percentage"])
         baseline_analysis = self.dataset.analyse(baseline_fit_step)
         self.parameters["baseline_coefficients"] = baseline_analysis.result
@@ -61,10 +61,10 @@ class BaselineCorrectionComplete(aspecd.processing.ProcessingStep):
         self.dataset.process(baseline_correct_step)
 
 
-class FieldCorrectionComplete(aspecd.processing.ProcessingStep):
+class FieldCorrection(aspecd.processing.ProcessingStep):
     """Acquire a correction value and apply it to the spectral data.
 
-    Wrapper around :class:`cwepr.analysis.FieldCorrectionValueFinding` and
+    Wrapper around :class:`cwepr.analysis.FieldCorrectionValue` and
     :class:`cwepr.processing.FieldCorrection` to find a correction value and
     apply it to the spectral data, i.e. shift the spectrum.
 
@@ -82,7 +82,7 @@ class FieldCorrectionComplete(aspecd.processing.ProcessingStep):
         self.description = "Complete linear field correction"
 
     def _perform_task(self):
-        value_finding_step = cwepr.analysis.FieldCorrectionValueFinding()
+        value_finding_step = cwepr.analysis.FieldCorrectionValue()
         field_analysis = self.parameters["dataset"].analyse(
             value_finding_step)
         self.parameters["correction_value"] = field_analysis.result
@@ -103,13 +103,8 @@ class IntegrationIndefinite(aspecd.analysis.SingleAnalysisStep):
         self.description = "Indefinite Integration"
 
     def _perform_task(self):
-        """Perform the actual integration.
-
-        Perform the actual integration using trapezoidal integration
-        functionality from scipy. The keyword argument initial=0 is used to
-        yield a list of length identical to the original one.
-        """
+        """Perform indefinite integration on copy of dataset."""
         integral_dataset = deepcopy(self.dataset)
-        integration_step = cwepr.processing.IntegrationIndefinite()
+        integration_step = cwepr.processing.Integration()
         integral_dataset.process(integration_step)
         self.result = integral_dataset

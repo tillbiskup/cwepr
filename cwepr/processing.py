@@ -71,9 +71,9 @@ class FrequencyCorrection(aspecd.processing.ProcessingStep):
 
     """
 
-    VALUE_G_LILIF = 2.002293
-    VALUE_MuB = 9.27401 * 10 ** (-24)
-    VALUE_H = 6.62607 * 10 ** (-34)
+    G_LILIF = 2.002293
+    BOHR_MAGNETON = 9.27401 * 10 ** (-24)
+    PLANCK_CONSTANT = 6.62607 * 10 ** (-34)
 
     def __init__(self, nu_given, nu_target):
         super().__init__()
@@ -89,51 +89,54 @@ class FrequencyCorrection(aspecd.processing.ProcessingStep):
         frequency.
         """
         for data_index in range(len(self.dataset.data.data)):
-            self.dataset.data.data[data_index] = self._transform_to_g(
+            self.dataset.data.data[data_index] = self._transform_b0_to_g(
                 self.dataset.data.data[data_index])
         for data_index in range(len(self.dataset.data.data)):
-            self.dataset.data.data[data_index] = self._transform_to_b(
+            self.dataset.data.data[data_index] = self._transform_g_to_b0(
                 self.dataset.data.data[data_index])
 
-    def _transform_to_g(self, value):
+    def _transform_b0_to_g(self, value):
         """Transform a field (B) axis value to a g axis value.
 
         Parameters
         ----------
-         value: :class:`float`
-         B value to transform.
+        value: :class:`float`
+            B value to transform.
 
         Returns
         -------
         g_value: :class:`float`
-        Transformed value.
+            Transformed value.
 
         """
-        g_value = self.VALUE_H * self.parameters["nu_given"].value \
-            / self.VALUE_MuB / value
+        g_value = self.PLANCK_CONSTANT * self.parameters["nu_given"].value \
+                  / self.BOHR_MAGNETON / value
         return g_value
 
-    def _transform_to_b(self, value):
+    def _transform_g_to_b0(self, value):
         """Transform a g axis value to a field (B) axis value.
 
         Parameters
         ----------
         value: :class:`float`
-        g value to transform.
+            g value to transform.
 
         Returns
         -------
         b_value: :class:`float`
-        Transformed value.
+            Transformed value.
 
         """
-        b_value = self.VALUE_H * self.parameters["nu_target"].value \
-            / self.VALUE_MuB / value
+        b_value = self.PLANCK_CONSTANT * self.parameters["nu_target"].value \
+                  / self.BOHR_MAGNETON / value
         return b_value
 
 
-class BaselineCorrection(aspecd.processing.ProcessingStep):
+class BaselineCorrectionWithPolynomial(aspecd.processing.ProcessingStep):
     """Perform a baseline correction using a polynomial previously determined.
+
+    The respective coefficients can be obtained using :class:`cwepr.analysis.PolynomialBaselineFitting`.
+    See also: :class:`cwepr.analysis.BaselineCorrectionWithCalculatedDataset`.
 
     Attributes
     ----------
@@ -163,7 +166,10 @@ class BaselineCorrection(aspecd.processing.ProcessingStep):
 
 class BaselineCorrectionWithCalculatedDataset(
         aspecd.processing.ProcessingStep):
-    """Perform a baseline correction using a polynomial previously determined.
+    """Perform a baseline correction using a baseline previously determined.
+
+    Uses a dataset with the respective baseline as data.
+    See also: :class:`cwepr.analysis.BaselineCorrectionWithPolynomial`.
 
     Attributes
     ----------
@@ -192,8 +198,8 @@ class BaselineCorrectionWithCalculatedDataset(
 class SubtractSpectrum(aspecd.processing.ProcessingStep):
     """Subtract one spectrum from another.
 
-    Processing routine to subtract a given spectrum, i.e. in general a
-    background, from the processed spectrum
+    Tool for subtracting a given spectrum, i.e. in general a background, from
+    the processed spectrum.
 
     Attributes
     ----------
@@ -211,7 +217,7 @@ class SubtractSpectrum(aspecd.processing.ProcessingStep):
         """Wrapper around the :meth:`_subtract` method."""
         self._subtract()
 
-    def interpolate(self):
+    def _interpolate(self):
         """Perform a potentially necessary interpolation.
 
         Interpolates the spectrum that should be subtracted from the other one
@@ -229,7 +235,7 @@ class SubtractSpectrum(aspecd.processing.ProcessingStep):
         The actual subtraction. The second spectrum (the one gets subtracted
         is first interpolated on the x values of the other one.
         """
-        y_interpolated = self.interpolate()
+        y_interpolated = self._interpolate()
         for data_index in range(len(self.dataset.data.data)):
             self.dataset.data.data[data_index] -= y_interpolated[data_index]
 
@@ -253,7 +259,7 @@ class AddSpectrum(aspecd.processing.ProcessingStep):
         """Wrapper around the :meth:`_add` method."""
         self._add()
 
-    def interpolate(self):
+    def _interpolate(self):
         """Perform a potentially necessary interpolation.
 
         Interpolates the spectrum that should be added to the other one on the
@@ -271,7 +277,7 @@ class AddSpectrum(aspecd.processing.ProcessingStep):
         The actual subtraction. The second spectrum (the one gets subtracted)
         is first interpolated on the x values of the other one.
         """
-        y_interpolated = self.interpolate()
+        y_interpolated = self._interpolate()
         for data_index in range(len(self.dataset.data.data)):
             self.dataset.data.data[data_index] += y_interpolated[data_index]
 
@@ -367,10 +373,11 @@ class NormaliseScanNumber(aspecd.processing.ProcessingStep):
                 self.parameters["scan_number"]
 
 
-class IntegrationIndefinite(aspecd.processing.ProcessingStep):
+class Integration(aspecd.processing.ProcessingStep):
     """Perform an indefinite integration.
 
-    Indefinite integration means integration yielding a integral function.
+    Indefinite integration means integration yielding an integral function.
+    The quality of the integration can be determined using :class:`cwepr.analysis.IntegrationVerification`
     """
 
     def __init__(self):

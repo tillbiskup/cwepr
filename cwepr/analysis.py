@@ -18,7 +18,7 @@ class Error(Exception):
     pass
 
 
-class WrongOrderError(Error):
+class ValuesNotIncreasingError(Error):
     """Exception raised when x values are decreasing.
 
     Values given for the common space determination should always be in
@@ -39,9 +39,6 @@ class WrongOrderError(Error):
 class NotEnoughDatasetsError(Error):
     """Exception raised when common definition range can't be determined.
 
-    This is usually the case when less than two datasets are given for the
-    common space determination.
-
     Attributes
     ----------
     message : :class:`str`
@@ -54,7 +51,7 @@ class NotEnoughDatasetsError(Error):
         self.message = message
 
 
-class NoCommonspaceError(Error):
+class NoCommonSpaceError(Error):
     """Exception raised when common definition range is zero.
 
     Attributes
@@ -86,7 +83,7 @@ class SpectrumNotIntegratedError(Error):
         self.message = message
 
 
-class FieldCorrectionValueFinding(aspecd.analysis.SingleAnalysisStep):
+class FieldCorrectionValue(aspecd.analysis.SingleAnalysisStep):
     """Determine correction value for a field correction.
 
     References for the constants:
@@ -110,9 +107,9 @@ class FieldCorrectionValueFinding(aspecd.analysis.SingleAnalysisStep):
     Reference: Rev. Mod. Phys. 2016, 88, 035009.
     """
 
-    VALUE_G_LILIF = 2.002293
-    VALUE_MuB = 9.27401 * 10 ** (-24)
-    VALUE_H = 6.62607 * 10 ** (-34)
+    G_LILIF = 2.002293
+    BOHR_MAGNETON = 9.27401 * 10 ** (-24)
+    PLANCK_CONSTANT = 6.62607 * 10 ** (-34)
 
     def __init__(self):
         super().__init__()
@@ -122,9 +119,9 @@ class FieldCorrectionValueFinding(aspecd.analysis.SingleAnalysisStep):
     def _perform_task(self):
         """Wrapper around field correction value determination method."""
         self.nu_value = self.dataset.metadata.bridge.mw_frequency.value
-        self.result = self.get_field_correction_value()
+        self.result = self._get_field_correction_value()
 
-    def get_field_correction_value(self):
+    def _get_field_correction_value(self):
         """Calculates a field correction value.
 
         Finds the approximate maximum of the peak in a field standard spectrum
@@ -144,13 +141,16 @@ class FieldCorrectionValueFinding(aspecd.analysis.SingleAnalysisStep):
             self.dataset.data.data[index_max] -
             self.dataset.data.data[index_min]) / 2.0
         calculated_field = \
-            self.VALUE_H * self.nu_value / self.VALUE_G_LILIF / self.VALUE_MuB
+            self.PLANCK_CONSTANT * self.nu_value / (self.G_LILIF * self.BOHR_MAGNETON)
         delta_b0 = calculated_field - experimental_field
         return delta_b0
 
 
-class BaselineFitting(aspecd.analysis.SingleAnalysisStep):
+class PolynomialBaselineFitting(aspecd.analysis.SingleAnalysisStep):
     """Analysis step for finding a baseline correction polynomial.
+
+    An actual correction with the respective polynomial can be performed afterwards
+    using :class:`cwepr.processing.BaselineCorrectionWithPolynomial`.
 
     Attributes
     ----------
@@ -225,7 +225,7 @@ class BaselineFitting(aspecd.analysis.SingleAnalysisStep):
         return points_to_use
 
 
-class IntegrationDefinite(aspecd.analysis.SingleAnalysisStep):
+class AreaUnderCurve(aspecd.analysis.SingleAnalysisStep):
     """Make definite integration, i.e. calculate the area under the curve."""
 
     def __init__(self):
@@ -250,6 +250,7 @@ class IntegrationVerification(aspecd.analysis.SingleAnalysisStep):
     In the case of a correct preprocessing, the curve after the first
     integration should be close to zero on the rightmost part of the spectrum,
     i.e. the area under this curve should also be close to zero.
+    The indefinite integration can be performed using :class:`cwepr.processing.Integration`
 
     Attributes
     ----------
@@ -292,7 +293,7 @@ class IntegrationVerification(aspecd.analysis.SingleAnalysisStep):
         self.result = (integral < self.threshold)
 
 
-class CommonspaceAndDelimiters(aspecd.analysis.SingleAnalysisStep):
+class CommonDefinitionRanges(aspecd.analysis.SingleAnalysisStep):
     """Determine the common definition ranges.
 
     If the common range is inferior to a certain value, an exception is raised.
@@ -332,7 +333,7 @@ class CommonspaceAndDelimiters(aspecd.analysis.SingleAnalysisStep):
     NotEnoughDatasetsError
         Exception raised when less than two datasets are provided.
 
-    WrongOrderError
+    ValuesNotIncreasingError
         Exception raised when any given x axis does not start with the smallest
         and end with the highest value (determined by comparison of the first
         and last value).
@@ -382,7 +383,7 @@ class CommonspaceAndDelimiters(aspecd.analysis.SingleAnalysisStep):
 
         Raises
         ------
-        WrongOrderError
+        ValuesNotIncreasingError
             Exception raised when any given x axis does not start with the
             smallest and end with the highest value (determined by comparison
             of the first and last value).
@@ -392,7 +393,7 @@ class CommonspaceAndDelimiters(aspecd.analysis.SingleAnalysisStep):
             x_coordinates = dataset.data.axes[0].values
             if x_coordinates[-1] < x_coordinates[0]:
                 dataset_name = dataset.id
-                raise WrongOrderError("Dataset " + dataset_name +
+                raise ValuesNotIncreasingError("Dataset " + dataset_name +
                                       " has x values in the wrong order.")
         for dataset in self.parameters["datasets"]:
             x_coordinates = dataset.data.axes[0].values
@@ -407,7 +408,7 @@ class CommonspaceAndDelimiters(aspecd.analysis.SingleAnalysisStep):
                     < self.minimal_width):
                 self.minimal_width = x_coordinates[-1] - x_coordinates[0]
 
-    def check_commonspace_for_two(self, index1, index2):
+    def _check_commonspace_for_two(self, index1, index2):
         """Compare the definition ranges of two datasets.
 
         Determine whether or not the common definition range of two spectra
@@ -447,7 +448,7 @@ class CommonspaceAndDelimiters(aspecd.analysis.SingleAnalysisStep):
             name2 = self.parameters["datasets"][index1].id
             errormessage = ("Datasets " + name1 + " and " + name2 +
                             "have not enough commonspace.")
-            raise NoCommonspaceError(errormessage)
+            raise NoCommonSpaceError(errormessage)
 
     def _check_commonspace_for_all(self):
         """Check all possible common definition ranges.
@@ -459,8 +460,8 @@ class CommonspaceAndDelimiters(aspecd.analysis.SingleAnalysisStep):
         for dataset_index_1 in range(len(self.parameters["datasets"])):
             for dataset_index_2 in range(len(self.parameters["datasets"])):
                 if dataset_index_1 != dataset_index_2:
-                    self.check_commonspace_for_two(dataset_index_1,
-                                                   dataset_index_2)
+                    self._check_commonspace_for_two(dataset_index_1,
+                                                    dataset_index_2)
 
     def _find_all_delimiter_points(self):
         """Find points where a spectrum starts or ends.
@@ -518,7 +519,7 @@ class CommonspaceAndDelimiters(aspecd.analysis.SingleAnalysisStep):
                 close_points = list()
 
 
-class PeakToPeakLinewidth(aspecd.analysis.SingleAnalysisStep):
+class LinewidthPeakToPeak(aspecd.analysis.SingleAnalysisStep):
     """Linewidth measurement (peak to peak in derivative)"""
 
     def __init__(self):
@@ -586,7 +587,7 @@ class LinewidthFWHM(aspecd.analysis.SingleAnalysisStep):
         return linewidth
 
 
-class SignalToNoise(aspecd.analysis.SingleAnalysisStep):
+class SignalToNoiseRatio(aspecd.analysis.SingleAnalysisStep):
     """Measure a spectrum's signal to noise ratio.
 
     This is done by comparing the absolute maximum of the spectrum to the

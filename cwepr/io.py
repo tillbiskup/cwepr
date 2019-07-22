@@ -1,7 +1,7 @@
 """Importers (Preparing raw data for processing)"""
 
 import os.path
-import collections as col
+import collections
 import re
 
 import numpy as np
@@ -10,8 +10,6 @@ import aspecd.infofile
 import aspecd.metadata
 import aspecd.utils
 import aspecd.dataset
-
-from cwepr.utils import are_intensity_values_plausible
 
 
 class Error(Exception):
@@ -103,7 +101,7 @@ class ExperimentTypeError(Error):
         self.message = message
 
 
-class ImporterEPRGeneral(aspecd.io.DatasetImporter):
+class GeneralImporter(aspecd.io.DatasetImporter):
     """Importer super class
 
     Determine the correct specialized importer for a format.
@@ -127,15 +125,41 @@ class ImporterEPRGeneral(aspecd.io.DatasetImporter):
 
     """
 
+    MAPPINGS = [
+        ["GENERAL", "combine_items", [["Date start", "Time start"],
+                                      "Start", " "]],
+        ["GENERAL", "combine_items", [["Date end", "Time end"],
+                                      "End", " "]],
+        ["", "rename_key", ["GENERAL", "measurement"]],
+        ["", "rename_key", ["TEMPERATURE", "temperature_control"]]
+    ]
     supported_formats = {"BES3T": [".DTA", ".DSC"], "Other": [".spc", ".par"]}
 
     def __init__(self, data_format=None, source=None):
         super().__init__(source=source)
         self.data_format = data_format
-        self.importers_for_formats = {"BES3T": ImporterBES3T,
-                                      "Other": ImporterEMXandESP}
+        self.importers_for_formats = {"BES3T": BES3TImporter,
+                                      "Other": EMXandESPImporter}
 
-    def import_metadata(self):
+    @staticmethod
+    def import_from_file(filename):
+        """Import data and metadata for a given filename.
+
+        The appropriate importer automatically checks whether data and metadata
+        files exist, matching a single format
+
+        Parameters
+        ----------
+        filename : :class:`str`
+            Path including the filename but not the extension.
+
+        """
+        importer_factory = ImporterFactory()
+        importer = importer_factory.get_importer(source=filename)
+        dataset = aspecd.dataset.Dataset()
+        dataset.import_from(importer=importer)
+
+    def _import_metadata(self):
         """Import metadata from parameter file and user made info file.
 
         Raises
@@ -155,6 +179,103 @@ class ImporterEPRGeneral(aspecd.io.DatasetImporter):
         return info_data
 
     @staticmethod
+    def _fill_axes(dataset):
+        """Add an x axis to the data.
+
+        The y (intensity) values (coming from the actual data file) are used as
+        already present. The x (field) values are created from the field data
+        in the metadata.
+
+        Both sets are combined and transformed into a numpy array.
+        """
+        field_points = []
+        for step_index in range(dataset.metadata.magnetic_field.step_count):
+            field_points.append(dataset.metadata.magnetic_field.field_min.value +
+                                dataset.metadata.magnetic_field.step_width.value
+                                * step_index)
+        field_data = np.array(field_points)
+        dataset.data.axes[0].values = field_data
+        dataset.data.axes[0].quantity = "magnetic field"
+        dataset.data.axes[0].unit = "mT"
+        dataset.data.axes[1].quantity = "intensity"
+
+    def map_metadata_and_check_for_overrides(self, metadata, dataset):
+        """Perform some operations to yield the final set of metadata.
+
+        Modifies names of metadata information as necessary, combines data from
+        the infofile and the spectrometer parameter file and checks for
+        possible overrides.
+
+        Parameters
+        ----------
+        metadata: :class:`list`
+            Loaded metadata to use. First entry: from infofile;
+            Second entry: from spectrometer parameter file.
+
+        """
+        metadata_mapper = aspecd.metadata.MetadataMapper()
+        metadata_mapper.metadata = metadata[0]
+        metadata_mapper.mappings = self.MAPPINGS
+        metadata_mapper.map()
+        dataset.metadata.from_dict(metadata_mapper.metadata)
+        param_data_mapped = metadata[1]
+        for data_part in param_data_mapped:
+            dataset.metadata.from_dict(data_part)
+            self._check_for_override(metadata_mapper.metadata, data_part, dataset)
+
+    def _check_for_override(self, data1, data2, dataset, name=""):
+        """Check if metadata from info file is overridden by parameter file.
+
+        Compare the keys in the info file dict with those in each part of the
+        DSC/PAR file to find overrides. Any matching keys are considered to be
+        overridden and a respective note is added to
+        :attr:`cwepr.metadata.DatasetMetadata.metadata_modifications`.
+        The method cascades through nested dicts returning a 'path' of the
+        potential overrides. E.g., when the key 'a' in the sub dict 'b' is
+        found in both dicts the path will be '/b/a'.
+
+        Parameters
+        ----------
+        data1 : :class:`dict`
+            Original data.
+
+        data2: :class:`dict`
+            Data that is added to the original dict.
+
+        name: :class:`str`
+            Used in the cascade to keep track of the path. This should not be
+            set to anything other than the default value.
+
+        """
+        top_level = False
+        for entry in list(data1.keys()):
+            data1[entry.lower()] = data1.pop(entry)
+        for entry in data1.keys():
+            if isinstance(data1[entry], collections.OrderedDict):
+                top_level = True
+        for entry in data1.keys():
+            if entry in data2.keys():
+                if top_level:
+                    if name.split("/")[-1] != entry:
+                        name = ""
+                    name = name + "/" + entry
+                    self._check_for_override(data1[entry], data2[entry], dataset,
+                                             name=name)
+                else:
+                    dataset.metadata.metadata_modifications.append(
+                        "Possible override @ " + name + "/" + entry + ".")
+
+    @staticmethod
+    def _modify_field_values(dataset):
+        """Wrapper method to get all magnetic field data in desired form.
+
+        Fills in all variables concerning the magnetic field as appropriate
+        and transforms them from gauss to millitesla.
+        """
+        dataset.metadata.magnetic_field.calculate_values()
+        dataset.metadata.magnetic_field.gauss_to_millitesla()
+
+    @staticmethod
     def _import_infofile(filename):
         """Use aspecd method to import user made info file.
 
@@ -167,8 +288,33 @@ class ImporterEPRGeneral(aspecd.io.DatasetImporter):
         infofile_data = aspecd.infofile.parse(filename)
         return infofile_data
 
+    @staticmethod
+    def plausible_intensity_values(array):
+        """Check imported values for plausibility.
 
-class ImporterBES3T(ImporterEPRGeneral):
+        Check whether the values imported are plausible, i.e. not extremely
+        high or
+        low.
+
+        .. note::
+            In case of a wrong byteorder the values observed can reach 10**300
+            and higher. The threshold of what is considered plausible is,
+            so far,
+            rather arbitrary.
+
+        Parameters
+        ----------
+        array: :class:`numpy.array`
+            Array to check the values of.
+
+        """
+        for value in array:
+            if value > 10 ** 40 or value < 10 ** -40:
+                return False
+        return True
+
+
+class BES3TImporter(GeneralImporter):
     """Specialized Importer for the BES3T format."""
 
     def __init__(self, source=None):
@@ -188,15 +334,15 @@ class ImporterBES3T(ImporterEPRGeneral):
         """
         complete_filename = self.source + ".DTA"
         raw_data = np.fromfile(complete_filename)
-        if not are_intensity_values_plausible(raw_data):
+        if not self.plausible_intensity_values(raw_data):
             raw_data = raw_data.byteswap()
         self.dataset.data.data = raw_data
-        metadata = self.import_metadata()
-        self.dataset.map_metadata_and_check_for_overrides(metadata)
-        self.dataset.modify_field_values()
-        self.dataset.fill_axes()
+        metadata = self._import_metadata()
+        self.map_metadata_and_check_for_overrides(metadata, self.dataset)
+        self._modify_field_values(self.dataset)
+        self._fill_axes(self.dataset)
 
-    def import_metadata(self):
+    def _import_metadata(self):
         """Import parameter file in BES3T format and user created info file.
 
         Returns
@@ -205,7 +351,7 @@ class ImporterBES3T(ImporterEPRGeneral):
             Parsed data from the source parameter file.
 
         """
-        info_data = super().import_metadata()
+        info_data = super()._import_metadata()
         file_param = open(self.source + ".DSC")
         raw_param_data = file_param.read()
         dsc_file_parser = ParserDSC()
@@ -326,7 +472,7 @@ class ParserDSC:
 
         """
         lines = part1.split("\n")
-        part1_clean = col.OrderedDict()
+        part1_clean = collections.OrderedDict()
         current_subpart = list()
         for line in lines:
             if "*" in line and "*\t" not in line:
@@ -377,9 +523,9 @@ class ParserDSC:
             (parameter names) and values (parameter values).
 
         """
-        p1p3_dict = col.OrderedDict()
+        p1p3_dict = collections.OrderedDict()
         for title, subpart in p1p3_split.items():
-            param_dict = col.OrderedDict()
+            param_dict = collections.OrderedDict()
             for line in subpart:
                 if delimiter_width != 0:
                     param_count = 0
@@ -463,7 +609,7 @@ class ParserDSC:
             (parameter value).
 
         """
-        part2_dict = col.OrderedDict()
+        part2_dict = collections.OrderedDict()
         for line in part2_split:
             line_split = line.split("    ")
             if line_split[0] != "":
@@ -502,7 +648,7 @@ class ParserDSC:
 
         """
         lines = part3.split("\n")
-        subdivisions = col.OrderedDict()
+        subdivisions = collections.OrderedDict()
         current_subpart = list()
         for line in lines:
             if "*" in line:
@@ -589,14 +735,14 @@ class ParserDSC:
         return mapper.metadata
 
 
-class ImporterEMXandESP(ImporterEPRGeneral):
+class EMXandESPImporter(GeneralImporter):
     """Specialized Importer for the BES3T format."""
 
     def __init__(self, source=None):
         super().__init__(source=source)
 
     def _import(self):
-        """Import data file in BES3T format.
+        """Import data file in EMX or ESP format.
 
         The data is checked for plausibility; if values are too large or too
         small the byte order is changed.
@@ -610,17 +756,16 @@ class ImporterEMXandESP(ImporterEPRGeneral):
         complete_filename = self.source + ".spc"
         datatype = np.dtype('<f')
         raw_data = np.fromfile(complete_filename, datatype)
-        if not are_intensity_values_plausible(raw_data):
+        if not self.plausible_intensity_values(raw_data):
             datatype = np.dtype('>i4')
             raw_data = np.fromfile(complete_filename, datatype)
         self.dataset.data.data = raw_data
-        metadata = self.import_metadata()
-        print(metadata)
-        self.dataset.map_metadata_and_check_for_overrides(metadata)
-        self.dataset.modify_field_values()
-        self.dataset.fill_axes()
+        metadata = self._import_metadata()
+        self.map_metadata_and_check_for_overrides(metadata, self.dataset)
+        self._modify_field_values(self.dataset)
+        self._fill_axes(self.dataset)
 
-    def import_metadata(self):
+    def _import_metadata(self):
         """Import parameter file in BES3T format and user created info file.
 
         Returns
@@ -631,7 +776,7 @@ class ImporterEMXandESP(ImporterEPRGeneral):
         """
         headlines = ["experiment", "spectrometer", "magnetic_field",
                      "bridge", "signal_channel", "probehead", "metadata"]
-        info_data = super().import_metadata()
+        info_data = super()._import_metadata()
         file_param = open(self.source + ".par")
         raw_param_data = file_param.read()
         par_file_parser = ParserPAR()
@@ -753,15 +898,15 @@ class ParserPAR:
         return content_parsed
 
 
-class ImporterFactoryEPR(aspecd.io.DatasetImporterFactory):
+class ImporterFactory(aspecd.io.DatasetImporterFactory):
     """Factory that returns correct importer class for a given file."""
 
     supported_formats = {"BES3T": [".DTA", ".DSC"], "Other": [".spc", ".par"]}
 
     def __init__(self):
         super().__init__()
-        self.importers_for_formats = {"BES3T": ImporterBES3T,
-                                      "Other": ImporterEMXandESP}
+        self.importers_for_formats = {"BES3T": BES3TImporter,
+                                      "Other": EMXandESPImporter}
         self.data_format = None
 
     def _get_importer(self, source):
@@ -808,7 +953,7 @@ class ImporterFactoryEPR(aspecd.io.DatasetImporterFactory):
         raise NoMatchingFilePairError(message=msg)
 
 
-class ExporterASCII(aspecd.io.DatasetExporter):
+class ASCIIExporter(aspecd.io.DatasetExporter):
     """Export a dataset in ASCII format.
 
     Exports the complete dataset to an ASCII file. At the same time, the
@@ -822,10 +967,10 @@ class ExporterASCII(aspecd.io.DatasetExporter):
     def _export(self):
         """Export the dataset's numeric data and metadata."""
         np.savetxt("Dataset", self.dataset.data.data, delimiter=",")
-        file_writer = aspecd.utils.Yaml()
+        metadata_writer = aspecd.utils.Yaml()
         metadata = self._get_and_prepare_metadata()
-        file_writer.dict = metadata
-        file_writer.write_to(filename="dataset_metadata")
+        metadata_writer.dict = metadata
+        metadata_writer.write_to(filename="dataset_metadata")
 
     def _get_and_prepare_metadata(self):
         """Prepare the dataset's metadata to be imported.

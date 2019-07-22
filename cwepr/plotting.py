@@ -3,7 +3,8 @@
 
 import matplotlib.pyplot as plt
 import numpy as np
-import aspecd
+
+import aspecd.plotting
 
 
 class Error(Exception):
@@ -90,114 +91,17 @@ class SimpleSpectrumPlotter(aspecd.plotting.SinglePlotter):
 
     def _set_defaults(self):
         """Create default values for all settings of the plot."""
-        self.set_color("tab:blue")
-        self.set_title("")
-        self.set_curve_name("Derivative Spectrum")
-        self.set_draw_zeroline(True)
-        self.set_zeroline_thickness(0.5)
-        self.set_zeroline_color("black")
-        self.set_fit_axis_to_spectrum(True)
+        self.parameters["color"] = "tab:blue"
+        self.parameters["title"] = ""
+        self.parameters["x_name"] = "Field"
+        self.parameters["y_name"] = "Intensity"
+        self.parameters["curve_name"] = "Derivative Spectrum"
+        self.parameters["draw_zero"] = True
+        self.parameters["zero_thickness"] = 0.5
+        self.parameters["zero_color"] = "black"
+        self.parameters["fit_axis"] = True
         # noinspection PyTypeChecker
         self.set_x_axis_limits(None, None)
-
-    def set_color(self, color):
-        """Sets the color of the main (derivative) curve.
-
-        Parameters
-        ----------
-        color: :class:`str` or RGBA tuple
-            The color to use.
-
-        """
-        self.parameters["color"] = color
-
-    def set_title(self, title):
-        """Sets the title of the plot.
-
-        Parameters
-        ----------
-        title: :class:`str`
-            The title to use.
-
-        """
-        self.parameters["title"] = title
-
-    def set_x_axis_name(self, name):
-        """Sets the label of the x axis.
-
-        Parameters
-        ----------
-        name: :class:`str`
-            The name to use.
-
-        """
-        self.parameters["x_name"] = name
-
-    def set_y_axis_name(self, name):
-        """Sets the label of the y axis.
-
-        Parameters
-        ----------
-        name: :class:`str`
-            The name to use.
-
-        """
-        self.parameters["y_name"] = name
-
-    def set_curve_name(self, name):
-        """Sets the label of the main (derivative) curve in the legend.
-
-        Parameters
-        ----------
-        name: :class:`str`
-            The name to use.
-
-        """
-        self.parameters["curve_name"] = name
-
-    def set_draw_zeroline(self, do_draw):
-        """Set whether the zero line should be drawn.
-
-        Parameters
-        ----------
-        do_draw: :class:`bool`
-            Should the zero line be drawn?
-
-        """
-        self.parameters["draw_zero"] = do_draw
-
-    def set_zeroline_thickness(self, thickness):
-        """Sets thickness of the zero line.
-
-        Parameters
-        ----------
-        thickness: :class:`float`
-            Thickness of the zero line; default: 0.5
-
-        """
-        self.parameters["zero_thickness"] = thickness
-
-    def set_zeroline_color(self, color):
-        """Sets the color of the zero line.
-
-        Parameters
-        ----------
-        color: :class:`str` or RGBA tuple
-            The color to use.
-
-        """
-        self.parameters["zero_color"] = color
-
-    def set_fit_axis_to_spectrum(self, do_fit):
-        """Whether the x axis limits should be fitted to width of the spectrum.
-
-        Parameters
-        ----------
-        do_fit: :class:`bool`
-            Should the width of the plot fit the width of the curve?
-
-        """
-        self.parameters["fit_axis"] = do_fit
 
     def set_x_axis_limits(self, left, right):
         """Sets the limits of the x axis.
@@ -209,6 +113,7 @@ class SimpleSpectrumPlotter(aspecd.plotting.SinglePlotter):
         ----------
         left: :class:`float`
             Left limit in units of the x axis.
+
         right: :class:'float'
             Right limit in units of the x axis.
 
@@ -239,6 +144,7 @@ class SimpleSpectrumPlotter(aspecd.plotting.SinglePlotter):
         ----------
         x_coordinates: :class:`list`
             x values for plotting
+
         y_coordinates: :class:`list`
             y values for plotting
 
@@ -302,54 +208,10 @@ class SpectrumAndIntegralPlotter(SimpleSpectrumPlotter):
         for colors and names of the integral curves.
         """
         super()._set_defaults()
-        self.set_integral1_name("First Integration")
-        self.set_integral1_color("tab:red")
-        self.set_integral2_name("Second Integration")
-        self.set_integral2_color("tab:green")
-
-    def set_integral1_color(self, color):
-        """Sets the color of the first integral curve.
-
-        Parameters
-        ----------
-        color: :class:`str` or RGBA tuple
-            The color to use.
-
-        """
-        self.parameters["integral1_color"] = color
-
-    def set_integral1_name(self, name):
-        """Sets the label of the first integral curve in the legend.
-
-        Parameters
-        ----------
-        name: :class:`str`
-            The name to use.
-
-        """
-        self.parameters["integral1_name"] = name
-
-    def set_integral2_color(self, color):
-        """Sets the color of the second integral curve.
-
-        Parameters
-        ----------
-        color: :class:`str` or RGBA tuple
-            The color to use.
-
-        """
-        self.parameters["integral2_color"] = color
-
-    def set_integral2_name(self, name):
-        """Sets the label of the second integral curve in the legend.
-
-        Parameters
-        ----------
-        name: :class:`str`
-            The name to use.
-
-        """
-        self.parameters["integral2_name"] = name
+        self.parameters["integral1_name"] = "First Integration"
+        self.parameters["integral1_color"] = "tab:red"
+        self.parameters["integral2_name"] = "Second Integration"
+        self.parameters["integral2_color"] = "tab:green"
 
     def _plot_lines(self, x_coordinates, y_coordinates):
         """Perform the actual plot for spectrum and integral(s).
@@ -362,6 +224,7 @@ class SpectrumAndIntegralPlotter(SimpleSpectrumPlotter):
         ----------
         x_coordinates: :class:`list`
             x values for plotting
+
         y_coordinates: :class:`list`
             y values for plotting
 
@@ -380,8 +243,9 @@ class SpectrumAndIntegralPlotter(SimpleSpectrumPlotter):
                  color=self.parameters["color"])
         if (self.parameters["integral_1"] is None and
                 self.parameters["integral_2"] is None):
-            raise NoIntegralDataProvidedError(""""Neither first nor second 
-integration data points have been provided for integral plotting.""")
+            message = """Neither first nor second integration data points have 
+            been provided for integral plotting."""
+            raise NoIntegralDataProvidedError(message)
         if self.parameters["integral_1"] is not None:
             plt.plot(x_coordinates, self.parameters["integral_1"],
                      label=self.parameters["integral1_name"],
@@ -392,13 +256,14 @@ integration data points have been provided for integral plotting.""")
                      color=self.parameters["integral2_color"])
 
 
-class Multiplotter(aspecd.plotting.MultiPlotter):
+class MultiPlotter(aspecd.plotting.MultiPlotter):
     """Plotter used for plotting multiple spectra at the same time.
 
     Attributes
     ----------
     datasets: :class:`list`
         List of datasets to plot.
+
     integrals: :class:`list`
         List of the numeric of the integrals to be indicated in the legend.
         Can be omitted.
@@ -416,132 +281,22 @@ class Multiplotter(aspecd.plotting.MultiPlotter):
 
     def _set_defaults(self):
         """Create default values for all settings of the plot."""
-        self.set_title("Spectrum")
-        self.set_x_axis_name("Field")
-        self.set_y_axis_name("Intensity Change")
-        self.set_draw_zeroline(True)
-        self.set_zeroline_thickness(0.5)
-        self.set_zeroline_color("black")
-        self.set_fit_axis_to_spectrum(True)
+        self.parameters["title"] = "Spectrum"
+        self.parameters["x_name"] = "Field"
+        self.parameters["y_name"] = "Intensity Change"
+        self.parameters["draw_zero"] = True
+        self.parameters["zero_thickness"] = 0.5
+        self.parameters["zero_color"] = "black"
+        self.parameters["fit_axis"] = True
         color_library = ["tab:blue", "tab:red", "tab:green", "tab:cyan",
                          "tab:magenta", "tab:yellow"]
-        self.set_curve_colors(color_library[:len(self.parameters["datasets"])])
+        self.parameters["colors"] = color_library[:len(self.parameters["datasets"])]
         curve_names = list()
         for curve_index in range(len(self.parameters["datasets"])):
             name = "Curve " + str(curve_index)
             curve_names.append(name)
-        self.set_curve_names(curve_names)
-        self.set_show_integrals(True)
-
-    def set_curve_names(self, names):
-        """Sets the names for the different curves.
-
-        Parameters
-        ----------
-        names: :class:`list`
-            List of 'str' containing the names.
-
-        """
-        self.parameters["names"] = names
-
-    def set_curve_colors(self, colors):
-        """Sets the colors for the different curves.
-
-        Parameters
-        ----------
-        colors: :class:`list`
-            List of 'str' and or RGBA containing the colors.
-
-        """
-        self.parameters["colors"] = colors
-
-    def set_title(self, title):
-        """Sets the title of the plot.
-
-        Parameters
-        ----------
-        title: :class:`str`
-            The title to use.
-
-        """
-        self.parameters["title"] = title
-
-    def set_x_axis_name(self, name):
-        """Sets the label of the x axis.
-
-        Parameters
-        ----------
-        name: :class:`str`
-            The name to use.
-
-        """
-        self.parameters["x_name"] = name
-
-    def set_y_axis_name(self, name):
-        """Sets the label of the y axis.
-
-        Parameters
-        ----------
-        name: :class:`str`
-            The name to use.
-
-        """
-        self.parameters["y_name"] = name
-
-    def set_draw_zeroline(self, do_draw):
-        """Set whether the zero line should be drawn.
-
-        Parameters
-        ----------
-        do_draw: :class:`bool`
-            Should the zero line be drawn?
-
-        """
-        self.parameters["draw_zero"] = do_draw
-
-    def set_zeroline_thickness(self, thickness):
-        """Sets thickness of the zero line.
-
-        Parameters
-        ----------
-        thickness: :class:`float`
-            Thickness of the zero line; default: 0.5
-
-        """
-        self.parameters["zero_thickness"] = thickness
-
-    def set_zeroline_color(self, color):
-        """Sets the color of the zero line.
-
-        Parameters
-        ----------
-        color: :class:`str` or RGBA tuple
-            The color to use.
-
-        """
-        self.parameters["zero_color"] = color
-
-    def set_fit_axis_to_spectrum(self, do_fit):
-        """Whether the x axis limits should be adapted to spectrum width.
-
-        Parameters
-        ----------
-        do_fit: :class:`bool`
-            Should the width of the plot fit the width of the curve?
-
-        """
-        self.parameters["fit_axis"] = do_fit
-
-    def set_show_integrals(self, do_show):
-        """Whether the integrals should be shown in the legend if provided.
-
-        Parameters
-        ----------
-        do_show: :class:`bool`
-            Should the integrals be indicated?
-
-        """
-        self.parameters["show_integrals"] = do_show
+        self.parameters["names"] = curve_names
+        self.parameters["show_integrals"] = True
 
     def _create_plot(self):
         """Draw and display the plot."""
@@ -553,7 +308,7 @@ class Multiplotter(aspecd.plotting.MultiPlotter):
             y_coordinates = self.parameters["datasets"][curve_index].data.data
             x_axes.append(x_coordinates)
             self._plot_lines(x_coordinates, y_coordinates, curve_index)
-        x_axis_limits = self.get_x_axis_limits(x_axes)
+        x_axis_limits = self._get_x_axis_limits(x_axes)
         if self.parameters["draw_zero"]:
             zeroline_values = np.linspace(x_axis_limits[0],
                                           x_axis_limits[1], num=1500)
@@ -565,7 +320,7 @@ class Multiplotter(aspecd.plotting.MultiPlotter):
         plt.show()
 
     @staticmethod
-    def get_x_axis_limits(x_axes):
+    def _get_x_axis_limits(x_axes):
         """Get reasonable limits for the x axis.
 
         Determined the x axis limits using the lowest starting point and
@@ -593,6 +348,7 @@ class Multiplotter(aspecd.plotting.MultiPlotter):
         ----------
         x_coordinates: :class:`list`
             x values for plotting
+
         y_coordinates: :class:`list`
             y values for plotting
 
@@ -618,39 +374,17 @@ class Multiplotter(aspecd.plotting.MultiPlotter):
             self.axes.set_xlim(x_coordinates[0], x_coordinates[1])
 
 
-class PlotSaver(aspecd.plotting.Saver):
+class Saver(aspecd.plotting.Saver):
     """Saver used to save an image of a given plot."""
 
     def __init__(self, filename=None):
         super().__init__(filename=filename)
-        self.set_defaults()
+        self._set_defaults()
 
-    def set_format(self, data_format):
-        """Sets the data format to save to (Default: .png).
-
-        Parameters
-        ----------
-        data_format: :class:`str`
-            File extension
-
-        """
-        self.parameters["format"] = data_format
-
-    def set_res(self, res):
-        """Sets the resolution for the saved image (Default: 300 dpi).
-
-        Parameters
-        ----------
-        res: :class:`int`
-            Resolution (dpi)
-
-        """
-        self.parameters["res"] = res
-
-    def set_defaults(self):
+    def _set_defaults(self):
         """Sets the default values for data format and resolution."""
-        self.set_format(".png")
-        self.set_res(300)
+        self.parameters["format"] = ".png"
+        self.parameters["res"] = 300
 
     def _save_plot(self):
         """Perform the actual saving of the plot.

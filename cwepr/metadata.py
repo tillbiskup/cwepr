@@ -62,7 +62,7 @@ class DatasetMetadata(aspecd.metadata.ExperimentalDatasetMetadata):
     spectrometer: :obj:`cwepr.metadata.Spectrometer`
         Metadata object containing information on the spectrometer used.
 
-    magnetic_field: :obj:`cwepr.metadata.BFieldData`
+    magnetic_field: :obj:`cwepr.metadata.MagneticField`
         Metadata object containing information on the magnetic field applied in
         the experiment.
 
@@ -85,9 +85,9 @@ class DatasetMetadata(aspecd.metadata.ExperimentalDatasetMetadata):
         super().__init__()
         self.experiment = Experiment()
         self.sample = Sample()
-        self.spectrometer = SpectrometerInfo()
-        self.magnetic_field = BFieldData()
-        self.bridge = BridgeInfo()
+        self.spectrometer = Spectrometer()
+        self.magnetic_field = MagneticField()
+        self.bridge = Bridge()
         self.signal_channel = SignalChannel()
         self.probehead = Probehead()
         self.metadata_modifications = []
@@ -101,7 +101,7 @@ class Sample(aspecd.metadata.Sample):
         self.solvent = ""
 
 
-class BFieldData(aspecd.metadata.Metadata):
+class MagneticField(aspecd.metadata.Metadata):
     """Metadata class including all variables concerning the magnetic field."""
 
     def __init__(self, dict_=None):
@@ -237,7 +237,7 @@ class Experiment(aspecd.metadata.Metadata):
         self.harmonic = ""
 
 
-class SpectrometerInfo(aspecd.metadata.Metadata):
+class Spectrometer(aspecd.metadata.Metadata):
     """Metadata information on what type of spectrometer was used."""
 
     def __init__(self):
@@ -246,7 +246,7 @@ class SpectrometerInfo(aspecd.metadata.Metadata):
         self.software = ""
 
 
-class BridgeInfo(aspecd.metadata.Metadata):
+class Bridge(aspecd.metadata.Metadata):
     """Metadata information on the microwave bridge employed."""
 
     def __init__(self):
