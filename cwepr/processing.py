@@ -110,7 +110,7 @@ class FrequencyCorrection(aspecd.processing.ProcessingStep):
 
         """
         g_value = self.PLANCK_CONSTANT * self.parameters["nu_given"].value \
-                  / self.BOHR_MAGNETON / value
+            / self.BOHR_MAGNETON / value
         return g_value
 
     def _transform_g_to_b0(self, value):
@@ -128,14 +128,15 @@ class FrequencyCorrection(aspecd.processing.ProcessingStep):
 
         """
         b_value = self.PLANCK_CONSTANT * self.parameters["nu_target"].value \
-                  / self.BOHR_MAGNETON / value
+            / self.BOHR_MAGNETON / value
         return b_value
 
 
 class BaselineCorrectionWithPolynomial(aspecd.processing.ProcessingStep):
     """Perform a baseline correction using a polynomial previously determined.
 
-    The respective coefficients can be obtained using :class:`cwepr.analysis.PolynomialBaselineFitting`.
+    The respective coefficients can be obtained using
+    :class:`cwepr.analysis.PolynomialBaselineFitting`.
     See also: :class:`cwepr.analysis.BaselineCorrectionWithCalculatedDataset`.
 
     Attributes
@@ -377,7 +378,8 @@ class Integration(aspecd.processing.ProcessingStep):
     """Perform an indefinite integration.
 
     Indefinite integration means integration yielding an integral function.
-    The quality of the integration can be determined using :class:`cwepr.analysis.IntegrationVerification`
+    The quality of the integration can be determined using
+    :class:`cwepr.analysis.IntegrationVerification`
     """
 
     def __init__(self):

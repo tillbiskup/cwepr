@@ -141,7 +141,8 @@ class FieldCorrectionValue(aspecd.analysis.SingleAnalysisStep):
             self.dataset.data.data[index_max] -
             self.dataset.data.data[index_min]) / 2.0
         calculated_field = \
-            self.PLANCK_CONSTANT * self.nu_value / (self.G_LILIF * self.BOHR_MAGNETON)
+            self.PLANCK_CONSTANT * self.nu_value / \
+            (self.G_LILIF * self.BOHR_MAGNETON)
         delta_b0 = calculated_field - experimental_field
         return delta_b0
 
@@ -149,8 +150,9 @@ class FieldCorrectionValue(aspecd.analysis.SingleAnalysisStep):
 class PolynomialBaselineFitting(aspecd.analysis.SingleAnalysisStep):
     """Analysis step for finding a baseline correction polynomial.
 
-    An actual correction with the respective polynomial can be performed afterwards
-    using :class:`cwepr.processing.BaselineCorrectionWithPolynomial`.
+    An actual correction with the respective polynomial can be performed
+    afterwards using
+    :class:`cwepr.processing.BaselineCorrectionWithPolynomial`.
 
     Attributes
     ----------
@@ -250,7 +252,8 @@ class IntegrationVerification(aspecd.analysis.SingleAnalysisStep):
     In the case of a correct preprocessing, the curve after the first
     integration should be close to zero on the rightmost part of the spectrum,
     i.e. the area under this curve should also be close to zero.
-    The indefinite integration can be performed using :class:`cwepr.processing.Integration`
+    The indefinite integration can be performed using
+    :class:`cwepr.processing.Integration`
 
     Attributes
     ----------
@@ -394,7 +397,8 @@ class CommonDefinitionRanges(aspecd.analysis.SingleAnalysisStep):
             if x_coordinates[-1] < x_coordinates[0]:
                 dataset_name = dataset.id
                 raise ValuesNotIncreasingError("Dataset " + dataset_name +
-                                      " has x values in the wrong order.")
+                                               """ has x values in the wrong 
+                                               order.""")
         for dataset in self.parameters["datasets"]:
             x_coordinates = dataset.data.axes[0].values
             self.start_points.append(x_coordinates[0])

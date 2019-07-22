@@ -290,7 +290,8 @@ class MultiPlotter(aspecd.plotting.MultiPlotter):
         self.parameters["fit_axis"] = True
         color_library = ["tab:blue", "tab:red", "tab:green", "tab:cyan",
                          "tab:magenta", "tab:yellow"]
-        self.parameters["colors"] = color_library[:len(self.parameters["datasets"])]
+        self.parameters["colors"] = \
+            color_library[:len(self.parameters["datasets"])]
         curve_names = list()
         for curve_index in range(len(self.parameters["datasets"])):
             name = "Curve " + str(curve_index)

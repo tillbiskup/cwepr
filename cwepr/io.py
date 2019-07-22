@@ -190,16 +190,17 @@ class GeneralImporter(aspecd.io.DatasetImporter):
         """
         field_points = []
         for step_index in range(dataset.metadata.magnetic_field.step_count):
-            field_points.append(dataset.metadata.magnetic_field.field_min.value +
-                                dataset.metadata.magnetic_field.step_width.value
-                                * step_index)
+            field_points.append(
+                dataset.metadata.magnetic_field.field_min.value +
+                dataset.metadata.magnetic_field.step_width.value *
+                step_index)
         field_data = np.array(field_points)
         dataset.data.axes[0].values = field_data
         dataset.data.axes[0].quantity = "magnetic field"
         dataset.data.axes[0].unit = "mT"
         dataset.data.axes[1].quantity = "intensity"
 
-    def map_metadata_and_check_for_overrides(self, metadata, dataset):
+    def _map_metadata_and_check_for_overrides(self, metadata, dataset):
         """Perform some operations to yield the final set of metadata.
 
         Modifies names of metadata information as necessary, combines data from
@@ -208,9 +209,12 @@ class GeneralImporter(aspecd.io.DatasetImporter):
 
         Parameters
         ----------
-        metadata: :class:`list`
+        metadata: :class:`dict`
             Loaded metadata to use. First entry: from infofile;
             Second entry: from spectrometer parameter file.
+
+        dataset: :class:`cwepr.dataset.Dataset`
+            dataset that should be operated on
 
         """
         metadata_mapper = aspecd.metadata.MetadataMapper()
@@ -221,7 +225,9 @@ class GeneralImporter(aspecd.io.DatasetImporter):
         param_data_mapped = metadata[1]
         for data_part in param_data_mapped:
             dataset.metadata.from_dict(data_part)
-            self._check_for_override(metadata_mapper.metadata, data_part, dataset)
+            self._check_for_override(metadata_mapper.metadata,
+                                     data_part,
+                                     dataset)
 
     def _check_for_override(self, data1, data2, dataset, name=""):
         """Check if metadata from info file is overridden by parameter file.
@@ -259,7 +265,9 @@ class GeneralImporter(aspecd.io.DatasetImporter):
                     if name.split("/")[-1] != entry:
                         name = ""
                     name = name + "/" + entry
-                    self._check_for_override(data1[entry], data2[entry], dataset,
+                    self._check_for_override(data1[entry],
+                                             data2[entry],
+                                             dataset,
                                              name=name)
                 else:
                     dataset.metadata.metadata_modifications.append(
@@ -338,7 +346,7 @@ class BES3TImporter(GeneralImporter):
             raw_data = raw_data.byteswap()
         self.dataset.data.data = raw_data
         metadata = self._import_metadata()
-        self.map_metadata_and_check_for_overrides(metadata, self.dataset)
+        self._map_metadata_and_check_for_overrides(metadata, self.dataset)
         self._modify_field_values(self.dataset)
         self._fill_axes(self.dataset)
 
@@ -744,8 +752,11 @@ class EMXandESPImporter(GeneralImporter):
     def _import(self):
         """Import data file in EMX or ESP format.
 
-        The data is checked for plausibility; if values are too large or too
+        There is no easy way to recognize the respective format (identical
+        file extensions, only the byte order differs). For this reason, the
+        data is checked for plausibility; if values are too large or too
         small the byte order is changed.
+        "<f" means little-endian float; ">i4" means big-endian 32-bit integer.
 
         Returns
         -------
@@ -761,7 +772,7 @@ class EMXandESPImporter(GeneralImporter):
             raw_data = np.fromfile(complete_filename, datatype)
         self.dataset.data.data = raw_data
         metadata = self._import_metadata()
-        self.map_metadata_and_check_for_overrides(metadata, self.dataset)
+        self._map_metadata_and_check_for_overrides(metadata, self.dataset)
         self._modify_field_values(self.dataset)
         self._fill_axes(self.dataset)
 
@@ -966,11 +977,13 @@ class ASCIIExporter(aspecd.io.DatasetExporter):
 
     def _export(self):
         """Export the dataset's numeric data and metadata."""
-        np.savetxt("Dataset", self.dataset.data.data, delimiter=",")
+        file_name_data = self.target + ".txt"
+        file_name_meta = self.target + ".yaml"
+        np.savetxt(file_name_data, self.dataset.data.data, delimiter=",")
         metadata_writer = aspecd.utils.Yaml()
         metadata = self._get_and_prepare_metadata()
         metadata_writer.dict = metadata
-        metadata_writer.write_to(filename="dataset_metadata")
+        metadata_writer.write_to(filename=file_name_meta)
 
     def _get_and_prepare_metadata(self):
         """Prepare the dataset's metadata to be imported.
