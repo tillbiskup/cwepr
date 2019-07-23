@@ -15,7 +15,7 @@ class Error(Exception):
 
 
 class NotEnoughValuesError(Error):
-    """Exception raised when magnetic field data cannot be calculated.
+    """Exception raised when not enough data is given for a mathematical task.
 
     This happens when not enough different values are provided to calculate all
     other values.
@@ -66,7 +66,7 @@ class DatasetMetadata(aspecd.metadata.ExperimentalDatasetMetadata):
         Metadata object containing information on the magnetic field applied in
         the experiment.
 
-    bridge: :obj:`cwepr.metadata.Brige`
+    bridge: :obj:`cwepr.metadata.Bridge`
         Metadata object containing information on the microwave bridge used.
 
     signal_channel: :obj:`cwepr.metadata.SignalChannel`
@@ -279,8 +279,8 @@ class SignalChannel(aspecd.metadata.Metadata):
         self.modulation_frequency = aspecd.metadata.PhysicalQuantity()
         self.modulation_amplitude = aspecd.metadata.PhysicalQuantity()
         self.receiver_gain = aspecd.metadata.PhysicalQuantity()
-        self.conversion_time = aspecd.metadata.PhysicalQuantity()
-        self.time_constant = ""
+        self.conversion_time = "" #aspecd.metadata.PhysicalQuantity()
+        self.time_constant = aspecd.metadata.PhysicalQuantity()
         self.phase = aspecd.metadata.PhysicalQuantity()
 
 

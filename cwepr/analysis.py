@@ -36,7 +36,7 @@ class ValuesNotIncreasingError(Error):
         self.message = message
 
 
-class NotEnoughDatasetsError(Error):
+class DefinitionRangeDeterminationError(Error):
     """Exception raised when common definition range can't be determined.
 
     Attributes
