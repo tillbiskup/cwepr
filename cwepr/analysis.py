@@ -374,7 +374,7 @@ class CommonDefinitionRanges(aspecd.analysis.SingleAnalysisStep):
 
         """
         if len(self.parameters["datasets"]) < 2:
-            raise NotEnoughDatasetsError(
+            raise DefinitionRangeDeterminationError(
                 "Number of datasets( " + str(len(self.parameters["datasets"]))
                 + ") is too low!")
         self._acquire_data()
@@ -429,6 +429,7 @@ class CommonDefinitionRanges(aspecd.analysis.SingleAnalysisStep):
         index1: :class:`int`
             Index of one dataset used in the comparison. The index is given
             for the instance's list of datasets.
+
         index2: :class:`int`
             Index of the second dataset used in the comparison.
 
@@ -616,16 +617,12 @@ class SignalToNoiseRatio(aspecd.analysis.SingleAnalysisStep):
 
         Call method to get the amplitude of the noise, compare it to the
         absolute amplitude and set a result.
-
-        .. todo::
-            numpy.abs or similar should do the trick for absolute values...
-
         """
         data_copy = copy.deepcopy(self.dataset.data.data)
         data_list_absolute = data_copy.to_list()
         for data_index, data_value in enumerate(data_list_absolute):
-            if data_value < 0:
-                data_list_absolute[data_index] *= -1
+            data_list_absolute[data_index] = np.abs(
+                data_list_absolute[data_index])
         signal_amplitude = max(data_list_absolute)
         noise_amplitude = self._get_noise_amplitude(data_list_absolute)
         self.result = signal_amplitude / noise_amplitude

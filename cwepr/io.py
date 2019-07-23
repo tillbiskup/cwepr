@@ -111,6 +111,7 @@ class GeneralImporter(aspecd.io.DatasetImporter):
     data_format
         The format of the data to import. Is set manually or determined
         automatically.
+
     importers_for_formats
         Map of the specialized importers for different formats.
 
@@ -119,6 +120,7 @@ class GeneralImporter(aspecd.io.DatasetImporter):
     UnsupportedDataFormatError
         Raised if a format is set but does not match any of the supported
         formats
+
     NoMatchingFilePairError
         Raised if no pair of files matching any one supported format can be
         found. Currently Bruker BES3T, EMX and ESP/ECS formats are supported.
@@ -166,6 +168,7 @@ class GeneralImporter(aspecd.io.DatasetImporter):
         ------
         MissingInfoFileError
             Raised if no user made info file is provided.
+
         ImportMetadataOnlyError
             Raised when no format specific importer is initialized. This should
             happen and only happen, when the method is called without first
@@ -753,10 +756,11 @@ class EMXandESPImporter(GeneralImporter):
         """Import data file in EMX or ESP format.
 
         There is no easy way to recognize the respective format (identical
-        file extensions, only the byte order differs). For this reason, the
+        file extensions, only the encoding differs). For this reason, the
         data is checked for plausibility; if values are too large or too
-        small the byte order is changed.
-        "<f" means little-endian float; ">i4" means big-endian 32-bit integer.
+        small the encoding is changed.
+        "<f" means little-endian float; ">i4" means big-endian 32-bit integer,
+        these are the encodings of the two formats.
 
         Returns
         -------

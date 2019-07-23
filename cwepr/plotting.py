@@ -186,6 +186,7 @@ class SpectrumAndIntegralPlotter(SimpleSpectrumPlotter):
     ----------
     integral_1: :class:`list`
         y values of the first integration
+
     integral_2: :class:`list`
         y values of the second integration
 

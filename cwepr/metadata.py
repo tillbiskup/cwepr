@@ -262,14 +262,7 @@ class Bridge(aspecd.metadata.Metadata):
 
 
 class SignalChannel(aspecd.metadata.Metadata):
-    """Metadata information information on the signal channel employed.
-
-    .. todo::
-        Currently aspecd crashes when the creation of an instance of
-        :class:`aspecd.metadata.PhysicalQuantity` is attempted from an empty
-        parameter field (such as time_constant). Find a workaround or make the
-        supervisor of aspecd find one.
-    """
+    """Metadata information information on the signal channel employed."""
 
     def __init__(self):
         super().__init__()
@@ -279,7 +272,7 @@ class SignalChannel(aspecd.metadata.Metadata):
         self.modulation_frequency = aspecd.metadata.PhysicalQuantity()
         self.modulation_amplitude = aspecd.metadata.PhysicalQuantity()
         self.receiver_gain = aspecd.metadata.PhysicalQuantity()
-        self.conversion_time = "" #aspecd.metadata.PhysicalQuantity()
+        self.conversion_time = aspecd.metadata.PhysicalQuantity()
         self.time_constant = aspecd.metadata.PhysicalQuantity()
         self.phase = aspecd.metadata.PhysicalQuantity()
 

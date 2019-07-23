@@ -32,10 +32,9 @@ class BaselineCorrection(aspecd.processing.ProcessingStep):
     ----------
     order: :class:`int`
         order of the polynomial to be fitted
-    percentage: :class:`int`
-        percentage of the data to be used for the fit
 
-        default is 10% (per side)
+    percentage: :class:`int`
+        percentage of the data to be used for the fit default is 10% (per side)
 
     """
 
