@@ -20,3 +20,5 @@ IMPORTER.import_into(recipe=RECIPE)
 
 CHEF = aspecd.tasks.Chef(recipe=RECIPE)
 CHEF.cook()
+
+print(CHEF.recipe.tasks[0])

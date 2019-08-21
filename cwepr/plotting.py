@@ -95,7 +95,6 @@ class SimpleSpectrumPlotter(aspecd.plotting.SinglePlotter):
         self.parameters["title"] = ""
         self.parameters["x_name"] = "Field"
         self.parameters["y_name"] = "Intensity"
-        self.parameters["curve_name"] = "Derivative Spectrum"
         self.parameters["draw_zero"] = True
         self.parameters["zero_thickness"] = 0.5
         self.parameters["zero_color"] = "black"
@@ -131,7 +130,6 @@ class SimpleSpectrumPlotter(aspecd.plotting.SinglePlotter):
         self._make_labels_and_title()
         self._plot_lines(x_coordinates, y_coordinates)
         self._make_axis_limits(x_coordinates)
-        plt.legend()
 
     def _make_labels_and_title(self):
         """Create the title as well as the labels for the axes."""
@@ -153,9 +151,7 @@ class SimpleSpectrumPlotter(aspecd.plotting.SinglePlotter):
             plt.plot(x_coordinates, 0 * x_coordinates,
                      lw=self.parameters["zero_thickness"],
                      color=self.parameters["zero_color"])
-        plt.plot(x_coordinates, y_coordinates,
-                 label=self.parameters["curve_name"],
-                 color=self.parameters["color"])
+        plt.plot(x_coordinates, y_coordinates, color=self.parameters["color"])
 
     def _make_axis_limits(self, x_coordinates):
         """Set the limits of the x axis.
