@@ -169,7 +169,7 @@ class PolynomialBaselineFitting(aspecd.analysis.SingleAnalysisStep):
         super().__init__()
         self.parameters["order"] = order
         self.parameters["percentage"] = percentage
-        self.description = "Polynomial fit to baseline"
+        self.description = "Coefficients of polynomial fitted to baseline"
 
     def _perform_task(self):
         """Wrapper around polynomial determination."""

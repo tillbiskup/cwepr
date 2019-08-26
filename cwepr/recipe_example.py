@@ -10,7 +10,7 @@ import cwepr.dataset
 
 
 PATH = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
-SOURCE = PATH + "/Messdaten/Recipe2.yaml"
+SOURCE = PATH + "/data/recipe_cwepr.yaml"
 
 DTS_FACT = cwepr.dataset.DatasetFactory()
 RECIPE = aspecd.tasks.Recipe()
