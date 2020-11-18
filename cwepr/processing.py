@@ -1,6 +1,6 @@
 """Module containing all processing steps.
 
-A processing step is anything that modifies the dataset without giving an
+A processing step_width is anything that modifies the dataset without giving an
 independent result. E.g., Field Correction or Baseline correction.
 """
 
@@ -12,7 +12,7 @@ import aspecd.processing
 
 
 class FieldCorrection(aspecd.processing.ProcessingStep):
-    """Processing step for field correction.
+    """Processing step_width for field correction.
 
     Perform a linear field correction of the data with a correction value
     previously determined.
@@ -174,7 +174,7 @@ class BaselineCorrectionWithCalculatedDataset(
 
     Attributes
     ----------
-    baseline_dataset: :class:`cwepr.dataset.Dataset`
+    baseline_dataset: :class:`cwepr.dataset.ExperimentalDataset`
         Dataset containing the baseline to subtract.
 
     """
@@ -204,7 +204,7 @@ class SubtractSpectrum(aspecd.processing.ProcessingStep):
 
     Attributes
     ----------
-    second_dataset: :class:`cwepr.dataset.Dataset`
+    second_dataset: :class:`cwepr.dataset.ExperimentalDataset`
         Dataset containing the spectrum that should be subtracted.
 
     """
@@ -246,7 +246,7 @@ class AddSpectrum(aspecd.processing.ProcessingStep):
 
     Attributes
     ----------
-    second_dataset: :class:`cwepr.dataset.Dataset`
+    second_dataset: :class:`cwepr.dataset.ExperimentalDataset`
         Dataset containing the spectrum that should be added.
 
     """
@@ -284,7 +284,7 @@ class AddSpectrum(aspecd.processing.ProcessingStep):
 
 
 class PhaseCorrection(aspecd.processing.ProcessingStep):
-    """Processing step for phase correction.
+    """Processing step_width for phase correction.
 
     The functionality is suitable for automatic phase correction, no parameters
     need to be provided manually.

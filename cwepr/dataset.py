@@ -1,4 +1,4 @@
-"""Dataset (Container for experimental data and respective metadata)"""
+"""ExperimentalDataset (Container for experimental data and respective metadata)"""
 
 
 import aspecd.metadata
@@ -7,7 +7,7 @@ import cwepr.io
 import cwepr.metadata
 
 
-class Dataset(aspecd.dataset.ExperimentalDataset):
+class ExperimentalDataset(aspecd.dataset.ExperimentalDataset):
     """Set of data uniting all relevant information.
 
     The unity of numerical and metadata is indispensable for the
@@ -40,8 +40,8 @@ class DatasetFactory(aspecd.dataset.DatasetFactory):
 
         Returns
         -------
-        dataset : :class:`cwepr.dataset.Dataset`
+        dataset : :class:`cwepr.dataset.ExperimentalDataset`
             Dataset object for cwepr package
 
         """
-        return cwepr.dataset.Dataset()
+        return cwepr.dataset.ExperimentalDataset()

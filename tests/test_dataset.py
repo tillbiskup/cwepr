@@ -8,7 +8,7 @@ import os
 
 class TestDataset(unittest.TestCase):
     def setUp(self):
-        self.dataset = dataset.Dataset()
+        self.dataset = dataset.ExperimentalDataset()
 
     def test_instantiate_class(self):
         pass
@@ -20,7 +20,7 @@ class TestImport(unittest.TestCase):
 
     def test_import_dataset(self):
         path = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
-        dts = dataset.Dataset()
+        dts = dataset.ExperimentalDataset()
         dts.import_from_file((path + "/Messdaten/1_No1-dunkel"))
 
 
@@ -32,4 +32,4 @@ class TestDatasetFactory(unittest.TestCase):
         path = os.path.dirname(os.path.dirname(os.path.dirname(__file__))) + "/Messdaten/1_No1-dunkel"
         factory = dataset.DatasetFactory()
         ds = factory.get_dataset(source=path)
-        assert(type(ds) == dataset.Dataset)
+        assert(type(ds) == dataset.ExperimentalDataset)

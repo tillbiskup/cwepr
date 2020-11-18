@@ -1,6 +1,6 @@
 """Module containing all analysis steps
 
-An analysis step is everything that operates on a dataset and yields a result
+An analysis step_width is everything that operates on a dataset and yields a result
 largely independent of this dataset. E.g., integration or determination of a
 field correction value.
 """
@@ -148,7 +148,7 @@ class FieldCorrectionValue(aspecd.analysis.SingleAnalysisStep):
 
 
 class PolynomialBaselineFitting(aspecd.analysis.SingleAnalysisStep):
-    """Analysis step for finding a baseline correction polynomial.
+    """Analysis step_width for finding a baseline correction polynomial.
 
     An actual correction with the respective polynomial can be performed
     afterwards using
@@ -396,7 +396,7 @@ class CommonDefinitionRanges(aspecd.analysis.SingleAnalysisStep):
             x_coordinates = dataset.data.axes[0].values
             if x_coordinates[-1] < x_coordinates[0]:
                 dataset_name = dataset.id
-                raise ValuesNotIncreasingError("Dataset " + dataset_name +
+                raise ValuesNotIncreasingError("ExperimentalDataset " + dataset_name +
                                                """ has x values in the wrong 
                                                order.""")
         for dataset in self.parameters["datasets"]:

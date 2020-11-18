@@ -194,7 +194,7 @@ class GeneralImporter(aspecd.io.DatasetImporter):
         field_points = []
         for step_index in range(dataset.metadata.magnetic_field.step_count):
             field_points.append(
-                dataset.metadata.magnetic_field.field_min.value +
+                dataset.metadata.magnetic_field.start.value +
                 dataset.metadata.magnetic_field.step_width.value *
                 step_index)
         field_data = np.array(field_points)
@@ -216,7 +216,7 @@ class GeneralImporter(aspecd.io.DatasetImporter):
             Loaded metadata to use. First entry: from infofile;
             Second entry: from spectrometer parameter file.
 
-        dataset: :class:`cwepr.dataset.Dataset`
+        dataset: :class:`cwepr.dataset.ExperimentalDataset`
             dataset that should be operated on
 
         """
@@ -717,9 +717,9 @@ class ParserDSC:
             ["Data Ranges and Resolutions:", "rename_key",
              ["XPTS", "step_count"]],
             ["Data Ranges and Resolutions:", "rename_key",
-             ["XMIN", "field_min"]],
+             ["XMIN", "start"]],
             ["Data Ranges and Resolutions:", "rename_key",
-             ["XWID", "field_width"]],
+             ["XWID", "sweep_width"]],
             ["", "rename_key",
              ["Data Ranges and Resolutions:", "magnetic_field"]]
         ]
@@ -827,8 +827,8 @@ class ParserPAR:
         mapper.metadata = dict_
         mapper.mappings = [
             ["", "rename_key", ["JSD", "accumulations"]],
-            ["", "rename_key", ["GST", "field_min"]],
-            ["", "rename_key", ["GSI", "field_width"]],
+            ["", "rename_key", ["GST", "start"]],
+            ["", "rename_key", ["GSI", "sweep_width"]],
             ["", "rename_key", ["MF", "mw_frequency"]],
             ["", "rename_key", ["MP", "power"]],
             ["", "rename_key", ["RMA", "modulation_amplitude"]],

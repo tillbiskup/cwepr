@@ -1,8 +1,8 @@
 """Module containing composite processing steps.
 
-In the definition of this package, a composite processing step includes both,
-processing and analysis. Generally this is the case if a processing step is
-performed which uses parameters obtained through an analysis step.
+In the definition of this package, a composite processing step_width includes both,
+processing and analysis. Generally this is the case if a processing step_width is
+performed which uses parameters obtained through an analysis step_width.
 
 This module exists for logical as well as technical reasons:
 1) It is not sensible to put combined processing and analysis in either of
@@ -69,7 +69,7 @@ class FieldCorrection(aspecd.processing.ProcessingStep):
 
     Attributes
     ----------
-    dataset: :class:`cwepr.dataset.Dataset`
+    dataset: :class:`cwepr.dataset.ExperimentalDataset`
         dataset of the field standard measurement
 
     """
