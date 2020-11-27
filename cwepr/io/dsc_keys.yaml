@@ -1,0 +1,36 @@
+experiment:
+  harmonic: Harmonic
+magnetic_field:
+  start:
+    unit: XUNI
+    value: XMIN
+  stop:
+    unit: XUNI
+  sweep_width:
+    unit: XUNI
+    value: XWID
+  step_width:
+    unit: XUNI
+  step_count: XPTS
+  sequence: SweepDirection
+bridge:
+  attenuation: PowerAtten
+  power:
+    value: MWPW
+  mw_frequency:
+    value: MWFQ
+  q_value: QValue
+signal_channel:
+  accumulations: AVGS
+  modulation_frequency:
+    value: B0MF
+  modulation_amplitude:
+    value: B0MA
+  receiver_gain:
+    value: RCAG
+  conversion_time:
+    value: SPTP
+  time_constant:
+    value: RCTC
+  phase:
+    value: RCPH

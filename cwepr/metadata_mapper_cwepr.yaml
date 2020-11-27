@@ -1,0 +1,26 @@
+---
+
+format:
+  type: metadata mapper cwepr
+  version: 0.0.1
+
+map 1:
+  infofile versions:
+    - 0.1.3
+    - 0.1.4
+  combine items:
+    - old keys: ['Date start', 'Time start']
+      new key: start
+      pattern: ' '
+      in dict: GENERAL
+    - old keys: ['Date end', 'Time end']
+      new key: end
+      pattern: ' '
+      in dict: GENERAL
+  rename key:
+    - old key: TEMPERATURE
+      new key: temperature_control
+      in dict:
+    - old key: GENERAL
+      new key: measurement
+      in dict:

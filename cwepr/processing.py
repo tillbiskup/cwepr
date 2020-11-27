@@ -1,21 +1,393 @@
-"""Module containing all processing steps.
+"""Module containing the processing steps of the cwEPR package.
 
-A processing step_width is anything that modifies the dataset without giving an
-independent result. E.g., Field Correction or Baseline correction.
+.. sidebar::
+    processing *vs.* analysis
+
+    For more details on the difference between processing and analysis,
+    see the `ASpecD documentation <https://docs.aspecd.de/>`_.
+
+
+A processing step always operates on a dataset and usually modifies the
+numerical data contained therein. The result of a processing step is in any
+case again a dataset, in contrast to analysis steps where this is not
+necessarily the case. Typical routine processing steps are normalisation (to
+area, amplitude, maximum, minimum), and for EPR spectroscopy such things as
+field and frequency correction.
+
+
+Currently, the following processing steps are implemented:
+
+  * :class:`FieldCorrection`
+  * :class:`FrequencyCorrection`
+  * :class:`PhaseCorrection`
+
+  * :class:`BaselineCorrectionWithPolynomial`
+  * :class:`BaselineCorrectionWithCalculatedDataset`
+
+  * :class:`Subtraction`
+  * :class:`Addition`
+
+  * :class:`NormalisationToMaximum`
+  * :class:`NormalisationToArea`
+  * :class:`NormalisationToScanNumber`
+
+  * :class:`Integration`
+
+
+Categories of processing steps
+==============================
+
+Processing steps can be categorised further. The following is an attempt to
+do that for cwEPR data and at the same time a list of processing steps one
+would like to have implemented. Besides that, it seems that this list
+evolves more and more towards a summary of how to properly record and
+(post-)process cwEPR data.
+
+For more authoritative answers, you may as well have a look into the EPR
+literature, particularly the "EPR Primer" by Chechik/Carter/Murphy and
+the book on quantitative EPR by the Eatons.
+
+.. todo::
+    Add references here, using the BIBTeX plugin
+
+
+Corrections
+-----------
+
+When analysing cwEPR data, usually, a series of simple correction steps is
+performed prior to any further analysis. This is particularly important if
+you plan to compare different datasets or if you would like to compare your
+spectra with those from the literature (always a good idea, though).
+
+  * Magnetic field correction
+
+    Usually, the magnetic field in an EPR measurement needs to be determined
+    by measuring a field standard in the identical setup, as the actual
+    magnetic field at the sample will usually differ from the field set in
+    the software.
+
+    Appropriate magnetic field correction becomes particularly important if
+    you are interested in absolute *g* values of your sample, *e.g.* to
+    compare it to literature data or quantum-chemical calculations and to
+    get ideas as to where the unpaired spin may predominantly reside on (in
+    terms of nuclear species).
+
+  * Microwave frequency correction
+
+    Comparing datasets is only possible in a meaningful manner if they are
+    either corrected for same frequency, or their magnetic field axes
+    converted in a g axis.
+
+  * Microwave phase correction
+
+    Usually, cwEPR spectra are not recorded with quadrature detection,
+    *i.e.*, with both, absorptive and dispersive signal components. However,
+    using the Hilbert transform, one can reconstruct the dispersive signal (
+    imaginary component) and correct the phase of the microwave source this way.
+
+  * Baseline correction
+
+    However careful measurements are performed, baselines are quite often
+    encountered. There are two different kinds of baseline that need to be
+    corrected in different ways. Drifts of some kind can usually be handled
+    by fitting and afterwards subtracting a (low-order) polynomial to the data.
+
+    Particularly for low-temperature data, weak signals, and large magnetic
+    field sweep ranges, resonator background can become quite dramatic.
+    Here, usually the only viable way is to record the empty resonator
+    independently under as much identical conditions as possible compared to
+    recording the signal of the actual sample (but with slightly broader
+    field range to compensate for different microwave frequency) and
+    afterwards subtracting this dataset (empty resonator, *i.e.* resonator
+    background signal) from the signal of the actual sample.
+
+
+Algebra
+-------
+
+Comparing datasets often involves adding, subtracting, multiplying or
+dividing the intensity values by a given fixed number. This is very simple
+algebra and should probably be implemented in the ASpecD framework eventually.
+
+Possible scenarios where one wants to multiply the intensity values of a
+cwEPR spectrum may be comparing spectra resulting from a single species from
+those of known two species, different (known) concentrations and alike.
+
+Of course, dividing the intensity of the spectrum by the maximum intensity
+is another option, however, this would be normalisation to maximum (not
+always a good idea, usually normalising to area or amplitude is better),
+and this is handled by a different set of processing steps (see below).
+
+.. note::
+    This type of simple algebra is quite *different* from adding or
+    subtracting datasets together. Whereas simple algebra really is a
+    one-liner in terms of implementation, handling different datasets
+    involves ensuring commensurable axis dimensions and ranges, to say the
+    least.
+
+
+Normalisation
+-------------
+
+Normalising data to some common characteristic is a prerequisite for
+comparing datasets among each other.
+
+There is a number of normalisations that are common for nearly every kind of
+data, and as such, these normalisation steps should probably eventually be
+implemented within the ASpecD framework. As there are:
+
+  * Normalisation to maximum
+
+    Simply divide the intensity values by their maximum
+
+    Often used as a very simple "normalisation" approach. Depends highly on
+    the situation and focus of the representation, but usually,
+    other methods such as normalisation to amplitude or area, are better
+    suited.
+
+  * Normalisation to minimum
+
+    Simply divide the intensity values by their minimum
+
+    The same as for the normalisation to maximum applies here. Furthermore,
+    normalising to the minimum usually only makes sense in case of
+    prominent negative signal components, as in first-derivative spectra in
+    cwEPR spectroscopy.
+
+  * Normalisation to amplitude
+
+    Divide the intensity values by the absolute of the difference between
+    maximum and minimum intensity value
+
+    Usually better suited as a simple normalisation than the naive
+    normalising to maximum or minimum described above. However, it strongly
+    depends on what you are interested in comparing and want to highlight.
+
+  * Normalisation to area
+
+    Divide the intensity values by the area under the curve of the spectrum
+
+    Not as easy as it looks like for first-derivative cwEPR spectra,
+    as here, you are usually interested in normalising to the same area (
+    *i.e.*, integral of the curve) of the absorptive (zeroth-derivative or
+    zeroth harmonic) spectrum.
+
+    At least given appropriate measurement conditions (no saturation, no line
+    broadening due to overmodulation, proper phasing), the cwEPR signal
+    intensity should be proportional to the number of spins in the active
+    volume of the resonator/probehead. Therefore, with all crucial
+    experimental parameters directly affecting the signal strength being
+    equal (microwave power, modulation amplitude), normalising to same area
+    should be the most straight-forward way of comparing two spectra in a
+    meaningful way.
+
+    Bare in mind, however, that spectra with strongly different overall line
+    width will have dramatically different minima and maxima, making
+    comparison of this kind sometimes less meaningful.
+
+
+Besides these rather general ways of normalising spectra (although described
+above particularly with cwEPR data in mind), there are some other
+normalisations more particular to cwEPR spectroscopy:
+
+  * Normalisation to same number of scans
+
+    Some spectrometers (probably only older ones) did usually sum the
+    intensity for each scan, rather than afterwards dividing by the number
+    of scans, making comparison of spectra with different number of scans
+    quite tricky.
+
+    Make sure you know exactly what you do before applying (or not applying)
+    such normalisation if you would like to do some kind of (semi-)quantitative
+    analysis of your data.
+
+  * Normalisation to same receiver gain
+
+    The preamplifiers in the signal channel (as the digitising unit in cwEPR
+    spectrometers is usually called) have usually a gain that can be
+    adjusted to the signal strength of the actual sample. Of course,
+    this setting will have a direct impact on the intensity values recorded (
+    usually something like mV).
+
+    Comparing spectra recorded with different receiver gain settings
+    therefore requires the user to *first* normalise the data to the same
+    receiver gain setting. Otherwise, (semi-)quantiative comparison is not
+    possible and will lead to wrong conclusions.
+
+    Note on the side: Adjusting the receiver gain for each measurement is
+    highly recommended, as setting it too high will make the signal clip and
+    distort the signal shape, and setting it too low will result in data
+    with (unnecessary) poor signal-to-noise ratio.
+
+
+
+Working with 2D datasets
+------------------------
+
+2D datasets in cwEPR spectroscopy, huh? Well, yes, more often than one might
+expect in the beginning. There are the usual suspects such as power sweeps
+and modulation amplitude sweeps, each varying (automatically) one parameter
+in a given range and record spectra for each value.
+
+There are, however, other types of 2D datasets that are quite useful in
+cwEPR spectroscopy. Some vendors of EPR spectrometers offer no simple way of
+saving each individual scan in a series of accumulations. However, this may
+sometimes be of interest, particularly as a single "spike" due to some
+external event or other malfunctioning may otherwise ruin your entire
+dataset, however long it might have taken to record it. Therefore, one way
+around this limitations is to perform a 2D experiment with repeated field
+scans, but saving each scan as a row in a 2D dataset.
+
+Generally, there are at least two different processing steps of interest for
+2D datasets:
+
+  * Projection along one axis
+
+    Equivalent to averaging along that axis
+
+    If recording multiple scans of one and the same spectrum for better
+    signal-to-noise ratio, but saving each scan individually within a row of
+    a 2D dataset, this is the way to get the dataset with improved
+    signal-to-noise ratio originally intended.
+
+    May as well be used for rotation patterns, *i.e.*, angular-dependent
+    measurements, if there turns out to be no angular dependence in the
+    data. In this case, at least you save the measurement time by having a
+    dataset with clearly better signal-to-noise ratio than initially intended.
+
+  * Extraction of a slice along one dimension
+
+    Having a 2D dataset, we may often be interested in only one slice along
+    one dimension.
+
+    Typical examples would be comparing two positions of the goniometer
+    (zero and 180 degree would be an obvious choice) or slices with similar
+    parameters for different datasets.
+
+
+More complicated and probably more involved processing of 2D datasets would
+be to (manually) inspect the individual scans and decide which of those to
+average, *e.g.* in case of one problematic scan in between, be it due to
+external noise sources or spectrometer problems.
+
+
+Handling multiple datasets
+--------------------------
+
+Comparing multiple datasets by plotting them in one and the same axis is a
+rather simple way of handling multiple datasets. However, usually, you would
+like to perform much more advanced operations on multiple datasets, such as
+adding and subtracting one from the other.
+
+May sound pretty simple at first, but is indeed pretty demanding in terms of
+its implementation, as internally, you need to check for quite a number of
+things, such as commensurable axes and ranges. However, this is a rather
+general problem of all kinds of datasets, hence it may be that this
+functionality eventually gets incorporated in the ASpecD framework.
+
+Particularly in EPR spectroscopy, each measurement will have a unique
+microwave frequency for which the data were recorded. Therefore, to combine
+the numerical values of two datasets (subtract, add, average), you will
+first need to correct them for same microwave frequency. This will generally
+result in different field axes for different datasets. Furthermore,
+some vendors like to record data with non-equidistant field axes as well,
+making handling of those datasets additionally messy.
+
+  * Subtract a dataset from another dataset
+
+    Ensure the datasets are compatible in terms of their axes (dimension,
+    quantity, unit, common area of values), subtract the common range of
+    values and return only the subtracted (*i.e.*, usually truncated) dataset.
+
+    A common use case for subtracting a dataset from another would be a
+    resonator background signal independently recorded, or some other
+    background signal such as the "glass signal" (from impurities in the
+    glass tube you've used).
+
+    Other, more advanced applications may involve subtracting the spectrum
+    of a single species from that of a spectrum consisting this and other
+    species. However, in such case be aware of the fact that the spectrum
+    containing more than one species may not be a simple superposition of
+    the spectra of the two independent species.
+
+  * Add a dataset to another dataset
+
+    Ensure the datasets are compatible in terms of their axes (dimension,
+    quantity, unit, common area of values), add the common range of values
+    together and return only the summed (*i.e.*, usually truncated) dataset.
+
+  * Average two datasets
+
+    Ensure the datasets are compatible in terms of their axes (dimension,
+    quantity, unit, common area of values), average the common range of values
+    together and return only the averaged (*i.e.*, usually truncated) dataset.
+
+    A common use case if you performed several independent measurements of
+    the same sample (with otherwise similar/comparable parameters) and would
+    like to average for better signal-to-noise.
+
+
+Other processing steps
+----------------------
+
+There may well be further types of processing steps the authors are currently
+not aware of or didn't dare to document here.
+
+
+Note to developers
+==================
+
+Processing steps can be based on analysis steps, but not inverse! Otherwise,
+we get cyclic dependencies what should obviously be avoided in order to keep
+code working.
+
+
+Module documentation
+====================
+
+What  follows is the API documentation of each class implemented in this module.
+
 """
+import operator
 
 import numpy as np
 import scipy.signal
 import scipy.integrate
+import scipy.interpolate
 
 import aspecd.processing
+import cwepr.analysis
+
+
+class Error(Exception):
+    """Base class for exceptions in this module."""
+
+
+class DimensionError(Error):
+    """Exception indicating error in the dimension of an object.
+
+    Attributes
+    ----------
+    message : `str`
+        explanation of the error
+
+    """
+
+    def __init__(self, message=''):
+        super().__init__()
+        self.message = message
 
 
 class FieldCorrection(aspecd.processing.ProcessingStep):
-    """Processing step_width for field correction.
+    """Processing step for field correction.
 
     Perform a linear field correction of the data with a correction value
     previously determined.
+
+    .. todo::
+        Check that the correct axis gets corrected, meaning that it should
+        be a magnetic field axis having the correct unit for the correction
+        value.
 
     Parameters
     ----------
@@ -31,7 +403,7 @@ class FieldCorrection(aspecd.processing.ProcessingStep):
 
     def _perform_task(self):
         """Shift all field axis data points by the correction value."""
-        for data_index in range(len(self.dataset.data.data)):
+        for data_index, _ in enumerate(self.dataset.data.data):
             self.dataset.data.axes[0].values[data_index] += \
                 self.parameters["correction_value"]
 
@@ -40,46 +412,12 @@ class FrequencyCorrection(aspecd.processing.ProcessingStep):
     """Convert data of a given frequency to another given frequency.
 
     This is used to make spectra comparable.
-
-    References for the constants:
-
-    g value for Li:LiF::
-
-        g(LiLiF) = 2.002293 +- 0.000002
-
-    Reference: Rev. Sci. Instrum. 1989, 60, 2949-2952.
-
-    Bohr magneton::
-
-        mu_B = 9.27401*10**(-24)
-
-    Reference: Rev. Mod. Phys. 2016, 88, 035009.
-
-    Planck constant::
-
-        h = 6.62607*10**(-34)
-
-    Reference: Rev. Mod. Phys. 2016, 88, 035009.
-
-    Attributes
-    ----------
-    nu_given: :class:`float`
-        Given frequency of the data present.
-
-    nu_target: :class:`float`
-        Frequency that the data should be converted to.
-
     """
 
-    G_LILIF = 2.002293
-    BOHR_MAGNETON = 9.27401 * 10 ** (-24)
-    PLANCK_CONSTANT = 6.62607 * 10 ** (-34)
-
-    def __init__(self, nu_given, nu_target):
+    def __init__(self):
         super().__init__()
-        self.parameters["nu_given"] = nu_given
-        self.parameters["nu_target"] = nu_target
-        self.description = "Transform data to target frequency"
+        self.parameters["frequency"] = None
+        self.description = "Correct magnetic field axis for given frequency"
 
     def _perform_task(self):
         """Perform the actual transformation / correction.
@@ -88,48 +426,42 @@ class FrequencyCorrection(aspecd.processing.ProcessingStep):
         units of using the given frequency, then converted back using target
         frequency.
         """
-        for data_index in range(len(self.dataset.data.data)):
-            self.dataset.data.data[data_index] = self._transform_b0_to_g(
-                self.dataset.data.data[data_index])
-        for data_index in range(len(self.dataset.data.data)):
-            self.dataset.data.data[data_index] = self._transform_g_to_b0(
-                self.dataset.data.data[data_index])
+        nu_target = self.parameters['frequency']
+        for axis in self.dataset.data.axes:
+            # TODO: Question: Better check for quantity rather than unit? (
+            #   Difficult if not filled)
+            # if axis.quantity == 'magnetic field'
+            if axis.unit == ('mT', 'G'):
+                axis.values = self._correct_field_for_frequency(nu_target,
+                                                                axis.values)
+        self._write_new_frequency()
 
-    def _transform_b0_to_g(self, value):
-        """Transform a field (B) axis value to a g axis value.
+    def _correct_field_for_frequency(self, nu_target=None,
+                                     b_initial=None):
+        """
+        Calculate new field axis for given frequency.
 
         Parameters
         ----------
-        value: :class:`float`
-            B value to transform.
+        nu_target : :class:`float`
+            Frequency the magnetic field should be computed for
+
+        b_initial : :class:`numpy.ndarray`
+            Original field axis
 
         Returns
         -------
-        g_value: :class:`float`
-            Transformed value.
+        b_target : :class:`numpy.ndarray`
+            Computed field axis
 
         """
-        g_value = self.PLANCK_CONSTANT * self.parameters["nu_given"].value \
-            / self.BOHR_MAGNETON / value
-        return g_value
+        nu_initial = self.dataset.metadata.bridge.mw_frequency.value
+        b_target = nu_target / nu_initial * b_initial
+        return b_target
 
-    def _transform_g_to_b0(self, value):
-        """Transform a g axis value to a field (B) axis value.
-
-        Parameters
-        ----------
-        value: :class:`float`
-            g value to transform.
-
-        Returns
-        -------
-        b_value: :class:`float`
-            Transformed value.
-
-        """
-        b_value = self.PLANCK_CONSTANT * self.parameters["nu_target"].value \
-            / self.BOHR_MAGNETON / value
-        return b_value
+    def _write_new_frequency(self):
+        self.dataset.metadata.bridge.mw_frequency.value = \
+            self.parameters['frequency']
 
 
 class BaselineCorrectionWithPolynomial(aspecd.processing.ProcessingStep):
@@ -139,17 +471,15 @@ class BaselineCorrectionWithPolynomial(aspecd.processing.ProcessingStep):
     :class:`cwepr.analysis.PolynomialBaselineFitting`.
     See also: :class:`cwepr.analysis.BaselineCorrectionWithCalculatedDataset`.
 
-    Attributes
-    ----------
-    coefficients: :class:`list`
-        List of the polynomial coefficients of the polynomial to subtract.
+    If no coefficients are given, the analysis step will be done with its
+    standard parameters and the result used for the actual correction.
 
     """
 
-    def __init__(self, coefficients=None):
+    def __init__(self):
         super().__init__()
-        self.parameters["coefficients"] = coefficients
         self.description = "Subtraction of baseline polynomial"
+        self.parameters['coefficients'] = []
 
     def _perform_task(self):
         """Perform the actual correction.
@@ -157,16 +487,21 @@ class BaselineCorrectionWithPolynomial(aspecd.processing.ProcessingStep):
         Baseline correction is performed by subtraction of  a previously
         determined polynomial.
         """
-        x_coordinates = self.dataset.data.axes[0].values
+        if 'coefficients' not in self.parameters or \
+                len(self.parameters['coefficients']) < 1:
+            self._get_coefficients()
         values_to_subtract = np.polyval(
-            np.poly1d(self.parameters["coefficients"]), x_coordinates)
-        for data_index in range(len(list(self.dataset.data.data))):
-            self.dataset.data.data[data_index] -= \
-                values_to_subtract[data_index]
+            np.poly1d(self.parameters["coefficients"]),
+            self.dataset.data.axes[0].values)
+        self.dataset.data.data -= values_to_subtract
+
+    def _get_coefficients(self):
+        baseline_fit = cwepr.analysis.PolynomialBaselineFitting()
+        result = self.dataset.analyse(baseline_fit)
+        self.parameters['coefficients'] = result.result
 
 
-class BaselineCorrectionWithCalculatedDataset(
-        aspecd.processing.ProcessingStep):
+class BaselineCorrectionWithCalculatedDataset(aspecd.processing.ProcessingStep):
     """Perform a baseline correction using a baseline previously determined.
 
     Uses a dataset with the respective baseline as data.
@@ -182,25 +517,24 @@ class BaselineCorrectionWithCalculatedDataset(
     def __init__(self, baseline_dataset=None):
         super().__init__()
         self.parameters["baseline_dataset"] = baseline_dataset
-        self.description = "Subtraction of baseline polynomial"
+        self.description = "Subtraction of baseline dataset"
 
     def _perform_task(self):
         """Perform the actual correction.
 
-        Baseline correction is performed by subtraction of  a previously
-        determined polynomial.
+        Baseline correction is performed by subtraction of  a baseline dataset.
         """
-        values_to_subtract = self.parameters["baseline_dataset"].data.data
-        for data_index in range(len(list(self.dataset.data.data))):
-            self.dataset.data.data[data_index] -= \
-                values_to_subtract[data_index]
+        self.dataset.data.data -= self.parameters["baseline_dataset"].data.data
 
 
-class SubtractSpectrum(aspecd.processing.ProcessingStep):
+class Subtraction(aspecd.processing.ProcessingStep):
     """Subtract one spectrum from another.
 
     Tool for subtracting a given spectrum, i.e. in general a background, from
     the processed spectrum.
+
+    .. TODO:: Big thing! Check first for axes ranges and only add those
+        parts!! Same for addition and others.
 
     Attributes
     ----------
@@ -209,40 +543,32 @@ class SubtractSpectrum(aspecd.processing.ProcessingStep):
 
     """
 
-    def __init__(self, second_dataset):
+    def __init__(self):
         super().__init__()
-        self.parameters["second_dataset"] = second_dataset
+        self.parameters["second_dataset"] = None
         self.description = "Subtract a spectrum"
 
     def _perform_task(self):
         """Wrapper around the :meth:`_subtract` method."""
-        self._subtract()
+        self._interpolate()
+        self.dataset.data.data -= self.parameters["second_dataset"].data.data
 
     def _interpolate(self):
         """Perform a potentially necessary interpolation.
 
-        Interpolates the spectrum that should be subtracted from the other one
-        on the x values of this other spectrum.
+        Interpolates the spectrum that should be added to the other one on the
+        x values of this other spectrum.
         """
-        target_x = self.dataset.data.axes[0].values
-        x_coordinates = self.parameters["second_dataset"].data.axes[0].values
-        y_coordinates = self.parameters["second_dataset"].data.data
-        interpolated_values = np.interp(target_x, x_coordinates, y_coordinates)
-        return interpolated_values
-
-    def _subtract(self):
-        """Perform the actual subtraction.
-
-        The actual subtraction. The second spectrum (the one gets subtracted
-        is first interpolated on the x values of the other one.
-        """
-        y_interpolated = self._interpolate()
-        for data_index in range(len(self.dataset.data.data)):
-            self.dataset.data.data[data_index] -= y_interpolated[data_index]
+        interpolator = AxisInterpolation()
+        interpolator.parameters['points'] = len(self.dataset.data.axes[
+                                                0].values)
+        # self.parameters["second_dataset"] = copy.deepcopy(self.parameters[
+        # "second_dataset"])
+        self.parameters["second_dataset"].process(interpolator)
 
 
-class AddSpectrum(aspecd.processing.ProcessingStep):
-    """Add one spectrum to another.
+class Addition(aspecd.processing.ProcessingStep):
+    """Add one spectrum to an other.
 
     Attributes
     ----------
@@ -251,14 +577,15 @@ class AddSpectrum(aspecd.processing.ProcessingStep):
 
     """
 
-    def __init__(self, second_dataset):
+    def __init__(self):
         super().__init__()
-        self.second_dataset = second_dataset
-        self.description = "Add another spectrum"
+        self.parameters["second_dataset"] = None
+        self.description = "Add second spectrum"
 
     def _perform_task(self):
         """Wrapper around the :meth:`_add` method."""
-        self._add()
+        self._interpolate()
+        self.dataset.data.data += self.parameters["second_dataset"].data.data
 
     def _interpolate(self):
         """Perform a potentially necessary interpolation.
@@ -266,25 +593,14 @@ class AddSpectrum(aspecd.processing.ProcessingStep):
         Interpolates the spectrum that should be added to the other one on the
         x values of this other spectrum.
         """
-        target_x = self.dataset.data.axes[0].values
-        x_coordinates = self.second_dataset.data.axes[0].values
-        y_coordinates = self.second_dataset.data.data
-        interpolated_values = np.interp(target_x, x_coordinates, y_coordinates)
-        return interpolated_values
-
-    def _add(self):
-        """Perform the actual subtraction.
-
-        The actual subtraction. The second spectrum (the one gets subtracted)
-        is first interpolated on the x values of the other one.
-        """
-        y_interpolated = self._interpolate()
-        for data_index in range(len(self.dataset.data.data)):
-            self.dataset.data.data[data_index] += y_interpolated[data_index]
+        interpolator = cwepr.processing.AxisInterpolation()
+        interpolator.parameters['points'] = len(self.dataset.data.axes[
+                                                0].values)
+        self.parameters["second_dataset"].process(interpolator)
 
 
 class PhaseCorrection(aspecd.processing.ProcessingStep):
-    """Processing step_width for phase correction.
+    """Processing step for phase correction.
 
     The functionality is suitable for automatic phase correction, no parameters
     need to be provided manually.
@@ -292,7 +608,7 @@ class PhaseCorrection(aspecd.processing.ProcessingStep):
 
     def __init__(self):
         super().__init__()
-        self.description = "Phase Correction"
+        self.description = "Phase Correction via Hilbert transform"
 
     def _perform_task(self):
         """Perform the actual phase correction.
@@ -306,72 +622,233 @@ class PhaseCorrection(aspecd.processing.ProcessingStep):
         self.parameters["phase_angle_value"] = phase_angle_raw.value
         self.parameters["phase_angle_unit"] = phase_angle_raw.unit
         if self.parameters["phase_angle_unit"] == "deg":
-            self.parameters["phase_angle_value"] = (
-                np.pi * self.parameters["phase_angle_value"]) / 180
+            self.parameters["phase_angle_value"] = \
+                (np.pi * self.parameters["phase_angle_value"]) / 180
             self.parameters["phase_angle_unit"] = "rad"
         data = self.dataset.data.data
         data_imaginary = scipy.signal.hilbert(data)
         data_imaginary = np.exp(-1j * self.parameters["phase_angle_value"]) * \
-            data_imaginary
+                         data_imaginary
         data_real = np.real(data_imaginary)
         self.dataset.data.data = data_real
 
 
-class NormaliseMaximum(aspecd.processing.ProcessingStep):
-    """Normalise a spectrum concerning the height of the maximum.
+class AutomaticPhaseCorrection(aspecd.processing.ProcessingStep):
+    """Automatic phase correction via Hilbert transform.
 
-    Should only be used on an integrated spectrum.
+    .. todo::
+        Explain what is done here.
+
+    .. todo::
+        Does not work properly. Reimplement with other method...
+
+    Adapted from the matlab functionality in the cwEPR-toolbox.
+    """
+
+    def __init__(self, order=1, points_percentage=10):
+        super().__init__()
+        # Public properties
+        self.description = "Automatic phase correction via Hilbert transform"
+        self.parameters['order'] = order
+        self.parameters['points_percentage'] = points_percentage
+        self.parameters['phase_angle'] = 0
+        # private properties
+        self._analytic_signal = None
+        self._points_per_side = None
+        self._area_under_curve = None
+
+    def _perform_task(self):
+        self._analytic_signal = scipy.signal.hilbert(self.dataset.data.data)
+        self._find_initial_negative_area()
+        self._find_best_phase()
+        self._reconstruct_real_signal()
+        self._print_results_to_command_line()
+
+    def _find_initial_negative_area(self):
+        ft_sig_tmp = self._analytic_signal
+        if self.parameters['order'] > 0:
+            for j in range(self.parameters['order']):
+                ft_sig_tmp = scipy.integrate.cumtrapz(self._analytic_signal,
+                                                      initial=0)
+        # import matplotlib.pyplot as plt
+        # xaxis = np.arange(len(ft_sig_tmp))
+        # X = [x.real for x in ft_sig_tmp]
+        # Y = [x.imag for x in ft_sig_tmp]
+        # plt.plot(xaxis, X, color='blue')
+        # plt.plot(xaxis, Y, color='red')
+        # plt.show()
+        ft_sig_tmp = self._baseline_correction(signal=np.real(ft_sig_tmp))
+        elements_inf_zero = [x for x in ft_sig_tmp if x < 0]
+        self._area_under_curve = abs(np.trapz(elements_inf_zero))
+
+    def _baseline_correction(self, signal=None):
+        signal = np.asarray(signal)
+        signal_size = signal.size
+        if len(signal.shape) > 1 and signal.shape[1] != 1:
+            signal.transpose()
+        self._points_per_side = \
+            int(np.ceil((self.parameters['points_percentage'] / 100) *
+                        signal_size))
+
+        data_parts = self._extract_points(signal)
+        x_axis_parts = self._extract_points(self.dataset.data.axes[0].values)
+        coefficients = np.polyfit(x_axis_parts, data_parts,
+                                  deg=self.parameters['order'])
+        baseline = np.polyval(coefficients, self.dataset.data.axes[0].values)
+
+        corrected_signal = signal - baseline
+        if len(signal.shape) > 1 and signal.shape[1] != 1:
+            corrected_signal = corrected_signal.transpose()
+        return corrected_signal
+
+    def _extract_points(self, values):
+        # pylint: disable=invalid-unary-operand-type
+        vector_parts = np.concatenate([values[:self._points_per_side],
+                                       values[-self._points_per_side:]])
+        return vector_parts
+
+    def _find_best_phase(self):
+        min_angle = -np.pi / 2
+        max_angle = np.pi / 2
+        # TODO: introduce parameter step width/number of points.
+        angles = np.linspace(min_angle, max_angle, num=181)
+        for angle in angles:
+            rotated_signal = (np.exp(1j * angle) * self._analytic_signal)
+            if self.parameters['order'] > 0:
+                for j in range(self.parameters['order']):
+                    rotated_signal = scipy.integrate.cumtrapz(rotated_signal,
+                                                              initial=0)
+            rotated_signal = self._baseline_correction(signal=np.real(
+                rotated_signal))
+            elements_inf_zero = [x for x in rotated_signal if x < 0]
+            area = abs(np.trapz(elements_inf_zero))
+            if area < self._area_under_curve:
+                self._area_under_curve = area
+                self.parameters['phase_angle'] = angle
+
+    def _reconstruct_real_signal(self):
+        self.dataset.data.data = np.real(np.exp(1j * self.parameters[
+            'phase_angle']) * self._analytic_signal)
+        assert np.iscomplex(self.dataset.data.data).all() == False
+
+    def _print_results_to_command_line(self):
+        phi_degree = self.parameters['phase_angle'] * 180 / np.pi
+        print('Phase correction was done with phi = %.3f degree' % phi_degree)
+
+
+class NormalisationToMaximum(aspecd.processing.ProcessingStep):
+    """Normalise a spectrum to the intensity of the maximum.
+
+    Should only be used upon an integrated spectrum.
     """
 
     def __init__(self):
         super().__init__()
         self.description = "Normalisation to maximum"
+        self.undoable = True
 
     def _perform_task(self):
         maximum = max(self.dataset.data.data)
-        for data_index in range(len(self.dataset.data.data)):
-            self.dataset.data.data[data_index] /= maximum
+        self.dataset.data.data /= maximum
 
 
-class NormaliseArea(aspecd.processing.ProcessingStep):
-    """Normalise a spectrum concerning the area under the curve.
+class NormalisationToPeakToPeakAmplitude(aspecd.processing.ProcessingStep):
+    """Normalise a spectrum to the amplitude between maximum and minimum."""
 
-    Should only be used on an integrated spectrum.
+    def __init__(self):
+        super().__init__()
+        self.description = "Normalisation to peak to peak amplitude"
+        self.undoable = True
 
-    Parameters
-    ----------
-    integral: :class:`float`
-        Area under the curve.
+    def _perform_task(self):
+        maximum = max(self.dataset.data.data)
+        minimum = abs(min(self.dataset.data.data))
+        peak_to_peak_amplitude = maximum + minimum
+        self.dataset.data.data /= peak_to_peak_amplitude
 
+
+class NormalisationOfDerivativeToArea(aspecd.processing.ProcessingStep):
+    """Normalise a spectrum to the area under the curve.
+
+    No other (processing) modules are used in order to keep original data.
     """
 
-    def __init__(self, integral):
+    def __init__(self):
         super().__init__()
-        self.parameters["integral"] = integral
+        self.parameters["area"] = float()
+        self.description = "Normalisation to area"
+        self.undoable = True
+
+    def _perform_task(self):
+        self._integrate_spectrum()
+        self.dataset.data.data /= self.parameters["area"]
+
+    def _integrate_spectrum(self):
+        integrated_spectrum = \
+            scipy.integrate.cumtrapz(self.dataset.data.data, initial=0)
+        self.parameters["area"] = np.trapz(integrated_spectrum)
+
+
+class NormalisationToArea(aspecd.processing.ProcessingStep):
+    """Normalise a spectrum concerning the area under the curve.
+
+    Should only be used upon an integrated spectrum.
+    """
+
+    def __init__(self):
+        super().__init__()
+        self.parameters["area"] = float()
         self.description = "Normalisation to area"
 
     def _perform_task(self):
-        for data_index in range(len(self.dataset.data.data)):
-            self.dataset.data.data[data_index] /= self.parameters["integral"]
+        for data_index, _ in enumerate(self.dataset.data.data):
+            self.dataset.data.data[data_index] /= self.parameters["area"]
 
 
-class NormaliseScanNumber(aspecd.processing.ProcessingStep):
+class NormalisationToScanNumber(aspecd.processing.ProcessingStep):
     """Normalise a spectrum concerning the number of scans used.
 
-    This is necessary to make spectra where the intensity of different scans
-    is added comparable to ones where it is averaged.
+    This is necessary to make spectra in which the intensity of different scans
+    is added, comparable to those where it is averaged.
     """
 
     def __init__(self):
         super().__init__()
         self.description = "Normalisation to scan number"
+        self.parameters["scan_number"] = None
 
     def _perform_task(self):
-        self.parameters["scan_number"] = \
-            self.dataset.metadata.signal_channel.accumulations
-        for data_index in range(len(self.dataset.data.data)):
-            self.dataset.data.data[data_index] /= \
-                self.parameters["scan_number"]
+        if not self.parameters['scan_number']:
+            self.parameters['scan_number'] = \
+                self.dataset.metadata.signal_channel.accumulations
+
+        self.dataset.data.data /= self.parameters["scan_number"]
+
+
+class NormalisationToReceiverGain(aspecd.processing.ProcessingStep):
+    """Normalise a spectrum to to receiver gain.
+
+    Due to the logarithmic scale of the receiver gain at least in BRUKER
+    spectrometers, it has to be transferred into the "normal" scale. It
+    calculates as following:
+
+        receiver gain = 10^(receiver gain in dB/20)
+
+    Source: Stefan Stoll, EasySpin sourcecode, according to Xenon Manual 2011
+
+        """
+
+    def __init__(self):
+        super().__init__()
+        self.description = "Normalisation to receiver gain"
+        self.parameters['receiver_gain'] = None
+
+    def _perform_task(self):
+        if not self.parameters['receiver_gain']:
+            self.parameters['receiver_gain'] = \
+                self.dataset.metadata.signal_channel.receiver_gain.value
+        receiver_gain = 10 ** (self.parameters['receiver_gain'] / 20)
+        self.dataset.data.data /= receiver_gain
 
 
 class Integration(aspecd.processing.ProcessingStep):
@@ -399,3 +876,137 @@ class Integration(aspecd.processing.ProcessingStep):
         integral_values = \
             scipy.integrate.cumtrapz(y_coordinates, x_coordinates, initial=0)
         self.dataset.data.data = integral_values
+
+
+class AxisInterpolation(aspecd.processing.ProcessingStep):
+    """Interpolating axes to given number of equidistant field points."""
+
+    def __init__(self):
+        super().__init__()
+        self.description = 'Interpolate magnetic field axis to get ' \
+                           'equidistant field points.'
+
+    def _perform_task(self):
+        for nr, axis in enumerate(self.dataset.data.axes):
+            if not axis.equidistant:
+                if 'points' not in self.parameters.keys():
+                    self._get_axis_length(ax_nr=nr)
+                self._interpolate_axis(nr)
+                break
+
+    def _interpolate_axis(self, ax_number=None):
+        points = self.parameters['points']
+        # Actual interpolation
+        start = self.dataset.metadata.magnetic_field.start.value
+        stop = self.dataset.metadata.magnetic_field.stop.value
+        new_x_axis = np.linspace(start, stop, num=points)
+        self.dataset.data.data = np.interp(new_x_axis, self.dataset.data.axes[
+            ax_number].values, self.dataset.data.data)
+        self.dataset.data.axes[ax_number].values = new_x_axis
+
+    def _get_axis_length(self, ax_nr):
+        self.parameters['points'] = len(self.dataset.data.axes[ax_nr].values)
+
+
+class SliceExtraction(aspecd.processing.ProcessingStep):
+    """Extract slice from 2D dataset and return remaining dataset."""
+
+    def __init__(self):
+        super().__init__()
+        self.description = 'Extract slice from 2D dataset'
+        self.parameters['slice'] = None
+        self.result = {
+            'slice_info': {
+                'value': None,
+                'unit': None
+            }
+        }
+
+    def _perform_task(self):
+        self.dataset.data.data = self.dataset.data.data[:, self.parameters[
+                                                               'slice']]
+        self.result['slice_info']['value'] = \
+            self.dataset.data.axes[1].values[self.parameters['slice']]
+        self.result['slice_info']['unit'] = self.dataset.data.axes[1].unit
+        self.dataset.data.axes[2] = self.dataset.data.axes[1]
+        self.dataset.data.axes[2] = None
+        # TODO: In matlab: Writes figure title. Sufficient to write results
+        #  in result dict?
+
+    @staticmethod
+    def applicable(dataset):
+        return len(dataset.data.axes) == 3
+
+
+class Averaging2DDataset(aspecd.processing.ProcessingStep):
+    """Average over 2D dataset to get one dimensional dataset."""
+
+    def __init__(self):
+        super().__init__()
+        self.parameters['axis'] = 1
+        self.description = 'Project 2D data in one dimension.'
+        self.undoable = True
+
+    def _perform_task(self):
+        self.dataset.data.data = np.average(self.dataset.data.data,
+                                            axis=0)
+        self.dataset.data.axes[self.parameters['axis']] = \
+            self.dataset.data.axes[self.parameters['axis'] + 1]
+        del self.dataset.data.axes[self.parameters['axis'] + 1]
+
+    @staticmethod
+    def applicable(dataset):
+        return len(dataset.data.axes) == 3
+
+
+class Algebra(aspecd.processing.ProcessingStep):
+    """Perform simple algebraic operation on one dataset.
+
+    To compare datasets (by eye), it might be useful to adapt its intensity
+    by algebraic operations. Adding, subtracting, multiplying and dividing
+    are implemented here.
+
+    """
+
+    def __init__(self):
+        super().__init__()
+        self.description = 'Perform simple algebra on one dataset.'
+        self.parameters['kind'] = None
+        self.parameters['value'] = 1
+        # private properties
+        self._kinds = {
+            'plus': operator.add,
+            '+': operator.add,
+            'minus': operator.sub,
+            '-': operator.sub,
+            'multiply': operator.mul,
+            '*': operator.mul,
+            'divide': operator.truediv,
+            '/': operator.truediv
+        }
+
+    def _perform_task(self):
+        operator_ = self._kinds[self.parameters['kind']]
+        self.dataset.data.data = operator_(self.dataset.data.data,
+                                         self.parameters['value'])
+
+
+class SubtractVector(aspecd.processing.ProcessingStep):
+    """Subtract input vector of same length from dataset."""
+    def __init__(self):
+        super().__init__()
+        self.description = 'Subtract vector of same length from dataset.'
+        self.parameters['vector'] = []
+
+    def _perform_task(self):
+        if len(self.parameters['vector']) != self.dataset.data.data.shape[0]:
+            raise DimensionError(message='Vector to subtract is not of the '
+                                         'same length as dataset.')
+        if self.dataset.data.data.ndim == 1:
+            self.dataset.data.data /= self.parameters['vector']
+        elif self.dataset.data.data.ndim == 2:
+            for second_dim in range(self.dataset.data.data.shape[1]):
+                self.dataset.data.data[:, second_dim] /= \
+                    self.parameters['vector']
+        else:
+            raise DimensionError(message='Dataset has weird shape.')

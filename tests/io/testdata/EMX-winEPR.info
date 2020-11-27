@@ -1,0 +1,79 @@
+cwEPR Info file - v. 0.1.4 (2020-01-21)
+
+GENERAL
+Filename:               EMX-winEPR
+Date start:             2016-06-17
+Date end:               2016-06-17
+Time start:             08:57:00
+Time end:               09:12:00
+Operator:               John Doe
+Label:                  I won't tell you
+Purpose:                field calibration
+
+SAMPLE
+Name:                   Dude
+ID:                     0
+Description:            Try go guess
+Solvent:                benzene
+Preparation:            Somebody
+Tube:                   3.9 x 3.0 x 250 mm (QSIL Suprasil)
+
+EXPERIMENT
+Type:                   field-sweep
+Runs:                   1
+Variable parameter:     field
+Increment:              0.1 G
+
+SPECTROMETER
+Model:                  Bruker EMX
+Software:               32-bit WIN-EPR Acquisition Version 3.0 (01 July 1998)
+
+MAGNETIC FIELD
+Field probe type:       Hall 
+Field probe model:      xxx 
+Start:                  350.0  mT
+Stop:                   350.5 mT
+Step:                   1024/0.5 mT
+Sequence:               up
+Controller:             Bruker 032 T
+Power supply:           laboratory-built
+
+BRIDGE
+Model:                  Bruker ER 041 MR
+Controller:             Bruker EMX 048 T
+Attenuation:            25 dB
+Power:                  630 uW
+Detection:              diode
+Frequency counter:      Systron Donner 6520 Microwave Counter
+MW frequency:           9.79594 GHz
+Q value:                6600
+
+SIGNAL CHANNEL
+Model:                  Bruker EMX Signal Channel SCT/H
+Modulation amplifier:   Bruker EMX 120 Mod. Amp.
+Accumulations:          1
+Modulation frequency:   100 kHz
+Modulation amplitude:   0.01 mT
+Receiver gain:          6.32e2
+Offset:                 0.0
+Conversion time:        40.96 ms
+Time constant:          20.48 ms
+Phase:                  0 deg
+
+DIGITAL FILTER
+Mode:                   Manual
+Number of Points:       0
+
+PROBEHEAD
+Type:                   rectangular?
+Model:                  Bruker SHQ
+Coupling:               critical
+
+TEMPERATURE
+Temperature:            295 K
+Controller:             N/A
+Cryostat:               N/A
+Cryogen:                N/A
+
+COMMENT
+Gotcha!

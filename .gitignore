@@ -30,6 +30,11 @@ docs/_templates
 cwepr/run.py
 cwepr/Dataset
 cwepr/dataset_metadata
+scratch_files/
+
+# tox venvs
+.tox
+.python-version
 
 # Output from tests
 *pdf

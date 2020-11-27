@@ -1,0 +1,80 @@
+cwEPR Info file - v. 0.1.4 (2020-01-21)
+
+GENERAL
+Filename:               BDPA-2DTimeField
+Date start:             2020-12-07
+Date end:               2020-12-07
+Time start:             14:54:00
+Time end:               14:58:00
+Operator:               Biskup
+Label:                  BDPA 2D TimeField
+Purpose:                Test measurement for data import
+
+SAMPLE
+Name:                   Bruker BDPA standard
+ID:                     4711
+Description:            solid
+Solvent:                N/A
+Preparation:            Bruker
+Tube:                   3 x 2 x 250 mm
+
+EXPERIMENT
+Type:                   time-field
+Runs:                   20
+Variable parameter:     time, field
+Increment:              5 ms, 0.15 mT
+
+SPECTROMETER
+Model:                  Bruker EMX
+Software:               Xenon 1.3b.5
+
+MAGNETIC FIELD
+Field probe type:       Hall 
+Field probe model:      xxx 
+Start:                  350.1 mT
+Stop:                   353.1 mT
+Step:                   0.15 mT
+Sequence:               up
+Controller:             Bruker EMX Field Controller
+Power supply:           Bruker ER 081 (90/30)
+
+BRIDGE
+Model:                  Bruker EMX PremiumX
+Controller:             Bruker EMX
+Attenuation:            25 dB
+Power:                  0.6325 mW
+Detection:              diode
+Frequency counter:      Bruker
+MW frequency:           9.851599 GHz
+Q value:                6900
+
+SIGNAL CHANNEL
+Model:                  Bruker EMX Signal Channel
+Modulation amplifier:   Bruker EMX Modulation Amplifier
+Accumulations:          1
+Modulation frequency:   100 kHz
+Modulation amplitude:   0.01 mT
+Receiver gain:          30 dB
+Offset:                 0.0
+Conversion time:        10.00 ms
+Time constant:          2.56 ms
+Phase:                  0 deg
+
+DIGITAL FILTER
+Mode:                   Manual
+Number of Points:       0
+
+
+PROBEHEAD
+Type:                   HQ
+Model:                  Bruker 4119HS-W1
+Coupling:               critical
+
+TEMPERATURE
+Temperature:            298 K
+Controller:             N/A
+Cryostat:               N/A
+Cryogen:                N/A
+
+COMMENT
+Time Field with 10 s sweep time, 5 ms resolution, and 20 field points

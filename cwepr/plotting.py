@@ -1,16 +1,13 @@
 """Module containing data plotters for different applications."""
 
-
-import matplotlib.pyplot as plt
 import numpy as np
+import matplotlib.pyplot as plt
 
 import aspecd.plotting
 
 
 class Error(Exception):
     """Base class for exceptions in this module."""
-
-    pass
 
 
 class NoIntegralDataProvidedError(Error):
@@ -31,30 +28,42 @@ class NoIntegralDataProvidedError(Error):
         self.message = message
 
 
+class MissingInformationError(Error):
+    """Exception raised when not enough information is provided."""
+
+    def __init__(self, message=''):
+        super().__init__()
+        self.message = message
+
+
+
 class BaselineControlPlotter(aspecd.plotting.SinglePlotter):
     """Plotter to visualize possible baseline fits.
 
-    Visualize the spectrum and a number of possible baseline correction
+    Visualise the spectrum and a number of possible baseline correction
     polynomials.
+
+    .. warning::
+        This should be written as a recipe rather than as a plotter.
 
     Attributes
     ----------
-    coefficients: :class:`list`
+    self.parameters['coefficients']: :class:`list`
         List containing any number of other lists each containing a set of
         polynomial coefficients for a polynomial that might be used for the
         baseline correction. The order of the coefficients is considered to
         highest to lowest as returned by :meth:`numpy.polyfit`.
 
-    data: :class:`numpy.array`
+    self.parameters['data']: :class:`numpy.array`
         Array containing the x (field) and y (intensity) values of the
         spectrum that shall be visualized with the polynomials
 
     """
 
-    def __init__(self, data, coefficients):
+    def __init__(self):
         super().__init__()
-        self.parameters["coefficients"] = coefficients
-        self.parameters["data"] = data
+        self.parameters["coefficients"] = None
+        self.parameters["data"] = None
 
     def _create_plot(self):
         """Plot the spectrum and one or more baselines.
@@ -87,73 +96,44 @@ class SimpleSpectrumPlotter(aspecd.plotting.SinglePlotter):
 
     def __init__(self):
         super().__init__()
+        self.style = ''
         self._set_defaults()
+        self._zero_line_style = {'y': 0,
+                                 'color': '#999999'}
+        self._ticklabel_format = {'style': 'sci',
+                                  'scilimits': (-2, 4),
+                                  'useMathText': True}
 
     def _set_defaults(self):
         """Create default values for all settings of the plot."""
         self.parameters["color"] = "tab:blue"
         self.parameters["title"] = ""
-        self.parameters["x_name"] = "Field"
-        self.parameters["y_name"] = "Intensity"
         self.parameters["draw_zero"] = True
-        self.parameters["zero_thickness"] = 0.5
-        self.parameters["zero_color"] = "black"
-        self.parameters["fit_axis"] = True
-        # noinspection PyTypeChecker
-        self.set_x_axis_limits(None, None)
-
-    def set_x_axis_limits(self, left, right):
-        """Sets the limits of the x axis.
-
-        .. note::
-            Using None as a limit will leave the respective limit unchanged.
-
-        Parameters
-        ----------
-        left: :class:`float`
-            Left limit in units of the x axis.
-
-        right: :class:'float'
-            Right limit in units of the x axis.
-
-        """
-        self.parameters["limit_left"] = left
-        self.parameters["limit_right"] = right
+        self.parameters["xlim"] = None
 
     def _create_plot(self):
         """Draw and display the plot.
 
         The plot settings are put into the parameter attribute.
         """
-        x_coordinates = self.dataset.data.axes[0].values
-        y_coordinates = self.dataset.data.data
-        self._make_labels_and_title()
-        self._plot_lines(x_coordinates, y_coordinates)
-        self._make_axis_limits(x_coordinates)
+        self._set_style()
+        self._make_title()
+        self._plot_data()
+        self._set_extent()
 
-    def _make_labels_and_title(self):
-        """Create the title as well as the labels for the axes."""
+    def _make_title(self):
+        """Set title."""
         plt.title(self.parameters["title"])
 
-    def _plot_lines(self, x_coordinates, y_coordinates):
-        """Draw the spectrum curve and the zero line (if necessary).
-
-        Parameters
-        ----------
-        x_coordinates: :class:`list`
-            x values for plotting
-
-        y_coordinates: :class:`list`
-            y values for plotting
-
-        """
+    def _plot_data(self):
+        """Draw the spectrum and the zero line (if desired)."""
         if self.parameters["draw_zero"]:
-            plt.plot(x_coordinates, 0 * x_coordinates,
-                     lw=self.parameters["zero_thickness"],
-                     color=self.parameters["zero_color"])
-        plt.plot(x_coordinates, y_coordinates, color=self.parameters["color"])
+            plt.axhline(**self._zero_line_style)
 
-    def _make_axis_limits(self, x_coordinates):
+        plt.plot(self.dataset.data.axes[0].values, self.dataset.data.data,
+                 color=self.parameters["color"])
+
+    def _set_extent(self):
         """Set the limits of the x axis.
 
         The limits are first fitted to the width of the spectrum (if
@@ -161,233 +141,255 @@ class SimpleSpectrumPlotter(aspecd.plotting.SinglePlotter):
 
         Parameters
         ----------
-        x_coordinates: :class:`list`
+        self.dataset.data.axes[0].values: :class:`list`
             x values to plot. These are necessary for determining the correct
             limits.
 
         """
-        if self.parameters["fit_axis"]:
-            self.axes.set_xlim(x_coordinates[0], x_coordinates[-1])
-        self.axes.set_xlim(self.parameters["limit_left"],
-                           self.parameters["limit_right"])
+        if self.parameters["xlim"]:
+            self.axes.set_xlim(self.parameters["xlim"])
+        else:
+            self.axes.set_xlim(self.dataset.data.axes[0].values[0],
+                               self.dataset.data.axes[0].values[-1])
 
-
-class SpectrumAndIntegralPlotter(SimpleSpectrumPlotter):
-    """Plotter for a derivative spectrum including integrations.
-
-    Plot derivative spectrum as well as the first and / or second integral
-    curve. Either integral curve can be omitted but NOT BOTH.
-
-    Attributes
-    ----------
-    integral_1: :class:`list`
-        y values of the first integration
-
-    integral_2: :class:`list`
-        y values of the second integration
-
-    Raises
-    ------
-    NoIntegralDataProvidedError
-        Raised when data for both integration is omitted.
-
-    """
-
-    def __init__(self, integral_1=None, integral_2=None):
-        super().__init__()
-        self.parameters["integral_1"] = integral_1
-        self.parameters["integral_2"] = integral_2
-
-    def _set_defaults(self):
-        """Set default settingsl.
-
-        Settings are applied as in the super class, plus additional settings
-        for colors and names of the integral curves.
-        """
-        super()._set_defaults()
-        self.parameters["integral1_name"] = "First Integration"
-        self.parameters["integral1_color"] = "tab:red"
-        self.parameters["integral2_name"] = "Second Integration"
-        self.parameters["integral2_color"] = "tab:green"
-
-    def _plot_lines(self, x_coordinates, y_coordinates):
-        """Perform the actual plot for spectrum and integral(s).
-
-        Draw the spectrum curve and the zero line (if necessary). Additionally
-        draw one or both integral curves. Either one of the integral curves can
-        be omitted but NOT BOTH.
-
-        Parameters
-        ----------
-        x_coordinates: :class:`list`
-            x values for plotting
-
-        y_coordinates: :class:`list`
-            y values for plotting
-
-        Raises
-        ------
-        NoIntegralDataProvidedError
-            Raised when data for both integrations is omitted.
-
-        """
-        if self.parameters["draw_zero"]:
-            plt.plot(x_coordinates, 0 * x_coordinates,
-                     lw=self.parameters["zero_thickness"],
-                     color=self.parameters["zero_color"])
-        plt.plot(x_coordinates, y_coordinates,
-                 label=self.parameters["curve_name"],
-                 color=self.parameters["color"])
-        if (self.parameters["integral_1"] is None and
-                self.parameters["integral_2"] is None):
-            message = """Neither first nor second integration data points have 
-            been provided for integral plotting."""
-            raise NoIntegralDataProvidedError(message)
-        if self.parameters["integral_1"] is not None:
-            plt.plot(x_coordinates, self.parameters["integral_1"],
-                     label=self.parameters["integral1_name"],
-                     color=self.parameters["integral1_color"])
-        if self.parameters["integral_2"] is not None:
-            plt.plot(x_coordinates, self.parameters["integral_2"],
-                     label=self.parameters["integral2_name"],
-                     color=self.parameters["integral2_color"])
+    def _set_style(self):
+        """Set the style to xkcd if indicated."""
+        if self.style == 'xkcd':
+            plt.xkcd()
 
 
 class MultiPlotter(aspecd.plotting.MultiPlotter):
-    """Plotter used for plotting multiple spectra at the same time.
+    """Plotter used for plotting multiple spectra at the same time."""
 
-    Attributes
-    ----------
-    datasets: :class:`list`
-        List of datasets to plot.
-
-    integrals: :class:`list`
-        List of the numeric of the integrals to be indicated in the legend.
-        Can be omitted.
-
-    """
-
-    def __init__(self, datasets, integrals=None):
+    def __init__(self):
         super().__init__()
-        self.description = "Plotter for multiple cwepr datasets."
-        self.parameters["datasets"] = datasets
-        self.integrals = integrals
-        if self.integrals is None:
-            self.integrals = list()
-        self._set_defaults()
+        # multiple datasets in self.datasets
+        self.description = "1D plotter for multiple datasets."
+        self._zero_line_style = {'y': 0,
+                                 'color': '#999999'}
+        self._ticklabel_format = {'style': 'sci',
+                                  'scilimits': (-2, 4),
+                                  'useMathText': True}
 
-    def _set_defaults(self):
-        """Create default values for all settings of the plot."""
-        self.parameters["title"] = "Spectrum"
-        self.parameters["x_name"] = "Field"
-        self.parameters["y_name"] = "Intensity Change"
+        self.parameters["title"] = ''
         self.parameters["draw_zero"] = True
-        self.parameters["zero_thickness"] = 0.5
-        self.parameters["zero_color"] = "black"
         self.parameters["fit_axis"] = True
-        color_library = ["tab:blue", "tab:red", "tab:green", "tab:cyan",
-                         "tab:magenta", "tab:yellow"]
-        self.parameters["colors"] = \
-            color_library[:len(self.parameters["datasets"])]
-        curve_names = list()
-        for curve_index in range(len(self.parameters["datasets"])):
-            name = "Curve " + str(curve_index)
-            curve_names.append(name)
-        self.parameters["names"] = curve_names
-        self.parameters["show_integrals"] = True
+        self.parameters["color"] = None
+        self.parameters["xlim"] = None
+        self.parameters['text'] = {
+            'position': [],
+            'text': str()
+        }
 
     def _create_plot(self):
         """Draw and display the plot."""
-        x_axes = list()
-        self._make_labels()
-        for curve_index in range(len(self.parameters["datasets"])):
-            x_coordinates = \
-                self.parameters["datasets"][curve_index].data.axes[0].values
-            y_coordinates = self.parameters["datasets"][curve_index].data.data
-            x_axes.append(x_coordinates)
-            self._plot_lines(x_coordinates, y_coordinates, curve_index)
-        x_axis_limits = self._get_x_axis_limits(x_axes)
+        for i, dataset_ in enumerate(self.datasets):
+            if self.parameters['color']:
+                self.axes.plot(dataset_.data.axes[0].values,
+                               dataset_.data.data,
+                               color=self.parameters['color'][i])
+            else:
+                self.axes.plot(dataset_.data.axes[0].values, dataset_.data.data)
         if self.parameters["draw_zero"]:
-            zeroline_values = np.linspace(x_axis_limits[0],
-                                          x_axis_limits[1], num=1500)
-            plt.plot(zeroline_values, 0 * zeroline_values,
-                     lw=self.parameters["zero_thickness"],
-                     color=self.parameters["zero_color"])
-        self._make_axis_limits(x_axis_limits)
-        plt.legend()
-        plt.show()
+            self._display_zero_line()
+        self._set_axes()
+        self._set_title()
+        self._set_text()
 
-    @staticmethod
-    def _get_x_axis_limits(x_axes):
-        """Get reasonable limits for the x axis.
+    def _display_zero_line(self):
+        """Create a horizontal line at zero."""
+        plt.axhline(**self._zero_line_style)
 
-        Determined the x axis limits using the lowest starting point and
-        highest end point.
-        """
-        minimum = None
-        maximum = None
-        for axis in x_axes:
-            if minimum is None or axis[0] < minimum:
-                minimum = axis[0]
-            if maximum is None or axis[-1] < maximum:
-                maximum = axis[-1]
-        return [minimum, maximum]
-
-    def _make_labels(self):
-        """Create the title as well as the labels for the axes."""
+    def _set_title(self):
+        """Set title."""
         plt.title(self.parameters["title"])
-        plt.xlabel(self.parameters["x_name"])
-        plt.ylabel(self.parameters["y_name"])
 
-    def _plot_lines(self, x_coordinates, y_coordinates, curve_index):
-        """Draw the spectrum curve.
+    def _set_axes(self):
+        if self.parameters['xlim']:
+            self.axes.set_xlim(self.parameters['xlim'])
+        else:
+            self.axes.set_xlim([self.datasets[0].data.axes[0].values[0],
+                                self.datasets[0].data.axes[0].values[-1]])
+        plt.ticklabel_format(**self._ticklabel_format)
 
-        Parameters
-        ----------
-        x_coordinates: :class:`list`
-            x values for plotting
-
-        y_coordinates: :class:`list`
-            y values for plotting
-
-        """
-        curve_name = self.parameters["names"][curve_index]
-        if self.integrals and self.parameters["show_integrals"]:
-            curve_name += "; Integral: "
-            curve_name += str(round(self.integrals[curve_index], 6))
-        plt.plot(x_coordinates, y_coordinates, label=curve_name,
-                 color=self.parameters["colors"][curve_index])
-
-    def _make_axis_limits(self, x_coordinates):
-        """Set the limits of the x axis.
-
-        Parameters
-        ----------
-        x_coordinates: :class:`list`
-            x values to plot. These are necessary for determining the correct
-            limits.
-
-        """
-        if self.parameters["fit_axis"]:
-            self.axes.set_xlim(x_coordinates[0], x_coordinates[1])
+    def _set_text(self):
+        if self.parameters['text']['position'] and \
+                self.parameters['text']['text']:
+            plt.text(self.parameters['text']['position'][0], self.parameters[
+                'text']['position'][1], self.parameters['text']['text'])
 
 
 class Saver(aspecd.plotting.Saver):
     """Saver used to save an image of a given plot."""
 
-    def __init__(self, filename=None):
-        super().__init__(filename=filename)
-        self._set_defaults()
 
-    def _set_defaults(self):
-        """Sets the default values for data format and resolution."""
-        self.parameters["format"] = ".png"
-        self.parameters["res"] = 300
+class GoniometerSweepPlotter(aspecd.plotting.SinglePlotter):
+    """Plotter for overviewing angle dependent data.
 
-    def _save_plot(self):
-        """Perform the actual saving of the plot.
+    .. important::
+        As aspecd developed further, there is the composite plotter to
+        inherit from. This plotter should thus get reworked."""
 
-        Uses the resolution (in dpi) specified in parameters/size.
+    def __init__(self):
+        super().__init__()
+        self.axes = None
+        self.style = ''
+        self.description = 'Plot for one goniometric dataset in different ' \
+                           'representations.'
+        self.parameters['color'] = None
+        self.parameters['xlim'] = tuple()
+        self.parameters["title"] = ''
+        self.subs = []
+        self._ticklabel_format = {'style': 'sci',
+                                  'scilimits': (-2, 4),
+                                  'useMathText': True}
+
+    def _create_plot(self):
+        """Plot the given dataset in three different representations."""
+        self._set_xlims()
+        self._set_style()  # xkcd
+        self._create_figure_and_axes()
+        self._make_stacked_plot(axis=self.subs[2])
+        self._make_contour_plot(axis=self.subs[0])
+        self._make_second_contour_plot(axis=self.subs[1])
+        self._adjust_spacing()
+        self._set_title()
+
+    def _set_xlims(self):
+        if not self.parameters['xlim']:
+            self.parameters['xlim'] = \
+                tuple([self.dataset.data.axes[0].values[0],
+                       self.dataset.data.axes[0].values[-1]])
+            assert len(self.parameters['xlim']) == 2
+
+    def _set_style(self):
+        """Set the style to xkcd if indicated."""
+        if self.style == 'xkcd':
+            plt.xkcd()
+
+    def _create_figure_and_axes(self):
+        """Overrides method in Aspecd to create figure with 3 axes.
+
+        .. todo:: Add condition in Aspecd to check if there is already a
+                figure element. If not, create a new one.
         """
-        self._add_file_extension()
-        self.plotter.figure.savefig(self.filename, dpi=self.parameters["res"])
+        self.figure = plt.figure(figsize=(16 / 2.54, 16 / 2.54))
+
+        subplots = [(2, 2, 1), (2, 2, 3), (1, 2, 2)]
+        self.subs = [1, 2, 3]
+        number = 0
+        for nrows, ncols, plot_number in subplots:
+            self.subs[number] = self.figure.add_subplot(nrows, ncols,
+                                                        plot_number)
+            number += 1
+        self.axes = self.subs[2]
+
+    def _make_stacked_plot(self, axis=None):
+        if not axis:
+            raise MissingInformationError(message='No axis provided fpr '
+                                                  'plotting.')
+
+        b_field = self.dataset.data.axes[0].values
+        angles = self.dataset.data.axes[1].values
+
+        stack_offset = 0.5 * max(self.dataset.data.data[0, :])
+        offset = 0
+        offsets = []
+
+        for idx, _ in enumerate(angles):
+            axis.plot(b_field, self.dataset.data.data[idx, :] + offset, 'k',
+                      linewidth=0.7)
+            offsets.append(offset)
+            offset += stack_offset
+
+        axis.grid(axis='x')
+        axis.set(xlim=self.parameters['xlim'],
+                 yticks=offsets,
+                 yticklabels=self.dataset.data.axes[1].values)
+
+    def _make_contour_plot(self, axis=None):
+        self.axes = axis
+
+        b_field = self.dataset.data.axes[0].values
+        angles = self.dataset.data.axes[1].values
+
+        axis.contourf(b_field, angles, self.dataset.data.data, 30, )
+        axis.contour(b_field, angles, self.dataset.data.data, 15,
+                     colors='black', linewidths=0.5)
+
+        axis.set(xlim=self.parameters['xlim'])
+
+    def _make_second_contour_plot(self, axis):
+        b_field = self.dataset.data.axes[0].values
+        angles = self.dataset.data.axes[1].values
+
+        axis.contourf(b_field, angles, self.dataset.data.data, 30, )
+        axis.set(xlim=self.parameters['xlim'])
+
+    def _adjust_spacing(self):
+        # left, bottom, width, height
+        l, b, w, h = self.subs[2].get_position().bounds
+        self.subs[2].set_position([l + 0.15 * w, b, w, 1.05 * h])
+        l, b, w, h = self.subs[1].get_position().bounds
+        self.subs[1].set_position([l, b, w, 1.05 * h])
+        l, b, w, h = self.subs[0].get_position().bounds
+        self.subs[0].set_position([l, b + 0.05 * h, w, 1.05 * h])
+
+    def _set_title(self):
+        self.figure.suptitle(self.parameters["title"])
+
+
+class StackedPlotter(aspecd.plotting.SinglePlotter):
+    """Make stacked plot of data in a 2D dataset.
+
+    ..note::
+        not tested
+
+    """
+    def __init__(self):
+        super().__init__()
+        self.description = 'Stack 2D plots of a 3D dataset.'
+        self.parameters['xlim'] = tuple()
+        self.style = ''
+
+    def _create_plot(self):
+        """Plot the given dataset in three different representations."""
+        self._set_xlims()
+        self._set_style()  # xkcd
+        self._make_stacked_plot()
+
+    def _set_xlims(self):
+        if not self.parameters['xlim']:
+            self.parameters['xlim'] = \
+                tuple([self.dataset.data.axes[0].values[0],
+                       self.dataset.data.axes[0].values[-1]])
+            assert len(self.parameters['xlim']) == 2
+
+    def _set_style(self):
+        """Set the style to xkcd if indicated."""
+        if self.style == 'xkcd':
+            plt.xkcd()
+
+    def _make_stacked_plot(self, axis=None):
+        if not axis:
+            raise MissingInformationError(message='No axis provided for '
+                                                  'plotting.')
+
+        b_field = self.dataset.data.axes[0].values
+        variable_parameter = self.dataset.data.axes[1].values
+
+        stack_offset = 0.5 * max(self.dataset.data.data[0, :])
+        offset = 0
+        offsets = []
+
+        for idx, _ in enumerate(variable_parameter):
+            axis.plot(b_field, self.dataset.data.data[idx, :] + offset, 'k',
+                      linewidth=0.7)
+            offsets.append(offset)
+            offset += stack_offset
+
+        axis.grid(axis='x')
+        axis.set(xlim=self.parameters['xlim'],
+                 yticks=offsets,
+                 yticklabels=self.dataset.data.axes[1].values)
+

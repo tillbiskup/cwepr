@@ -3,6 +3,11 @@
 
 inherits:
   - strictness_high
+ignore-paths:
+  - scratch_files
+  - cwepr/io/__init__.py
+  - cwepr/io/emx_esp.py
+  - cwepr/io/general.py
 
 pep257:
   run: true

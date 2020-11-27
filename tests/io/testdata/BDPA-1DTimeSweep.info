@@ -1,0 +1,80 @@
+cwEPR Info file - v. 0.1.4 (2020-01-21)
+
+GENERAL
+Filename:               BDPA-1DTimeSweep
+Date start:             2020-12-07
+Date end:               2020-12-07
+Time start:             14:45:00
+Time end:               14:46:00
+Operator:               Biskup
+Label:                  BDPA 1D TimeSweep
+Purpose:                Test measurement for data import
+
+SAMPLE
+Name:                   Bruker BDPA standard
+ID:                     4711
+Description:            solid
+Solvent:                N/A
+Preparation:            Bruker
+Tube:                   3 x 2 x 250 mm
+
+EXPERIMENT
+Type:                   time-sweep
+Runs:                   1
+Variable parameter:     time
+Increment:              5 ms
+
+SPECTROMETER
+Model:                  Bruker EMX
+Software:               Xenon 1.3b.5
+
+MAGNETIC FIELD
+Field probe type:       Hall 
+Field probe model:      xxx 
+Start:                  351.6 mT
+Stop:                   351.6 mT
+Step:                   0.0 mT
+Sequence:               up
+Controller:             Bruker EMX Field Controller
+Power supply:           Bruker ER 081 (90/30)
+
+BRIDGE
+Model:                  Bruker EMX PremiumX
+Controller:             Bruker EMX
+Attenuation:            25 dB
+Power:                  0.6325 mW
+Detection:              diode
+Frequency counter:      Bruker
+MW frequency:           9.851543 GHz
+Q value:                6900
+
+SIGNAL CHANNEL
+Model:                  Bruker EMX Signal Channel
+Modulation amplifier:   Bruker EMX Modulation Amplifier
+Accumulations:          1
+Modulation frequency:   100 kHz
+Modulation amplitude:   0.01 mT
+Receiver gain:          40 dB
+Offset:                 0.0
+Conversion time:        10.00 ms
+Time constant:          2.56 ms
+Phase:                  0 deg
+
+DIGITAL FILTER
+Mode:                   Manual
+Number of Points:       0
+
+
+PROBEHEAD
+Type:                   HQ
+Model:                  Bruker 4119HS-W1
+Coupling:               critical
+
+TEMPERATURE
+Temperature:            298 K
+Controller:             N/A
+Cryostat:               N/A
+Cryogen:                N/A
+
+COMMENT
+1D_TimeSweep on signal maximum (?)

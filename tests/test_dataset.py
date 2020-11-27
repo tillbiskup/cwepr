@@ -5,6 +5,8 @@ import unittest
 from cwepr import dataset
 import os
 
+ROOTPATH = os.path.split(os.path.abspath(__file__))[0]
+
 
 class TestDataset(unittest.TestCase):
     def setUp(self):
@@ -15,13 +17,7 @@ class TestDataset(unittest.TestCase):
 
 
 class TestImport(unittest.TestCase):
-    def setUP(self):
-        pass
-
-    def test_import_dataset(self):
-        path = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
-        dts = dataset.ExperimentalDataset()
-        dts.import_from_file((path + "/Messdaten/1_No1-dunkel"))
+    pass
 
 
 class TestDatasetFactory(unittest.TestCase):
@@ -29,7 +25,7 @@ class TestDatasetFactory(unittest.TestCase):
         pass
 
     def test_dataset_factory(self):
-        path = os.path.dirname(os.path.dirname(os.path.dirname(__file__))) + "/Messdaten/1_No1-dunkel"
+        source = os.path.join(ROOTPATH, "io/testdata/test-bes3t-1D-fieldsweep")
         factory = dataset.DatasetFactory()
-        ds = factory.get_dataset(source=path)
+        ds = factory.get_dataset(source=source)
         assert(type(ds) == dataset.ExperimentalDataset)

@@ -1,0 +1,73 @@
+cwEPR Info file - v. 0.1.3 (2016-01-18)
+
+GENERAL
+Filename:               MagnettechGoniometerSweep
+Date start:             2020-11-17
+Date end:               2020-11-17
+Time start:             13:30:00
+Time end:               14:00:00
+Operator:               Someone
+Label:                  
+Purpose:                Angle-dependent signal
+
+SAMPLE
+Name:                   Sample
+ID:                     42
+Description:            some stuff on quartz-substrate
+Solvent:                nothing
+Preparation:            
+Tube:                   3.8 x 3 x 180 mm
+
+EXPERIMENT
+Type:                   goniometer sweep
+Runs:                   1
+Variable parameter:     angle
+Increment:              N/A       
+
+SPECTROMETER
+Model:                  Magnettech MS-5000 [11-0096]
+Software:               Magnettech ESRStudio 1.54.1
+
+MAGNETIC FIELD
+Field probe type:       Hall 
+Field probe model:      xxx 
+Start:                  335.0 mT
+Stop:                   340.0 mT
+Step:                   N/A
+Sequence:               up
+Controller:             Magnettech built-in
+Power supply:           Magnettech built-in
+
+BRIDGE
+Model:                  Magnettech built-in
+Controller:             Magnettech built-in
+Attenuation:            20 dB
+Power:                  0.1 mW
+Detection:              mixer
+Frequency counter:      Magnettech built-in
+MW frequency:           9.492914592 GHz
+Q value:                2524.3
+
+SIGNAL CHANNEL
+Model:                  Magnettech built-in
+Modulation amplifier:   Magnettech built-in
+Accumulations:          1
+Modulation frequency:   100 kHz
+Modulation amplitude:   0.05 mT
+Receiver gain:          N/A
+Conversion time:        N/A
+Time constant:          N/A
+Phase:                  0 deg
+
+PROBEHEAD
+Type:                   rectangular TE102
+Model:                  Magnettech built-in
+Coupling:               critical
+
+TEMPERATURE
+Temperature:            293 K
+Controller:             N/A
+Cryostat:               N/A
+Cryogen:                N/A
+
+COMMENT

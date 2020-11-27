@@ -1,0 +1,74 @@
+cwEPR Info file - v. 0.1.3 (2016-01-18)
+
+GENERAL
+Filename:               test-magnettech
+Date start:             2020-11-12
+Date end:               2020-11-12
+Time start:             9:50:00
+Time end:               10:20:00
+Operator:               Someone
+Label:                  Magnettech-XML-Import
+Purpose:                Signal
+
+SAMPLE
+Name:                   Trityl-Radical
+ID:                     42
+Description:            trityl radical
+Solvent:                benzene
+Preparation:            someone different
+Tube:                   3.8 x 3 x 180 mm
+
+EXPERIMENT
+Type:                   field sweep
+Runs:                   1
+Variable parameter:     magnetic field
+Increment:              N/A       
+
+SPECTROMETER
+Model:                  Magnettech MS-5000 [11-0096]
+Software:               Magnettech ESRStudio 1.54.1
+
+MAGNETIC FIELD
+Field probe type:       Hall 
+Field probe model:      xxx 
+Start:                  336.09 mT
+Stop:                   340.42 mT
+Step:                   N/A
+Sequence:               up
+Controller:             Magnettech built-in
+Power supply:           Magnettech built-in
+
+BRIDGE
+Model:                  Magnettech built-in
+Controller:             Magnettech built-in
+Attenuation:            20 dB
+Power:                  1.0 mW
+Detection:              mixer
+Frequency counter:      Magnettech built-in
+MW frequency:           9.4895842 GHz
+Q value:                2441.6
+
+SIGNAL CHANNEL
+Model:                  Magnettech built-in
+Modulation amplifier:   Magnettech built-in
+Accumulations:          1
+Modulation frequency:   10 kHz
+Modulation amplitude:   0.001 mT
+Receiver gain:          N/A
+Conversion time:        N/A
+Time constant:          N/A
+Phase:                  0 deg
+
+PROBEHEAD
+Type:                   rectangular TE102
+Model:                  Magnettech built-in
+Coupling:               critical
+
+TEMPERATURE
+Temperature:            293 K
+Controller:             N/A
+Cryostat:               N/A
+Cryogen:                N/A
+
+COMMENT
+Booh!

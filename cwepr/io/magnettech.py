@@ -1,0 +1,368 @@
+"""Import magnettech 1D and 2D datasets from its xml file(s).
+"""
+import base64
+import glob
+import os
+import struct
+import xml.etree.ElementTree as ET
+
+import cwepr.metadata
+import numpy as np
+
+import aspecd.annotation
+import aspecd.infofile
+import aspecd.io
+
+import cwepr.dataset
+import cwepr.processing
+import cwepr.io.errors
+
+
+class MagnettechXmlImporter(aspecd.io.DatasetImporter):
+    """Import cw-EPR raw data from the Magnettech benchtop spectrometer.
+
+    Magnettech provides a XML-file with the results. Specialities of this
+    format are existing and will be briefly explained: The data is coded in
+    hex-numbers, and the y axis consists of 10 times more points than the
+    y-axis. Therefore, an interpolation is needed to expand the axis to the
+    necessary amount of points.
+
+
+    Attributes
+    ----------
+    dataset: :obj:`trepr.dataset.Dataset`
+        Dataset to work with.
+
+    root: :class:`str`
+        path of the root directory
+
+    """
+
+    def __init__(self, source=''):
+        if source.endswith('.xml'):
+            source = source[:-4]
+        super().__init__(source=source)
+        # public properties
+        self.dataset = cwepr.dataset.ExperimentalDataset()
+        self.load_infofile = True
+        self.root = None
+        self.xml_metadata = dict()
+        self.full_filename = ''
+        # private properties
+        self._infofile = aspecd.infofile.Infofile()
+        self._bfrom = float()
+        self._bto = float()
+        self._xvalues = None
+        self._yvalues = None
+        self._infofile = aspecd.infofile.Infofile()
+
+    def _import(self):
+        self._get_full_filename()
+        self._get_xml_root_element()
+
+        self._get_raw_data()
+        self._create_x_axis()
+        self._extract_metadata_from_xml()  # Is needed for cutting data
+        self._cut_data()
+
+        self._hand_data_to_dataset()
+
+        # First import metadata from infofile, then override hand-written
+        # information by metadata from xml-file. The order matters.
+        if self.load_infofile and self._infofile_exists():
+            self._load_infofile()
+            self._map_infofile()
+        self._map_metadata_from_xml()
+
+    def _hand_data_to_dataset(self):
+        self.dataset.data.data = self._yvalues
+        self.dataset.data.axes[0].values = self._xvalues
+        self.dataset.data.axes[0].unit = 'mT'
+        self.dataset.data.axes[0].quantity = 'magnetic field'
+        self.dataset.data.axes[1].unit = 'mV'
+        self.dataset.data.axes[1].quantity = 'intensity'
+
+    def _get_full_filename(self):
+        if self.source:
+            self.full_filename = self.source + '.xml'
+
+    def _get_xml_root_element(self):
+        """Get the root object/name of the xml document."""
+        if not self.source:
+            raise cwepr.io.errors.MissingPathError('No path provided')
+        if not os.path.exists(self.full_filename):
+            raise FileNotFoundError('XML file not found.')
+        self.root = ET.parse(self.full_filename).getroot()
+
+    def _get_raw_data(self):
+        self._xvalues = \
+            self._convert_base64string_to_np_array(self.root[0][0][1][0].text)
+        self._yvalues = \
+            self._convert_base64string_to_np_array(self.root[0][0][1][-1].text)
+
+    def _create_x_axis(self):
+        b_field_x_offset = float(self.root[0][0][1][0].attrib['XOffset'])
+        b_field_x_slope = float(self.root[0][0][1][0].attrib['XSlope'])
+        mw_abs_x_offset = float(self.root[0][0][1][-1].attrib['XOffset'])
+        mw_abs_x_slope = float(self.root[0][0][1][-1].attrib['XSlope'])
+
+        mw_x = mw_abs_x_offset + \
+            np.linspace(0, len(self._yvalues) - 1, num=len(self._yvalues)) \
+            * mw_abs_x_slope
+        b_field_x = b_field_x_offset + np.linspace(0, len(self._xvalues) - 1,
+                                                   num=len(self._xvalues)) * \
+            b_field_x_slope
+        self._xvalues = np.interp(mw_x, b_field_x, self._xvalues)
+
+    def _cut_data(self):
+        self._get_magnetic_field_range()
+        mask = (self._xvalues > self._bfrom) & (self._xvalues < self._bto)
+        self._xvalues = self._xvalues[mask]
+        self._yvalues = self._yvalues[mask]
+
+    def _get_magnetic_field_range(self):
+        """Get magnetic field range from preprocessed XML data."""
+        self._bfrom = float(self.xml_metadata['Bfrom']['value'])
+        self._bto = float(self.xml_metadata['Bto']['value'])
+
+    def _map_metadata_from_xml(self):
+        self.dataset.metadata.temperature_control.temperature.value = \
+            float(self.xml_metadata['Temperature']) + 273.15
+        self.dataset.metadata.temperature_control.temperature.unit = 'K'
+        self.dataset.metadata.experiment.type = \
+            self.xml_metadata['KineticMode']
+        self.dataset.metadata.experiment.runs = \
+            self.xml_metadata['MeasurementCount']
+        self.dataset.metadata.experiment.variable_parameter = \
+            self.xml_metadata['XDatasource']
+        self.dataset.metadata.spectrometer = \
+            {'model': self.xml_metadata['Device'],
+             'software': self.xml_metadata['SWV']}
+        self.dataset.metadata.magnetic_field.start.from_string(
+            self.xml_metadata['Bfrom']['value'] + ' ' + self.xml_metadata[
+                'Bfrom']['unit'])
+        self.dataset.metadata.magnetic_field.stop.from_string(
+            self._dict_to_string(self.xml_metadata['Bto']))
+        self.dataset.metadata.magnetic_field.sweep_width.value = \
+            float(self.xml_metadata['Bto']['value']) - \
+            float(self.xml_metadata['Bfrom']['value'])
+        self.dataset.metadata.magnetic_field.sweep_width.unit = \
+            self.xml_metadata['Bfrom']['unit']
+        self.dataset.metadata.magnetic_field.field_probe_type = 'Hall'
+        self.dataset.metadata.magnetic_field.field_probe_model = 'builtin'
+        if self._xvalues[-1] - self._xvalues[0] > 0:
+            self.dataset.metadata.magnetic_field.sequence = 'up'
+        else:
+            self.dataset.metadata.magnetic_field.sequence = 'down'
+        self.dataset.metadata.magnetic_field.controller = 'builtin'
+        self.dataset.metadata.magnetic_field.power_supply = 'builtin'
+        self.dataset.metadata.bridge.model = 'builtin'
+        self.dataset.metadata.bridge.controller = 'builtin'
+        self.dataset.metadata.bridge.power.from_string(self._dict_to_string(
+            self.xml_metadata['MicrowavePower']))
+        self.dataset.metadata.bridge.detection = 'mixer'
+        self.dataset.metadata.bridge.frequency_counter = 'builtin'
+        self.dataset.metadata.bridge.mw_frequency.value = \
+            float(self.xml_metadata['MwFreq'])
+        self.dataset.metadata.bridge.mw_frequency.unit = 'GHz'
+        self.dataset.metadata.bridge.q_value = \
+            float(self.xml_metadata['QFactor'])
+        self.dataset.metadata.signal_channel.model = 'builtin'
+        self.dataset.metadata.signal_channel.modulation_amplifier = 'builtin'
+        self.dataset.metadata.signal_channel.accumulations = \
+            int(self.xml_metadata['Accumulations'])
+        self.dataset.metadata.signal_channel.modulation_frequency.from_string(
+            self._dict_to_string(self.xml_metadata['ModulationFreq']))
+        self.dataset.metadata.signal_channel.modulation_amplitude.from_string(
+            self._dict_to_string(self.xml_metadata['Modulation']))
+        self.dataset.metadata.signal_channel.phase = \
+            float(self.xml_metadata['Phase'])
+        self.dataset.metadata.probehead.model = 'builtin'
+        self.dataset.metadata.probehead.coupling = 'critical'
+
+    def _extract_metadata_from_xml(self):
+        # NOTE: Order of these statements is crucial not to overwrite values!
+        xml_metadata = self.root[0][0][0].attrib
+        xml_metadata.update(self.root[0][0].attrib)
+        for childnode in self.root[0][0][0][0]:
+            if 'Unit' in childnode.attrib:
+                xml_metadata[childnode.attrib['Name']] = \
+                    {'value': childnode.text, 'unit': childnode.attrib['Unit']}
+            else:
+                xml_metadata[childnode.attrib['Name']] = childnode.text
+        self.xml_metadata = xml_metadata
+
+    @staticmethod
+    def _convert_base64string_to_np_array(string):
+        # Split string at "=" and add the delimiter afterwards again
+        tmpdata = [x + "=" for x in string.split("=") if x]
+        # Decode and unpack list of strings
+        data = [struct.unpack('d', base64.b64decode(x)) for x in tmpdata]
+        data = [i[0] for i in data]
+        return np.asarray(data)
+
+    @staticmethod
+    def _dict_to_string(dict_):
+        return dict_['value'] + ' ' + dict_['unit']
+
+    def _load_infofile(self):
+        """Import infofile and parse it."""
+        infofile_name = self._get_infofile_name()
+        self._infofile.filename = infofile_name[0]
+        self._infofile.parse()
+
+    def _get_infofile_name(self):
+        return glob.glob(self.source + '.info')
+
+    def _assign_comment_as_annotation(self):
+        comment = aspecd.annotation.Comment()
+        comment.comment = self._infofile.parameters['COMMENT']
+        self.dataset.annotate(comment)
+
+    def _map_metadata(self, infofile_version):
+        """Bring the metadata into a unified format."""
+        mapper = \
+            cwepr.metadata.MetadataMapper(version=infofile_version,
+                                          metadata=self._infofile.parameters)
+        mapper.map()
+        self.dataset.metadata.from_dict(mapper.metadata)
+
+    def _map_infofile(self):
+        """Bring the metadata to a given format."""
+        infofile_version = self._infofile.infofile_info['version']
+        self._map_metadata(infofile_version)
+        self._assign_comment_as_annotation()
+
+    def _infofile_exists(self):
+        if self._get_infofile_name() and os.path.exists(
+                self._get_infofile_name()[0]):
+            return True
+        else:
+            print('No infofile found for dataset %s, import continued without '
+                  'infofile.' % os.path.split(self.source)[1])
+
+
+class GoniometerSweepImporter(aspecd.io.DatasetImporter):
+    """Importer for goniometric data from magnettech benchtop spectrometer.
+
+    ..note::
+        Metadata are only taken from the infofile, ignoring the (much
+        likely more accurate) xml-file metadata.
+    """
+
+    def __init__(self, source=''):
+        super().__init__(source=source)
+        self._infofile = aspecd.infofile.Infofile()
+        self.dataset = cwepr.dataset.ExperimentalDataset()
+        self.filenames = None
+        self._data = None
+        self._angles = []
+
+    def _import(self):
+        self._get_filenames()
+        self._sort_filenames()
+        self._import_all_spectra_to_list()
+
+        self._fill_axes()
+        self._get_metadata()
+
+    def _get_filenames(self):
+        if not os.path.exists(self.source):
+            raise FileNotFoundError
+        self.filenames = glob.glob(os.path.join(self.source, '*[0-9]dg.xml'))
+
+    def _sort_filenames(self):
+
+        def sort_key(string=''):
+            num = string.split('gon_')[1]
+            num = num.split('dg')[0]
+            return int(num)
+        self.filenames = sorted(self.filenames, key=sort_key)
+        return self.filenames
+
+    def _import_all_spectra_to_list(self):
+        self._data = []
+        interpolate = cwepr.processing.AxisInterpolation()
+        # import all files without infofile
+        for nr, filename in enumerate(self.filenames):
+            filename = filename[:-4]
+            importer = cwepr.io.MagnettechXmlImporter(source=filename)
+            importer.load_infofile = False
+            self._data.append(cwepr.dataset.ExperimentalDataset())
+            self._data[nr].import_from(importer)
+            self._angles.append(float(importer.xml_metadata['GonAngle']))
+            for idx, angle in enumerate(self._angles):
+                if angle > 359:
+                    self._angles[idx] = 0
+            # bring all measurements to the frequency of the first
+            if nr > 0:
+                freq_correction = cwepr.processing.FrequencyCorrection()
+                freq_correction.parameters['frequency'] = \
+                    self._data[0].metadata.bridge.mw_frequency.value
+                self._data[nr].process(freq_correction)
+
+            self._interpolation_to_same_number_of_points(interpolate, nr)
+
+            # make 3D dataset from set of 2d datasets
+        my_array = np.ndarray((len(self._data), len(self._data[0].data.data)))
+        self.dataset.data.data = my_array
+        for nr, set_ in enumerate(self._data):
+            self.dataset.data.data[nr, :] = set_.data.data
+
+    def _interpolation_to_same_number_of_points(self, interpolate, nr):
+        interpolate.parameters['points'] = len(self._data[0].data.data)
+        self._data[nr].process(interpolate)
+
+    def _fill_axes(self):
+        self._fill_field_axis()
+        self._fill_angle_axis()
+
+    def _fill_field_axis(self):
+        self.dataset.data.axes[0] = self._data[0].data.axes[0]
+
+    def _fill_angle_axis(self):
+        self.dataset.data.axes[1].values = np.asarray(self._angles)
+        self.dataset.data.axes[1].unit = 'degree'
+        self.dataset.data.axes[1].quantity = 'goniometer angle'
+
+    def _get_metadata(self):
+        """Import metadata from infofile.
+
+        .. note::
+            Currently, the metadata are only taken from the infofile.
+            All information from the xml-file are completely ignored.
+
+        """
+        self._load_infofile()
+        self._map_infofile()
+
+    def _load_infofile(self):
+        """Import infofile and parse it."""
+        infofile_name = self._get_infofile_name()
+        if not infofile_name:
+            raise FileNotFoundError('Infofile not found')
+        self._infofile.filename = infofile_name[0]
+        self._infofile.parse()
+
+    def _get_infofile_name(self):
+        folder_path = os.path.split(self.source)[0]
+        return glob.glob(folder_path + '.info')
+
+    def _assign_comment_as_annotation(self):
+        comment = aspecd.annotation.Comment()
+        comment.comment = self._infofile.parameters['COMMENT']
+        self.dataset.annotate(comment)
+
+    def _map_metadata(self, infofile_version):
+        """Bring the metadata into a unified format."""
+        mapper = \
+            cwepr.metadata.MetadataMapper(version=infofile_version,
+                                          metadata=self._infofile.parameters)
+        mapper.map()
+        self.dataset.metadata.from_dict(mapper.metadata)
+
+    def _map_infofile(self):
+        """Bring the metadata to a given format."""
+        infofile_version = self._infofile.infofile_info['version']
+        self._map_metadata(infofile_version)
+        self._assign_comment_as_annotation()

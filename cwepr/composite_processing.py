@@ -1,14 +1,33 @@
 """Module containing composite processing steps.
 
-In the definition of this package, a composite processing step_width includes both,
-processing and analysis. Generally this is the case if a processing step_width is
-performed which uses parameters obtained through an analysis step_width.
+In the definition of this package, a composite processing step includes both,
+processing and analysis. Generally this is the case if a processing step is
+performed which uses parameters obtained through an analysis step.
 
 This module exists for logical as well as technical reasons:
-1) It is not sensible to put combined processing and analysis in either of
-those modules.
-2) Both processing and analysis importing each other leads to infinite
-recursion.
+
+#. It is not sensible to put combined processing and analysis in either of
+   those modules.
+
+#. Both processing and analysis importing each other leads to infinite
+   recursion.
+
+
+.. todo::
+    This module needs to change name. Probably it will be named "tasks",
+    but not sure yet whether this will possibly collide with the "tasks"
+    module in the ASpecD framework.
+
+    Nevertheless, the few classes defined herein are multi-step processing
+    and analysis tasks one should be able to write a recipe for. Therefore,
+    it is more the question of whether those tasks described here will
+    simply be converted to a recipe that can modularly be imported or
+    somehow be interfaced by a dedicated class.
+
+    Probably, part of the problem with this module is a slight misconception
+    of the originator of this module how the ASpecD framework is designed
+    and should be used.
+
 """
 
 from copy import deepcopy
@@ -45,8 +64,10 @@ class BaselineCorrection(aspecd.processing.ProcessingStep):
         self.description = "Complete baseline correction"
 
     def _perform_task(self):
-        baseline_fit_step = cwepr.analysis.PolynomialBaselineFitting(
-            self.parameters["order"], self.parameters["percentage"])
+        baseline_fit_step = cwepr.analysis.PolynomialBaselineFitting()
+        baseline_fit_step.parameters['order'] = self.parameters["order"],
+        baseline_fit_step.parameters['percentage'] = \
+            self.parameters['percentage']
         baseline_analysis = self.dataset.analyse(baseline_fit_step)
         self.parameters["baseline_coefficients"] = baseline_analysis.result
         baseline = aspecd.dataset.CalculatedDataset()

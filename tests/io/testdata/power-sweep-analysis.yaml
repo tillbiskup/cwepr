@@ -1,0 +1,52 @@
+default_package: cwepr
+datasets_source_directory: /Users/mirjamschroder/Programmierkram/Python/cwepr/tests/io/testdata/
+
+datasets:
+  - BDPA-2DFieldPower
+
+tasks:
+  - kind: singleanalysis
+    type: AmplitudeVsPower
+    result: calcAmplitudePower
+    
+  - kind: singleanalysis
+    type: PolynomialFitOnData
+    properties:
+        parameters:
+            points: 13
+            order: 3
+            return_type: dataset
+    result: fittedCurve
+    apply_to: 
+        - calcAmplitudePower
+
+  - kind: multiplot
+    type: MultiPlotter
+    properties:
+      filename: PowerSweepAnalysis.pdf
+      parameters:
+        draw_zero: False
+    label: PSAPlot
+    apply_to:
+        - fittedCurve
+        - calcAmplitudePower
+        
+  - kind: report
+    type: PowerSweepAnalysisReporter
+    properties:
+        template: /Users/mirjamschroder/Programmierkram/Python/cwepr/templates/de/power_sweep_report.tex
+        filename: PowerSweepReport.tex
+        #dataset:  BDPA-2DFieldPower
+        context:
+            FITTING: fittedCurve
+            CALCDATA: calcAmplitudePower
+            general:
+                title: Some fancy title to the report
+                author: John Doe
+    compile: True
+    apply_to:
+        - BDPA-2DFieldPower
+
+
+    
+

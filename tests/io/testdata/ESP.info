@@ -1,0 +1,67 @@
+cwEPR Info file - v. 0.1.0 (2013-04-03)
+
+GENERAL
+Filename:               glas001
+Date:                   2013-04-04
+Time start:             08:00:00
+Time end:               08:40:00
+Operator:               Max Mustermann
+Label:                  leeres Roehrchen
+Purpose:                Test auf Glassignal
+Spectrometer:           ESP380E
+Software:               esp380e
+Runs:                   1
+
+SAMPLE
+Name:                   leeres Quarzglas-Roehrchen
+Description:            2 mm od, 1 mm id
+Buffer:                 N/A
+Preparation:            N/A
+Tube:                   2 x 1 x 120 mm
+
+MAGNETIC FIELD
+Start:                  339.50 mT
+Stop:                   349.50 mT
+Step:                   100/1024
+Sequence:               up
+Controller:             Bruker ER 032M
+Power supply:           Bruker ER 083 CS
+
+BRIDGE
+Model:                  Bruker ER 046 MRT
+Attenuation:            25 dB
+Power:                  0.63 mW
+Detection:              diode
+Frequency counter:      HP 5352B
+MW frequency:           9.66567 GHz
+
+SIGNAL CHANNEL
+Model:                  Bruker ER 023M
+Averages:               25
+Modulation frequency:   100 kHz
+Modulation amplitude:   0.2 mT
+Receiver gain:          5e5
+Conversion time:        81.92 ms
+Time constant:          20.48 ms
+Phase:                   0 deg
+
+PROBEHEAD
+Type:                   dielectric
+Model:                  Bruker ER 4118X-MD5
+Coupling:               critical
+
+TEMPERATURE
+Temperature:            270 K
+Controller:             Oxford ITC 503
+Cryostat:               Oxford 935
+Cryogen:                N2
+
+FIELD CALIBRATION
+Gaussmeter:             
+Method:                 Standard | StartEnd  % Wichtig als "Schalter" beim Parsen
+Standard:               LiLiF
+Signal field:           3448.99 G       % Felder fuer Freiburg
+MW Frequency:           9.666147 GHz
+Deviation:              0.18 G
+
+COMMENT

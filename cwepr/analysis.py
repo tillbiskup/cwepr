@@ -1,25 +1,76 @@
-"""Module containing all analysis steps
+"""Module containing the analysis steps of the cwEPR package.
 
-An analysis step_width is everything that operates on a dataset and yields a result
-largely independent of this dataset. E.g., integration or determination of a
-field correction value.
+.. sidebar::
+    processing *vs.* analysis
+
+    For more details on the difference between processing and analysis,
+    see the `ASpecD documentation <https://docs.aspecd.de/>`_.
+
+
+An analysis step, in contrast to a processing step, does not simply modify a
+given dataset, but extracts some characteristic of this dataset that is
+contained in its ``results`` property. This can be as simple as a number,
+*e.g.*, in case of the signal-to-noise figure of a data trace, but as
+complicated as a (calculated) dataset on its own containing some measure as
+function of some parameter, such as the microwave frequency for each of a
+series of recordings, allowing to visualise drifts that may or may not
+impact data analysis.
+
+.. note::
+    This module may be split into different modules and thus converted into
+    a subpackage at some point in the future, depending on the number of
+    classes for analysis steps to come (but rather likely to happen).
+
+
+.. todo::
+    Reduce number of error classes, as many seem to be pretty generic,
+    and make use of the messages if exceptions are thrown. Carefully revise
+    methods.
+
+
+.. todo::
+    Make methods dealing with both, 1D and 2D datasets or raising the
+    respective errors.
+
+
+Note to developers
+==================
+
+Processing steps can be based on analysis steps, but not inverse! Otherwise,
+we get cyclic dependencies what should obviously be avoided in order to keep
+code working.
 """
 
 import copy
 import math
 import numpy as np
+import scipy.constants
 
 import aspecd.analysis
+import aspecd.dataset
 
 
 class Error(Exception):
     """Base class for exceptions in this module."""
 
-    pass
+
+class DimensionError(Error):
+    """Exception indicating error in the dimension of an object.
+
+    Attributes
+    ----------
+    message : `str`
+        explanation of the error
+
+    """
+
+    def __init__(self, message=''):
+        super().__init__()
+        self.message = message
 
 
 class ValuesNotIncreasingError(Error):
-    """Exception raised when x values are decreasing.
+    """Exception raised when x values are not decreasing.
 
     Values given for the common space determination should always be in
     increasing order.
@@ -51,7 +102,7 @@ class DefinitionRangeDeterminationError(Error):
         self.message = message
 
 
-class NoCommonSpaceError(Error):
+class NoCommonRangeError(Error):
     """Exception raised when common definition range is zero.
 
     Attributes
@@ -86,48 +137,47 @@ class SpectrumNotIntegratedError(Error):
 class FieldCorrectionValue(aspecd.analysis.SingleAnalysisStep):
     """Determine correction value for a field correction.
 
+    As g standard reference, it can be chosen from two substances, LiLiF and
+    DPPH using the parameter "standard".
+
     References for the constants:
 
-    g value for Li:LiF::
+    g value of Li:LiF::
 
         g(LiLiF) = 2.002293 +- 0.000002
 
     Reference: Rev. Sci. Instrum. 1989, 60, 2949-2952.
 
-    Bohr magneton::
+    g value of DPPH:
 
-        mu_B = 9.27401*10**(-24)
+        g(DPPH) = 2.0036 ± 0.0002
 
-    Reference: Rev. Mod. Phys. 2016, 88, 035009.
+    Reference: Appl. Magn. Reson. 10, 339-350 (1996)
 
-    Planck constant::
-
-        h = 6.62607*10**(-34)
-
-    Reference: Rev. Mod. Phys. 2016, 88, 035009.
     """
 
     G_LILIF = 2.002293
-    BOHR_MAGNETON = 9.27401 * 10 ** (-24)
-    PLANCK_CONSTANT = 6.62607 * 10 ** (-34)
+    G_DPPH = 2.0036
 
     def __init__(self):
         super().__init__()
-        self.nu_value = 0.0
+        self.mw_frequency = 9.5
+        self.g_correct = self.G_LILIF
         self.description = "Determination of a field correction value"
 
     def _perform_task(self):
         """Wrapper around field correction value determination method."""
-        self.nu_value = self.dataset.metadata.bridge.mw_frequency.value
+        self.mw_frequency = self.dataset.metadata.bridge.mw_frequency.value
+        self._get_sample_g_value()
         self.result = self._get_field_correction_value()
 
     def _get_field_correction_value(self):
         """Calculates a field correction value.
 
-        Finds the approximate maximum of the peak in a field standard spectrum
-        by using the difference between minimum and maximum in the derivative.
-        This value is subtracted from the the expected field value for the MW
-        frequency provided.
+        Finds the zero-crossing of a (derivative) spectrum of a field
+        standard by using the difference between minimum and maximum part of the
+        signal. This value is then subtracted from the the expected field
+        value for the MW frequency provided.
 
         Returns
         -------
@@ -135,46 +185,56 @@ class FieldCorrectionValue(aspecd.analysis.SingleAnalysisStep):
             Field correction value
 
         """
-        index_max = np.argmax(self.dataset.data.axes[0].values)
-        index_min = np.argmin(self.dataset.data.axes[0].values)
-        experimental_field = (
-            self.dataset.data.data[index_max] -
-            self.dataset.data.data[index_min]) / 2.0
+        i_max = np.argmax(self.dataset.data.data)
+        i_min = np.argmin(self.dataset.data.data)
+        zero_crossing_exp = (self.dataset.data.axes[0].values[i_min] +
+                             self.dataset.data.axes[0].values[i_max]) / 2
         calculated_field = \
-            self.PLANCK_CONSTANT * self.nu_value / \
-            (self.G_LILIF * self.BOHR_MAGNETON)
-        delta_b0 = calculated_field - experimental_field
+            scipy.constants.value('Planck constant') \
+            * self.mw_frequency * 1e9 * 1e3 / \
+            (self.g_correct * scipy.constants.value('Bohr magneton'))
+        delta_b0 = calculated_field - zero_crossing_exp
         return delta_b0
+
+    def _get_sample_g_value(self):
+        if 'standard' in self.parameters.keys():
+            if self.parameters['standard'].lower() == 'dpph':
+                self.g_correct = self.G_DPPH
+            elif self.parameters['standard'].lower() == 'lilif':
+                self.g_correct = self.G_LILIF
+            else:
+                print('This g-standard sample is not listed, LiLiF is chosen '
+                      'automatically.')
 
 
 class PolynomialBaselineFitting(aspecd.analysis.SingleAnalysisStep):
     """Analysis step_width for finding a baseline correction polynomial.
 
     An actual correction with the respective polynomial can be performed
-    afterwards using
-    :class:`cwepr.processing.BaselineCorrectionWithPolynomial`.
+    afterwards using :class:`cwepr.processing.BaselineCorrectionWithPolynomial`.
 
     Attributes
     ----------
-    order: :class:`int`
-        Order of the polynomial to create
+    parameters[order]: :class:`int`
+        Order of the polynomial, default is 0
 
-    percentage: :class:`int`
-        Percentage of the spectrum to consider as baseline on EACH SIDE of the
+    parameters[percentage]: :class:`int`
+        Percentage of the spectrum to consider as baseline on each side of the
         spectrum. I.e. 10% means 10% left and 10 % right.
+        Default: 10 %
 
     """
 
-    def __init__(self, order=0, percentage=10):
+    def __init__(self):
         super().__init__()
-        self.parameters["order"] = order
-        self.parameters["percentage"] = percentage
+        self.parameters["order"] = 0
+        self.parameters["percentage"] = 10
+        self.result = None
         self.description = "Coefficients of polynomial fitted to baseline"
 
     def _perform_task(self):
         """Wrapper around polynomial determination."""
-        coefficients = self._find_polynomial_by_fit()
-        self.result = coefficients
+        self.result = self._find_polynomial_by_fit()
 
     def _find_polynomial_by_fit(self):
         """Perform a polynomial fit on the baseline.
@@ -185,14 +245,11 @@ class PolynomialBaselineFitting(aspecd.analysis.SingleAnalysisStep):
         number_of_points = len(self.dataset.data.data)
         points_per_side = \
             math.ceil(number_of_points * self.parameters["percentage"] / 100.0)
-        dataset_copy_y = copy.deepcopy(self.dataset.data.data)
-        data_list_y = dataset_copy_y.tolist()
-        data_list_x = \
-            (copy.deepcopy(self.dataset.data.axes[0].values)).tolist()
-        points_to_use_x = \
-            self._get_points_to_use(data_list_x, points_per_side)
-        points_to_use_y = \
-            self._get_points_to_use(data_list_y, points_per_side)
+
+        data_list_y = copy.deepcopy(self.dataset.data.data).tolist()
+        data_list_x = (copy.deepcopy(self.dataset.data.axes[0].values)).tolist()
+        points_to_use_x = self._get_points_to_use(data_list_x, points_per_side)
+        points_to_use_y = self._get_points_to_use(data_list_y, points_per_side)
         coefficients = np.polyfit(
             np.asarray(points_to_use_x), np.asarray(points_to_use_y),
             self.parameters["order"])
@@ -221,7 +278,7 @@ class PolynomialBaselineFitting(aspecd.analysis.SingleAnalysisStep):
 
         """
         left_part = data[:points_per_side + 1]
-        right_part = data[len(data) - points_per_side - 1:]
+        right_part = data[- points_per_side - 1:]
         points_to_use = left_part
         points_to_use.extend(right_part)
         return points_to_use
@@ -239,15 +296,17 @@ class AreaUnderCurve(aspecd.analysis.SingleAnalysisStep):
 
         The x values from the dataset are used.
         """
-        x_coordinates = self.dataset.data.axes[0].values
-        y_coordinates = self.dataset.data.data
+        x_values = self.dataset.data.axes[0].values
+        y_values = self.dataset.data.data
 
-        integral = np.trapz(y_coordinates, x_coordinates)
-        self.result = integral
+        self.result = np.trapz(y_values, x_values)
 
 
 class IntegrationVerification(aspecd.analysis.SingleAnalysisStep):
     """Verify whether the spectrum was correctly preprocessed.
+
+    Checks if the baseline is not too much inclined on the right side of the
+    spectrum, is therefore getting the area under this curve.
 
     In the case of a correct preprocessing, the curve after the first
     integration should be close to zero on the rightmost part of the spectrum,
@@ -257,23 +316,27 @@ class IntegrationVerification(aspecd.analysis.SingleAnalysisStep):
 
     Attributes
     ----------
-    y: :class:`list`
+    parameters[y]: :class:`list`
         y values to use for the integration
 
     percentage: :class:`int`
         Percentage of the spectrum to consider
 
     threshold: :class:`float`
-        Threshold for the integral. If the integral determined is smaller the
-        preprocessing is considered to have been successful.
+        Threshold for the integral. If the determined integral is smaller, the
+        preprocessing is considered successful.
+
+
+    .. warning::
+        Rewrite? Integrate somewhere automatically?
 
     """
 
-    def __init__(self, y, percentage=15, threshold=0.001):
+    def __init__(self):
         super().__init__()
-        self.parameters["y"] = y
-        self.percentage = percentage
-        self.threshold = threshold
+        self.parameters["y"] = None
+        self.percentage = 15
+        self.threshold = 0.001
         self.description = "Preprocessing verification after first integration"
 
     def _perform_task(self):
@@ -299,20 +362,29 @@ class IntegrationVerification(aspecd.analysis.SingleAnalysisStep):
 class CommonDefinitionRanges(aspecd.analysis.SingleAnalysisStep):
     """Determine the common definition ranges.
 
+    Compare the axis values of two or more datasets. This might be
+    interesting for further analysis and/or processing steps.
+
     If the common range is inferior to a certain value, an exception is raised.
     This can be transformed to a warning on a higher level application. In this
-    respect the analysis determines if a large enough common space exists. This
+    respect the analysis determines if a large enough common range exists. This
     is the case if no exception is raised.
 
     Additionally the analysis finds the edges of common ranges and returns them
     which can be used to display them in a plot.
 
+    .. note::
+        Das ist eine generelle Funktionalität für Algebra auf *mehreren*
+        Datensätzen, und sollte als solche vielleicht einmal sauber
+        implementiert und dann ins ASpecD-Framework verschoben werden.
+
+
     Attributes
     ----------
-    datasets: :class:`list`
+    parameters['datasets']: :class:`list`
         List of datasets to consider in the determination.
 
-    threshold: :class:`float`
+    parameters['threshold']: :class:`float`
         Distance used for determining whether or not the common
         definition range of two spectra is large enough (vide infra).
 
@@ -375,7 +447,7 @@ class CommonDefinitionRanges(aspecd.analysis.SingleAnalysisStep):
         """
         if len(self.parameters["datasets"]) < 2:
             raise DefinitionRangeDeterminationError(
-                "Number of datasets( " + str(len(self.parameters["datasets"]))
+                "Number of datasets ( " + str(len(self.parameters["datasets"]))
                 + ") is too low!")
         self._acquire_data()
         self._check_commonspace_for_all()
@@ -396,9 +468,9 @@ class CommonDefinitionRanges(aspecd.analysis.SingleAnalysisStep):
             x_coordinates = dataset.data.axes[0].values
             if x_coordinates[-1] < x_coordinates[0]:
                 dataset_name = dataset.id
-                raise ValuesNotIncreasingError("ExperimentalDataset " + dataset_name +
-                                               """ has x values in the wrong 
-                                               order.""")
+                message = 'ExperimentalDataset ' + dataset_name +\
+                          'has x values in the wrong order.'
+                raise ValuesNotIncreasingError(message=message)
         for dataset in self.parameters["datasets"]:
             x_coordinates = dataset.data.axes[0].values
             self.start_points.append(x_coordinates[0])
@@ -445,15 +517,15 @@ class CommonDefinitionRanges(aspecd.analysis.SingleAnalysisStep):
         width_delta = math.fabs(width1 - width2)
         if (math.fabs(self.start_points[index1] - self.start_points[index2])
             > (width_delta + self.parameters["threshold"] *
-                (min(width1, width2)))) or (
-            math.fabs(self.end_points[index1] - self.end_points[index2]) > (
+               (min(width1, width2)))) or (
+                math.fabs(self.end_points[index1] - self.end_points[index2]) > (
                 width_delta + self.parameters["threshold"] *
                 (min(width1, width2)))):
             name1 = self.parameters["datasets"][index1].id
             name2 = self.parameters["datasets"][index1].id
             errormessage = ("Datasets " + name1 + " and " + name2 +
-                            "have not enough commonspace.")
-            raise NoCommonSpaceError(errormessage)
+                            "have not enough common space.")
+            raise NoCommonRangeError(errormessage)
 
     def _check_commonspace_for_all(self):
         """Check all possible common definition ranges.
@@ -462,8 +534,8 @@ class CommonDefinitionRanges(aspecd.analysis.SingleAnalysisStep):
             Avoid calculating every combination twice.
 
         """
-        for dataset_index_1 in range(len(self.parameters["datasets"])):
-            for dataset_index_2 in range(len(self.parameters["datasets"])):
+        for dataset_index_1, _ in enumerate(self.parameters["datasets"]):
+            for dataset_index_2, _ in enumerate(self.parameters["datasets"]):
                 if dataset_index_1 != dataset_index_2:
                     self._check_commonspace_for_two(dataset_index_1,
                                                     dataset_index_2)
@@ -525,7 +597,18 @@ class CommonDefinitionRanges(aspecd.analysis.SingleAnalysisStep):
 
 
 class LinewidthPeakToPeak(aspecd.analysis.SingleAnalysisStep):
-    """Linewidth measurement (peak to peak in derivative)"""
+    """Linewidth measurement (peak to peak in derivative).
+
+    .. todo::
+        Combine all linewidth classes into one with a switch for the method
+        to use?
+
+        However: FWHM can only be used as linewidth measure in absorptive
+        spectra, not in derivative-shape spectra. Perhaps therefore rename
+        to Peak2PeakDistance or similar?
+
+
+    """
 
     def __init__(self):
         super().__init__()
@@ -534,29 +617,33 @@ class LinewidthPeakToPeak(aspecd.analysis.SingleAnalysisStep):
     def _perform_task(self):
         self.result = self.get_peak_to_peak_linewidth()
 
+    @staticmethod
+    def applicable(dataset):
+        return type(dataset.data.data.size) == int
+
     def get_peak_to_peak_linewidth(self):
         """Calculates the peak-to-peak linewidth.
 
         This is done by determining the distance between the maximum and the
         minimum in the derivative spectrum which should yield acceptable
-        results in a symmetrical signal.
+        results in a symmetrical signal. Limitation: Spectrum contains only
+        one line.
 
         Returns
         -------
         linewidth: :class:`float`
-            line width as determined
+            peak to peak linewidth
 
         """
-        index_max = np.argmax(self.dataset.data.axes[0].values)
-        index_min = np.argmin(self.dataset.data.axes[0].values)
-        linewidth = (
-            self.dataset.data.data[index_max] -
-            self.dataset.data.data[index_min])
+        index_max = np.argmax(self.dataset.data.data)
+        index_min = np.argmin(self.dataset.data.data)
+        linewidth = abs(self.dataset.data.axes[0].values[index_min] -
+                        self.dataset.data.axes[0].values[index_max])
         return linewidth
 
 
 class LinewidthFWHM(aspecd.analysis.SingleAnalysisStep):
-    """Linewidth measurement at half maximum"""
+    """Full linewidth at half maximum."""
 
     def __init__(self):
         super().__init__()
@@ -578,18 +665,17 @@ class LinewidthFWHM(aspecd.analysis.SingleAnalysisStep):
             line width as determined
 
         """
-        index_max = np.argmax(self.dataset.data.axes[0].values)
+        index_max = np.argmax(self.dataset.data.data)
         spectral_data = copy.deepcopy(self.dataset.data.data)
-        maximum = self.dataset.data.axes[0].values[index_max]
-        for data_index, data_value in enumerate(spectral_data):
-            data_value -= maximum / 2
-            if data_value < 0:
-                data_value *= -1
-            spectral_data[data_index] = data_value
+
+        spectral_data -= max(spectral_data) / 2
+        spectral_data = abs(spectral_data)
+
         left_zero_cross_index = np.argmin(spectral_data[:index_max])
         right_zero_cross_index = np.argmin(spectral_data[index_max:])
-        linewidth = right_zero_cross_index - left_zero_cross_index
-        return linewidth
+        b_field_left = self.dataset.data.axes[0].values[left_zero_cross_index]
+        b_field_right = self.dataset.data.axes[0].values[right_zero_cross_index]
+        return b_field_right - b_field_left
 
 
 class SignalToNoiseRatio(aspecd.analysis.SingleAnalysisStep):
@@ -601,15 +687,16 @@ class SignalToNoiseRatio(aspecd.analysis.SingleAnalysisStep):
 
     Attributes
     ----------
-    percentage: :class:`int`
+    parameters['percentage']: :class:`int`
         percentage of the spectrum to be considered edge part on any side
         (i.e. 10% means 10% on each end).
+        Default: 10%
 
     """
 
-    def __init__(self, percentage=10):
+    def __init__(self):
         super().__init__()
-        self.parameters["percentage"] = percentage
+        self.parameters["percentage"] = 10
         self.description = "Determine signal to noise ratio."
 
     def _perform_task(self):
@@ -618,57 +705,204 @@ class SignalToNoiseRatio(aspecd.analysis.SingleAnalysisStep):
         Call method to get the amplitude of the noise, compare it to the
         absolute amplitude and set a result.
         """
-        data_copy = copy.deepcopy(self.dataset.data.data)
-        data_list_absolute = data_copy.to_list()
-        for data_index, data_value in enumerate(data_list_absolute):
-            data_list_absolute[data_index] = np.abs(
-                data_list_absolute[data_index])
-        signal_amplitude = max(data_list_absolute)
-        noise_amplitude = self._get_noise_amplitude(data_list_absolute)
+        signal = self.dataset.data.data
+        noise = self._get_noise()
+
+        noise_amplitude = self._get_amplitude(noise)
+        signal_amplitude = self._get_amplitude(signal) - noise_amplitude
+
         self.result = signal_amplitude / noise_amplitude
 
-    def _get_noise_amplitude(self, data_absolute):
-        """Find the maximum of the noise.
+    @staticmethod
+    def _get_amplitude(data=None):
+        return max(data) - min(data)
 
-        This method assembles the data points of the spectrum to consider as
-        noise and returns the maximum.
+    def _get_noise(self):
+        number_of_points = math.ceil(len(self.dataset.data.data) *
+                                     self.parameters["percentage"] / 100.0)
+        noise_data = np.append(self.dataset.data.data[:number_of_points],
+                               self.dataset.data.data[-number_of_points:])
+        return noise_data
 
-        """
-        number_of_points = len(data_absolute)
-        points_per_side = \
-            math.ceil(number_of_points * self.parameters["percentage"] / 100.0)
-        points_to_use_y = \
-            self._get_points_to_use(data_absolute, points_per_side)
-        amplitude = max(points_to_use_y)
-        return amplitude
+
+class Amplitude(aspecd.analysis.SingleAnalysisStep):
+    """Determine amplitude of dataset.
+
+    Depending of the dimension of the dataset, the returned value is either
+    a scalar (1D dataset) or a vector (2D dataset) containing the amplitude of
+    each row respectively.
+
+    Returns
+    -------
+    result
+        amplitude(s) row-wise, thus scalar or vector.
+
+    """
+
+    def __init__(self):
+        super().__init__()
+        self.description = "Get amplitude of (derivative) spectrum."
+
+    def _perform_task(self):
+        if len(self.dataset.data.axes) == 2:
+            self.result = max(self.dataset.data.data) - \
+                          min(self.dataset.data.data)
+        else:
+            self.result = np.amax(self.dataset.data.data, axis=1) - \
+                          np.amin(self.dataset.data.data, axis=1)
+
+
+class AmplitudeVsPower(aspecd.analysis.SingleAnalysisStep):
+    """Return a calculated dataset to further analyse a power-sweep experiment.
+
+    The analysis of a power sweep results in a plot of the peak amplitude
+     vs. the square root of the microwave power of the bridge. Both values
+     are determined in this step and put together in a calculated dataset
+     that can be used subsequently to perform the linear fit.
+
+    """
+
+    def __init__(self):
+        super().__init__()
+        self.description = "Return calculated dataset for power sweep analysis."
+        self.result = aspecd.dataset.CalculatedDataset()
+        # private properties
+        self._analysis = Amplitude()
+        self._roots_of_mw_power = np.ndarray([])
 
     @staticmethod
-    def _get_points_to_use(data, points_per_side):
-        """Get a number of points from the spectrum to use for a fit.
+    def applicable(dataset):
+        return len(dataset.data.axes) > 2
 
-        Slices the list of all data points to have a list of points from each
-        side of the spectrum to consider as noise.
+    def _perform_task(self):
+        self._calculate_data_and_axis()
+        self._check_mw_axis()
+        self._assign_data_to_result()
+        self._assign_units_to_result()
 
-        WARNING: The spectral data needs to be provided and/or the percentage
-        to use set in a way that no actual peak lies in this range.
+    def _assign_units_to_result(self):
+        if self.dataset.data.axes[1].unit == 'mW':
+            self.result.data.axes[0].unit = 'sqrt(mW)'
+        elif self.dataset.data.axes[1].unit == 'W':
+            self.result.data.axes[0].unit = 'sqrt(W)'
+        self.result.data.axes[0].quantity = 'root of mw power'
 
-        Parameters
-        ----------
-        data: :class:`list`
-            List from which points should be used on each side.
+    def _assign_data_to_result(self):
+        self.result.data.data = self._analysis.result
+        self.result.data.axes[0].values = self._roots_of_mw_power
 
-        points_per_side: :class:'int'
-            How many points from each end of the list should be used.
+    def _calculate_data_and_axis(self):
+        self._roots_of_mw_power = np.sqrt(self.dataset.data.axes[1].values)
+        amplitude = Amplitude()
+        self._analysis = self.dataset.analyse(amplitude)
 
-        Returns
-        -------
-        points_to_use: :class:`list`
-            List only containing the correct number of points from each side
-            and not the points in between.
+    def _check_mw_axis(self):
+        if self._roots_of_mw_power[-1] - self._roots_of_mw_power[0] < 0:
+            self._roots_of_mw_power = self._roots_of_mw_power[::-1]
+            self._analysis.result = self._analysis.result[::-1]
 
-        """
-        left_part = data[:points_per_side + 1]
-        right_part = data[len(data) - points_per_side - 1:]
-        points_to_use = left_part
-        points_to_use.extend(right_part)
-        return points_to_use
+
+class PolynomialFitOnData(aspecd.analysis.SingleAnalysisStep):
+    """Perform polynomial fit on data and return its parameters or a dataset.
+
+    Developed tests first.
+
+    Attributes
+    ----------
+    parameters['points']
+        first n points that should taken into account
+
+    parameters['order']
+        order of the fit. defaults to 1
+
+    parameters['return_type'] : :class: `str`
+        choose to returning the coefficients of the fit or a calculated
+        dataset containing the curve to plot. Defaults to coefficients.
+
+        Valid values: 'coefficients', 'dataset'
+
+    .. todo::
+        if origin is given, add point at 0,0? Does not guarantee the fit
+        really passes the origin.
+            origin : :class: `bool`
+        Determines whether fit should pass origin, defaults to True.
+
+    """
+    def __init__(self):
+        super().__init__()
+        self.description = "Perform linear fit and return parameters."
+        self.result = None
+        self.parameters['points'] = 3
+        self.parameters['order'] = 1
+        self.parameters['return_type'] = 'coefficients'
+        # private properties
+        self._coefficients = []
+        self._curve = aspecd.dataset.CalculatedDataset()
+
+    def _perform_task(self):
+        self._get_coefficients()
+        self._get_curve()
+        self._assign_result()
+
+    def _get_coefficients(self):
+        x_data_to_process = \
+            self.dataset.data.axes[0].values[:self.parameters['points']]
+        y_data_to_process = self.dataset.data.data[:self.parameters['points']]
+        self._coefficients = np.polyfit(x_data_to_process,
+                                        y_data_to_process,
+                                        self.parameters['order'])
+
+    def _get_curve(self):
+        self._prepare_axes()
+        self._curve.data.data = np.polyval(self._coefficients,
+                                           self.dataset.data.axes[0].values)
+        self._curve.data.axes[0].values = self.dataset.data.axes[0].values
+        self._curve.metadata.calculation.parameters['coefficients'] = \
+            self._coefficients
+
+    def _assign_result(self):
+        if self.parameters['return_type'].lower() == 'dataset':
+            self.result = self._curve
+        else:
+            self.result = self._coefficients
+
+    def _prepare_axes(self):
+        self._curve.data.axes[0] = self.dataset.data.axes[0]
+
+
+class PtpVsModAmp(aspecd.analysis.SingleAnalysisStep):
+    """Create calculated dataset for modulation sweep analysis."""
+
+    def __init__(self):
+        super().__init__()
+        self.description = 'Create dataset with ptp-linewidth vs modulation ' \
+                           'Amplitude.'
+        self.new_dataset = aspecd.dataset.CalculatedDataset()
+        self.linewidths = np.ndarray([0])
+
+    def _perform_task(self):
+        self._get_linewidths()
+        self._fill_dataset()
+        self.result = self.new_dataset
+
+    @staticmethod
+    def applicable(dataset):
+        return len(dataset.data.axes) > 2
+
+    def _get_linewidths(self):
+        for line in self.dataset.data.data:
+            index_max = np.argmax(line)
+            index_min = np.argmin(line)
+            linewidth = abs(self.dataset.data.axes[1].values[index_min] -
+                            self.dataset.data.axes[1].values[index_max])
+            self.linewidths = np.append(self.linewidths, linewidth)
+
+    def _fill_dataset(self):
+        self.new_dataset.data.data = self.linewidths
+        self.new_dataset.data.axes[0] = self.dataset.data.axes[1]
+        self.new_dataset.data.axes[1].unit = self.dataset.data.axes[0].unit
+        self.new_dataset.data.axes[1].quantity = 'peak to peak linewidth'
+
+
+
+

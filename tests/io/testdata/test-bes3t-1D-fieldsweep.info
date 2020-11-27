@@ -1,0 +1,79 @@
+cwEPR Info file - v. 0.1.4 (2020-01-21)
+
+GENERAL
+Filename:               test-bes3t-1D-fieldsweep
+Date start:             2020-02-04
+Date end:               2020-02-04
+Time start:             08:57:00
+Time end:               09:12:00
+Operator:               John Doe
+Label:                  I won't tell you
+Purpose:                Signal?
+
+SAMPLE
+Name:                   Dude
+ID:                     0
+Description:            Try go guess
+Solvent:                benzene
+Preparation:            Somebody
+Tube:                   3.9 x 3.0 x 250 mm (QSIL Suprasil)
+
+EXPERIMENT
+Type:                   field-sweep
+Runs:                   1
+Variable parameter:     field
+Increment:              0.1 G
+
+SPECTROMETER
+Model:                  Bruker EMX
+Software:               Xenon 1.3b.5
+
+MAGNETIC FIELD
+Field probe type:       Hall 
+Field probe model:      xxx 
+Start:                  346.1 mT
+Stop:                   356.1 mT
+Step:                   1000/10 mT
+Sequence:               up
+Controller:             Bruker EMX Field Controller
+Power supply:           Bruker ER 081 (90/30)
+
+BRIDGE
+Model:                  Bruker EMX PremiumX
+Controller:             Bruker EMX
+Attenuation:            25 dB
+Power:                  0.6325 mW
+Detection:              diode
+Frequency counter:      Bruker
+MW frequency:           9.847957 GHz
+Q value:                9200
+
+SIGNAL CHANNEL
+Model:                  Bruker EMX Signal Channel
+Modulation amplifier:   Bruker EMX Modulation Amplifier
+Accumulations:          20
+Modulation frequency:   100 kHz
+Modulation amplitude:   0.1 mT
+Receiver gain:          65 dB
+Offset:                 0.0
+Conversion time:        40.96 ms
+Time constant:          40.96 ms
+Phase:                  0 deg
+
+DIGITAL FILTER
+Mode:                   Manual
+Number of Points:       0
+
+PROBEHEAD
+Type:                   HQ
+Model:                  Bruker 4119HS-W1
+Coupling:               critical
+
+TEMPERATURE
+Temperature:            295 K
+Controller:             N/A
+Cryostat:               N/A
+Cryogen:                N/A
+
+COMMENT
+Gotcha!

@@ -1,10 +1,23 @@
-"""ExperimentalDataset (Container for experimental data and respective metadata)"""
+"""
+Dataset structure for cwEPR data.
 
+This is a container for experimental data and the respective metadata. The
+general structure is inherited from :class:`aspecd.dataset.Dataset` and
+adapted for cwEPR data.
+"""
 
-import aspecd.metadata
+import os
 
-import cwepr.io
+import aspecd.dataset
+import aspecd.utils
+
+import cwepr.io.factory
+import cwepr.io.general
 import cwepr.metadata
+
+
+class Error(Exception):
+    """Base class for exceptions in this module."""
 
 
 class ExperimentalDataset(aspecd.dataset.ExperimentalDataset):
@@ -21,11 +34,11 @@ class ExperimentalDataset(aspecd.dataset.ExperimentalDataset):
 
 
 class DatasetFactory(aspecd.dataset.DatasetFactory):
-    """Implementation of the dataset factory for recipe driven evaluation"""
+    """Implementation of the dataset factory for recipe driven evaluation."""
 
     def __init__(self):
         super().__init__()
-        self.importer_factory = cwepr.io.ImporterFactory()
+        self.importer_factory = cwepr.io.factory.DatasetImporterFactory()
 
     @staticmethod
     def _create_dataset(source=''):
@@ -45,3 +58,4 @@ class DatasetFactory(aspecd.dataset.DatasetFactory):
 
         """
         return cwepr.dataset.ExperimentalDataset()
+

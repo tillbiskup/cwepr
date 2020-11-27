@@ -26,8 +26,8 @@ with open(os.path.join(os.path.dirname(__file__), '..', 'VERSION')) as \
     release_ = version_file.read().strip()
 
 project = 'cwEPR'
-copyright = '2018-2019, Pascal Kirchner, Till Biskup'
-author = 'Pascal Kirchner'
+copyright = '2018– Till Biskup, 2020- Mirjam Schröder, 2018/19, Pascal Kirchner'
+author = 'Till Biskup, Mirjam Schröder, Pascal Kirchner'
 
 # The short X.Y version
 version = ".".join(release_.split('.')[0:2])
@@ -171,7 +171,7 @@ latex_elements = {
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
     (master_doc, 'cwepr.tex', 'cwEPR Documentation',
-     'Pascal Kirchner, Till Biskup', 'manual'),
+     'Till Biskup, Mirjam Schröder, Pascal Kirchner', 'manual'),
 ]
 
 
@@ -222,11 +222,13 @@ epub_exclude_files = ['search.html']
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {
     'python': ('https://docs.python.org/3', None),
+    'numpy': ('https://numpy.org/doc/stable/', None),
     'matplotlib': ('https://matplotlib.org/', None),
-    'aspecd': ('https://docs.aspecd.de', None),
+    'aspecd': ('https://docs.aspecd.de/', None),
 }
 
 # -- Options for todo extension ----------------------------------------------
 
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = True
+todo_link_only = True
