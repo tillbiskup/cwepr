@@ -824,7 +824,8 @@ class PolynomialFitOnData(aspecd.analysis.SingleAnalysisStep):
     .. todo::
         if origin is given, add point at 0,0? Does not guarantee the fit
         really passes the origin.
-            origin : :class: `bool`
+
+    origin : :class: `bool`
         Determines whether fit should pass origin, defaults to True.
 
     """

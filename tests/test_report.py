@@ -47,8 +47,7 @@ class TestExperimentalDatasetLaTeXReporter(unittest.TestCase):
 class TestPowerSweepAnalysisReport(unittest.TestCase):
     def setUp(self):
         self.recipe_filename = \
-            '/Users/mirjamschroder/Programmierkram/Python/cwepr/tests/io' \
-            '/testdata/power-sweep-analysis.yaml'
+            os.path.join(ROOTPATH, 'io/testdata/power-sweep-analysis.yaml')
         self.filename = 'PowerSweepReport.tex'
         self.filename2 = 'PowerSweepAnalysis.pdf'
         template_ = '/Users/mirjamschroder/Programmierkram/Python/cwepr' \

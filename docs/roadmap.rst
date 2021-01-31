@@ -25,6 +25,19 @@ A few ideas how to develop the project further, currently a list as a reminder f
 
 * Start to (re)implement functionality test-driven.
 
+* Handling of Magnettech files
+
+  * Renaming to sensible conventions (recursively through directories)
+
+* Batch processing
+
+  * Basic preprocessing, plot, export as PNG/PDF, figure caption for dokuwiki
+
+* Creating/correcting Info files afterwards
+
+  * Read *all* necessary parameters from vendor file format
+  * Create/complete/correct info file
+
 
 Todos
 =====

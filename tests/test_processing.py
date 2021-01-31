@@ -168,8 +168,7 @@ class TestSliceExtraction(unittest.TestCase):
         dataset = importer.get_dataset(source=source)
         slice_ = cwepr.processing.SliceExtraction()
         slice_.parameters['slice'] = 5
-        with self.assertRaises(
-                aspecd.exceptions.ProcessingNotApplicableToDatasetError):
+        with self.assertRaises(aspecd.exceptions.NotApplicableToDatasetError):
             dataset.process(slice_)
 
 
@@ -190,8 +189,7 @@ class TestAveraging2DDataset(unittest.TestCase):
         importer = cwepr.dataset.DatasetFactory()
         dataset = importer.get_dataset(source=source)
         avg = cwepr.processing.Averaging2DDataset()
-        with self.assertRaises(
-                aspecd.exceptions.ProcessingNotApplicableToDatasetError):
+        with self.assertRaises(aspecd.exceptions.NotApplicableToDatasetError):
             dataset.process(avg)
 
 
