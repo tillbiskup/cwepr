@@ -27,9 +27,6 @@ there are a series of more general modules:
 """
 
 from .factory import DatasetImporterFactory
-from .bes3t import BES3TImporterOld
-from .emx_esp import EMXandESPImporter
 from .magnettech import MagnettechXmlImporter
 from .exporter import ASCIIExporter
-from .general import GeneralImporter
 from .txt_file import TxtImporter

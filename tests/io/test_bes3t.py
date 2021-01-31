@@ -8,25 +8,6 @@ import cwepr.io
 
 ROOTPATH = os.path.split(os.path.abspath(__file__))[0]
 
-
-@unittest.skip('outdated')
-class TestBES3TImporterOld(unittest.TestCase):
-    def test_import(self):
-        source = os.path.join(ROOTPATH, 'testdata/test-bes3t-1D-fieldsweep')
-        importer = cwepr.io.BES3TImporterOld(source=source)
-        dataset = cwepr.dataset.ExperimentalDataset()
-        dataset.import_from(importer)
-
-    def test_import_with_extension(self):
-        for extension in [".DSC", ".DTA", ".YGF"]:
-            source = os.path.join(ROOTPATH,
-                                  'testdata/test-bes3t-1D-fieldsweep' +
-                                  extension)
-            importer = cwepr.io.BES3TImporterOld(source=source)
-            dataset = cwepr.dataset.ExperimentalDataset()
-            dataset.import_from(importer)
-
-
 class TestBES3TImporter(unittest.TestCase):
     def setUp(self):
         self.dataset = cwepr.dataset.ExperimentalDataset()

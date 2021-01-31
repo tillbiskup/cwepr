@@ -12,7 +12,6 @@ import aspecd.dataset
 import aspecd.utils
 
 import cwepr.io.factory
-import cwepr.io.general
 import cwepr.metadata
 
 

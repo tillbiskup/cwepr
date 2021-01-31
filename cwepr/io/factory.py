@@ -15,7 +15,6 @@ import os.path
 import aspecd.io
 
 from cwepr.io.bes3t import BES3TImporter
-from cwepr.io.emx_esp import EMXandESPImporter
 from cwepr.io.magnettech import MagnettechXmlImporter, GoniometerSweepImporter
 from cwepr.io.txt_file import TxtImporter
 from cwepr.io.errors import NoMatchingFilePairError
@@ -31,11 +30,9 @@ class DatasetImporterFactory(aspecd.io.DatasetImporterFactory):
     def __init__(self):
         super().__init__()
         self.supported_formats = {"BES3T": [".DTA", ".DSC"],
-                                  "EMX_ESP": [".spc", ".par"],
                                   "Magnettech": [".xml"],
                                   "Txt": [".txt"]}
         self.importers_for_formats = {"BES3T": BES3TImporter,
-                                      "EMX_ESP": EMXandESPImporter,
                                       "Magnettech": MagnettechXmlImporter,
                                       "Txt": TxtImporter}
         self.data_format = None
