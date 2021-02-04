@@ -13,7 +13,6 @@ necessary for those parts of the file, and it is not clear whether they are
 similarly versioned as the basic format.
 """
 
-import collections
 import glob
 import os
 import re
