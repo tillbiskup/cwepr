@@ -23,7 +23,9 @@ class TestAnalysis(unittest.TestCase):
         analysator = cwepr.analysis.FieldCorrectionValue()
         analysator.parameters['standard'] = 'dpph'
         analysator = self.dataset.analyse(analysator)
-        self.assertTrue(analysator.g_correct == 2.0036)
+        print(analysator.parameters['mw_frequency'])
+        self.assertTrue(analysator.parameters['mw_frequency'])
+        self.assertTrue(analysator._g_correct == 2.0036)
         self.assertEqual(np.float64, type(analysator.result))
 
     def test_polynomial_baseline_fitting(self):
@@ -147,6 +149,13 @@ class TestPolynomialFitOnData(unittest.TestCase):
                          type(analysis.result))
         self.assertEqual(self.dataset.data.data.shape[0],
                          len(self.dataset.data.axes[0].values))
+
+    def test_adds_origin_point(self):
+        self.dataset.data.data = np.linspace(2, 21)
+        self.dataset.data.axes[0].values = np.linspace(2, 11)
+        self.analysator.parameters['add_origin'] = True
+        self.dataset.analyse(self.analysator)
+        self.assertIn(0, self.dataset.data.data)
 
 
 class TestPtpVsModAmp(TestCase):
