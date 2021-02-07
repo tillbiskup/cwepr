@@ -142,13 +142,12 @@ class TestBaselineCorrectionWithPolynomial(unittest.TestCase):
     def setUp(self):
         self.dataset = cwepr.dataset.ExperimentalDataset()
         self.dataset.data.data = np.ones(100) + 10
-        self.dataset.data.axes[0].values = np.linspace(1,100, num=100)
+        self.dataset.data.axes[0].values = np.linspace(1, 100, num=100)
 
     def test_baseline_correction_without_coefficients_works(self):
         baseline_corr = cwepr.processing.BaselineCorrectionWithPolynomial()
         blc = self.dataset.process(baseline_corr)  # Only works upon a copy!
-        self.assertTrue(blc.parameters['coefficients'])
-        self.assertAlmostEqual(self.dataset.data.data[5],0)
+        self.assertAlmostEqual(self.dataset.data.data[5], 0)
 
 
 class TestAveraging2DDataset(unittest.TestCase):

@@ -349,6 +349,8 @@ What  follows is the API documentation of each class implemented in this module.
 
 """
 import copy
+import math
+from typing import Any, Tuple
 
 import numpy as np
 import scipy.signal
@@ -484,10 +486,11 @@ class BaselineCorrectionWithPolynomial(aspecd.processing.ProcessingStep):
 
     Attributes
     ----------
-    self.parameters['coefficients']
-        Coefficients to perform baseline correction with. If not given,
-        they are collected with the corresponding analysis class
-        :class:`cwepr.analysis.PolynomialBaselineFitting`
+    self.parameters['percentage']
+        Percentage of the spectrum to consider as baseline on each side of the
+        spectrum, i.e. 10% means 10% left and 10 % right.
+
+        Default: 10 %
 
     self.parameters['order']
         The order for the baseline correction if no coefficients are given.
@@ -498,8 +501,10 @@ class BaselineCorrectionWithPolynomial(aspecd.processing.ProcessingStep):
     def __init__(self):
         super().__init__()
         self.description = "Subtraction of baseline polynomial"
-        self.parameters['coefficients'] = np.ndarray([])
+        self.parameters["percentage"] = 10
         self.parameters['order'] = 0
+        self._cut_data_x = np.ndarray([])
+        self._cut_data_y = np.ndarray([])
 
     @staticmethod
     def applicable(dataset):
@@ -508,26 +513,60 @@ class BaselineCorrectionWithPolynomial(aspecd.processing.ProcessingStep):
     def _perform_task(self):
         """Perform the actual correction.
 
-        Baseline correction is performed by subtraction of  a previously
-        determined polynomial.
+        Baseline correction is performed by subtraction of  an evaluated
+        polynomial.
         """
-        print(self.dataset.data.data[:10])
-        if not self.parameters['coefficients'].size:
-            self._get_coefficients()
-        print('Coeffs1', self.parameters['coefficients'])
-        values_to_subtract = np.polyval(self.parameters['coefficients'],
-            self.dataset.data.axes[0].values)
+        self._get_spectrum_to_evaluate()
+        values_to_subtract = self._get_values_to_subtract()
         self.dataset.data.data -= values_to_subtract
-        print('Coeffs', self.parameters['coefficients'])
-        print(values_to_subtract)
-        print(self.dataset.data.data[:10])
 
+    def _get_spectrum_to_evaluate(self):
+        number_of_points = len(self.dataset.data.data)
+        points_per_side = \
+            math.ceil(number_of_points * self.parameters["percentage"] / 100.0)
+        self._cut_data_y = self._get_points_to_use(self.dataset.data.data,
+                                             points_per_side)
+        self._cut_data_x = self._get_points_to_use(self.dataset.data.axes[
+                                                    0].values,
+                                             points_per_side)
 
-    def _get_coefficients(self):
-        baseline_fit = cwepr.analysis.PolynomialBaselineFitting()
-        baseline_fit.parameters['order'] = self.parameters['order']
-        result = self.dataset.analyse(baseline_fit)
-        self.parameters['coefficients'] = result.result
+    @staticmethod
+    def _get_points_to_use(data, points_per_side):
+        """Get a number of points from the spectrum to use for a fit.
+
+        Slice the list of all data points to have a list of points from each
+        side of the spectrum to use for polynomial fitting.
+
+        Parameters
+        ----------
+        data: :class:`list`
+            List from which points should be used on each side.
+
+        points_per_side: :class:'int'
+            How many points from each end of the list should be used.
+
+        Returns
+        -------
+        points_to_use: :class:`list`
+            List only containing the correct number of points from each side
+            and not the points in between.
+
+        """
+        left_part = data[:points_per_side + 1]
+        right_part = data[- points_per_side - 1:]
+        points_to_use = np.concatenate((left_part, right_part))
+        return points_to_use
+
+    def _get_values_to_subtract(self):
+        if np.polynomial.Polynomial:
+            polynomial = np.polynomial.Polynomial.fit(self._cut_data_x,
+                                                      self._cut_data_y,
+                                                      self.parameters['order'])
+            return polynomial(self.dataset.data.axes[0].values)
+        else:
+            polynomial = np.polyfit(self._cut_data_x, self._cut_data_y,
+                                    self.parameters['order'])
+            return np.polyval(polynomial, self.dataset.data.axes[0].values)
 
 
 class BaselineCorrectionWithCalculatedDataset(aspecd.processing.ProcessingStep):

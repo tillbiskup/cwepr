@@ -27,11 +27,6 @@ class TestAnalysis(unittest.TestCase):
         self.assertTrue(analysator._g_correct == 2.0036)
         self.assertEqual(np.float64, type(analysator.result))
 
-    def test_polynomial_baseline_fitting(self):
-        analysator = cwepr.analysis.PolynomialBaselineFitting()
-        analysator = self.dataset.analyse(analysator)
-        self.assertEqual(np.ndarray, type(analysator.result))
-
     def test_area_under_curve(self):
         analysator = cwepr.analysis.AreaUnderCurve()
         analysator = self.dataset.analyse(analysator)
