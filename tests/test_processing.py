@@ -140,15 +140,15 @@ class TestNormalisationToReceiverGain(unittest.TestCase):
 
 class TestBaselineCorrectionWithPolynomial(unittest.TestCase):
     def setUp(self):
-        source = os.path.join(ROOTPATH, 'io/testdata/sinus_baseline')
-        importer = cwepr.io.txt_file.TxtImporter(source=source)
         self.dataset = cwepr.dataset.ExperimentalDataset()
-        self.dataset.import_from(importer)
+        self.dataset.data.data = np.ones(100) + 10
+        self.dataset.data.axes[0].values = np.linspace(1,100, num=100)
 
     def test_baseline_correction_without_coefficients_works(self):
         baseline_corr = cwepr.processing.BaselineCorrectionWithPolynomial()
         blc = self.dataset.process(baseline_corr)  # Only works upon a copy!
         self.assertTrue(blc.parameters['coefficients'])
+        self.assertAlmostEqual(self.dataset.data.data[5],0)
 
 
 class TestAveraging2DDataset(unittest.TestCase):

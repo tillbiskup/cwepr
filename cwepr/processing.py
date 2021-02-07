@@ -501,18 +501,27 @@ class BaselineCorrectionWithPolynomial(aspecd.processing.ProcessingStep):
         self.parameters['coefficients'] = np.ndarray([])
         self.parameters['order'] = 0
 
+    @staticmethod
+    def applicable(dataset):
+        return dataset.data.data.ndim == 1
+
     def _perform_task(self):
         """Perform the actual correction.
 
         Baseline correction is performed by subtraction of  a previously
         determined polynomial.
         """
+        print(self.dataset.data.data[:10])
         if not self.parameters['coefficients'].size:
             self._get_coefficients()
-        values_to_subtract = np.polyval(
-            np.poly1d(self.parameters['coefficients']),
+        print('Coeffs1', self.parameters['coefficients'])
+        values_to_subtract = np.polyval(self.parameters['coefficients'],
             self.dataset.data.axes[0].values)
         self.dataset.data.data -= values_to_subtract
+        print('Coeffs', self.parameters['coefficients'])
+        print(values_to_subtract)
+        print(self.dataset.data.data[:10])
+
 
     def _get_coefficients(self):
         baseline_fit = cwepr.analysis.PolynomialBaselineFitting()
