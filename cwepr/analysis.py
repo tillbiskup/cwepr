@@ -474,23 +474,23 @@ class Amplitude(aspecd.analysis.SingleAnalysisStep):
             self.result = max(self.dataset.data.data) - \
                           min(self.dataset.data.data)
         else:
-            self.result = np.amax(self.dataset.data.data, axis=1) - \
-                          np.amin(self.dataset.data.data, axis=1)
+            self.result = np.amax(self.dataset.data.data, axis=0) - \
+                          np.amin(self.dataset.data.data, axis=0)
 
 
 class AmplitudeVsPower(aspecd.analysis.SingleAnalysisStep):
     """Return a calculated dataset to further analyse a power-sweep experiment.
 
     The analysis of a power sweep results in a plot of the peak amplitude
-     vs. the square root of the microwave power of the bridge. Both values
-     are determined in this step and put together in a calculated dataset
-     that can be used subsequently to perform the linear fit.
+    vs. the square root of the microwave power of the bridge. Both values
+    are determined in this step and put together in a calculated dataset
+    that can be used subsequently to perform the linear fit.
 
-     Returns
-     -------
-     result: :class:`aspecd.dataset.CalculatedDataset`
-        Calculated Dataset where the data is the amplitude and the axis
-        values is the root of the mw-power (in ascending order).
+    Returns
+    -------
+    result: :class:`aspecd.dataset.CalculatedDataset`
+       Calculated Dataset where the data is the amplitude and the axis
+       values is the root of the mw-power (in ascending order).
 
     """
 

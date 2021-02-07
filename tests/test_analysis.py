@@ -23,7 +23,6 @@ class TestAnalysis(unittest.TestCase):
         analysator = cwepr.analysis.FieldCorrectionValue()
         analysator.parameters['standard'] = 'dpph'
         analysator = self.dataset.analyse(analysator)
-        print(analysator.parameters['mw_frequency'])
         self.assertTrue(analysator.parameters['mw_frequency'])
         self.assertTrue(analysator._g_correct == 2.0036)
         self.assertEqual(np.float64, type(analysator.result))
@@ -73,7 +72,7 @@ class TestAmplitude(unittest.TestCase):
         self.assertEqual(np.float64, type(analysis.result))
 
     def test_get_amplitude_2d_dataset(self):
-        self.dataset.data.data = np.tile(self.data, (4, 1))
+        self.dataset.data.data = np.transpose(np.tile(self.data, (4, 1)))
         analysis = self.dataset.analyse(self.analysator)
         np.testing.assert_almost_equal(analysis.result, 2, decimal=4)
         self.assertEqual(np.ndarray, type(analysis.result))
@@ -84,7 +83,7 @@ class TestAmplitudeVsPower(unittest.TestCase):
         self.analysator = cwepr.analysis.AmplitudeVsPower()
         self.dataset = cwepr.dataset.ExperimentalDataset()
         data = np.sin(np.linspace(0, 2 * np.pi, num=500))
-        self.dataset.data.data = np.tile(data, (4, 1))
+        self.dataset.data.data = np.transpose(np.tile(data, (4, 1)))
         self.dataset.data.axes[1].values = np.array([10, 5, 2.5, 1.25, 0.6125,
                                                      0.305])
         self.dataset.data.axes[1].unit = 'mW'

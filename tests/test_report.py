@@ -1,6 +1,7 @@
 import os
 import unittest
 import aspecd.tasks
+import aspecd.processing
 import cwepr.analysis
 import cwepr.dataset
 import cwepr.processing
@@ -16,7 +17,7 @@ class TestExperimentalDatasetLaTeXReporter(unittest.TestCase):
         self.dataset = factory.get_dataset(source=source)
         analysator = cwepr.analysis.Amplitude()
         self.dataset.analyse(analysator)
-        algebra = cwepr.processing.Algebra()
+        algebra = aspecd.processing.ScalarAlgebra()
         algebra.parameters['kind'] = '+'
         algebra.parameters['value'] = 10
         algebra.comment = 'Does this show up in the report?'

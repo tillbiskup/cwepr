@@ -78,7 +78,6 @@ class BES3TImporter(aspecd.io.DatasetImporter):
     def _import_data(self):
         complete_filename = self.source + ".DTA"
         raw_data = np.fromfile(complete_filename, dtype=self._file_encoding)
-        self._dimensions.reverse()
         raw_data = np.reshape(raw_data, self._dimensions)
         self.dataset.data.data = raw_data
 
