@@ -348,7 +348,7 @@ Module documentation
 What  follows is the API documentation of each class implemented in this module.
 
 """
-import operator
+import copy
 
 import numpy as np
 import scipy.signal
@@ -389,16 +389,16 @@ class FieldCorrection(aspecd.processing.ProcessingStep):
         be a magnetic field axis having the correct unit for the correction
         value.
 
-    Parameters
+    Attributes
     ----------
-    correction_value: :class:`float`
-        The previously determined correction value.
+    parameters['correction_value']: :class:`float`
+        Previously determined correction value.
 
     """
 
-    def __init__(self, correction_value=0):
+    def __init__(self):
         super().__init__()
-        self.parameters["correction_value"] = correction_value
+        self.parameters["correction_value"] = None
         self.description = "Linear field correction"
 
     def _perform_task(self):
@@ -412,11 +412,19 @@ class FrequencyCorrection(aspecd.processing.ProcessingStep):
     """Convert data of a given frequency to another given frequency.
 
     This is used to make spectra comparable.
+
+    Attributes
+    ----------
+    self.parameters['frequency']
+        Frequency to correct for.
+
+        Default: 9.5
+
     """
 
     def __init__(self):
         super().__init__()
-        self.parameters["frequency"] = None
+        self.parameters["frequency"] = 9.5
         self.description = "Correct magnetic field axis for given frequency"
 
     def _perform_task(self):
@@ -474,12 +482,24 @@ class BaselineCorrectionWithPolynomial(aspecd.processing.ProcessingStep):
     If no coefficients are given, the analysis step will be done with its
     standard parameters and the result used for the actual correction.
 
+    Attributes
+    ----------
+    self.parameters['coefficients']
+        Coefficients to perform baseline correction with. If not given,
+        they are collected with the corresponding analysis class
+        :class:`cwepr.analysis.PolynomialBaselineFitting`
+
+    self.parameters['order']
+        The order for the baseline correction if no coefficients are given.
+
+        Default: 0
     """
 
     def __init__(self):
         super().__init__()
         self.description = "Subtraction of baseline polynomial"
-        self.parameters['coefficients'] = []
+        self.parameters['coefficients'] = np.ndarray([])
+        self.parameters['order'] = 0
 
     def _perform_task(self):
         """Perform the actual correction.
@@ -488,15 +508,16 @@ class BaselineCorrectionWithPolynomial(aspecd.processing.ProcessingStep):
         determined polynomial.
         """
         if 'coefficients' not in self.parameters or \
-                len(self.parameters['coefficients']) < 1:
+                not self.parameters['coefficients']:
             self._get_coefficients()
         values_to_subtract = np.polyval(
-            np.poly1d(self.parameters["coefficients"]),
+            np.poly1d(self.parameters['coefficients']),
             self.dataset.data.axes[0].values)
         self.dataset.data.data -= values_to_subtract
 
     def _get_coefficients(self):
         baseline_fit = cwepr.analysis.PolynomialBaselineFitting()
+        baseline_fit.parameters['order'] = self.parameters['order']
         result = self.dataset.analyse(baseline_fit)
         self.parameters['coefficients'] = result.result
 
@@ -509,7 +530,7 @@ class BaselineCorrectionWithCalculatedDataset(aspecd.processing.ProcessingStep):
 
     Attributes
     ----------
-    baseline_dataset: :class:`cwepr.dataset.ExperimentalDataset`
+    parameters['baseline_dataset']: :class:`cwepr.dataset.ExperimentalDataset`
         Dataset containing the baseline to subtract.
 
     """
@@ -538,7 +559,7 @@ class Subtraction(aspecd.processing.ProcessingStep):
 
     Attributes
     ----------
-    second_dataset: :class:`cwepr.dataset.ExperimentalDataset`
+    parameters['second_dataset']: :class:`cwepr.dataset.ExperimentalDataset`
         Dataset containing the spectrum that should be subtracted.
 
     """
@@ -572,7 +593,7 @@ class Addition(aspecd.processing.ProcessingStep):
 
     Attributes
     ----------
-    second_dataset: :class:`cwepr.dataset.ExperimentalDataset`
+    parameters['second_dataset']: :class:`cwepr.dataset.ExperimentalDataset`
         Dataset containing the spectrum that should be added.
 
     """
@@ -600,37 +621,48 @@ class Addition(aspecd.processing.ProcessingStep):
 
 
 class PhaseCorrection(aspecd.processing.ProcessingStep):
-    """Processing step for phase correction.
+    """Phase correction if phase angle is given directly or in metadata.
 
-    The functionality is suitable for automatic phase correction, no parameters
-    need to be provided manually.
+    Therefore also highly problematic as most phase deviation is not
+    introduced on purpose and listed in the metadata.
     """
 
     def __init__(self):
         super().__init__()
         self.description = "Phase Correction via Hilbert transform"
+        self.parameters["phase_angle_value"] = None
+        self.parameters["phase_angle_unit"] = 'deg'
 
     def _perform_task(self):
         """Perform the actual phase correction.
 
-        The phase angle is
-        acquired from the dataset's metadata and transformed to radians if
-        necessary. The phase correction is then applied and the corrected data
-        inserted into the dataset.
+        The phase angle is acquired from the dataset's metadata and
+        transformed to radians if necessary. The phase correction is then
+        applied and the corrected data inserted into the dataset.
         """
-        phase_angle_raw = self.dataset.metadata.signal_channel.phase
-        self.parameters["phase_angle_value"] = phase_angle_raw.value
-        self.parameters["phase_angle_unit"] = phase_angle_raw.unit
+        if not self.parameters["phase_angle_value"]:
+            self._get_phase_from_metadata()
+        self._convert_deg_to_rad()
+        self._do_phase_correction()
+
+    def _do_phase_correction(self):
+        data = self.dataset.data.data
+        analytic_signal = scipy.signal.hilbert(data)
+        corrected_analytic_signal = np.exp(-1j * self.parameters[
+            "phase_angle_value"]) * analytic_signal 
+        corrected_data = np.real(corrected_analytic_signal)
+        self.dataset.data.data = corrected_data
+
+    def _convert_deg_to_rad(self):
         if self.parameters["phase_angle_unit"] == "deg":
             self.parameters["phase_angle_value"] = \
                 (np.pi * self.parameters["phase_angle_value"]) / 180
             self.parameters["phase_angle_unit"] = "rad"
-        data = self.dataset.data.data
-        data_imaginary = scipy.signal.hilbert(data)
-        data_imaginary = np.exp(-1j * self.parameters["phase_angle_value"]) * \
-                         data_imaginary
-        data_real = np.real(data_imaginary)
-        self.dataset.data.data = data_real
+
+    def _get_phase_from_metadata(self):
+        phase_angle_raw = self.dataset.metadata.signal_channel.phase
+        self.parameters["phase_angle_value"] = phase_angle_raw.value
+        self.parameters["phase_angle_unit"] = phase_angle_raw.unit
 
 
 class AutomaticPhaseCorrection(aspecd.processing.ProcessingStep):
@@ -645,12 +677,12 @@ class AutomaticPhaseCorrection(aspecd.processing.ProcessingStep):
     Adapted from the matlab functionality in the cwEPR-toolbox.
     """
 
-    def __init__(self, order=1, points_percentage=10):
+    def __init__(self):
         super().__init__()
         # Public properties
         self.description = "Automatic phase correction via Hilbert transform"
-        self.parameters['order'] = order
-        self.parameters['points_percentage'] = points_percentage
+        self.parameters['order'] = 1
+        self.parameters['points_percentage'] = 10
         self.parameters['phase_angle'] = 0
         # private properties
         self._analytic_signal = None
@@ -665,18 +697,12 @@ class AutomaticPhaseCorrection(aspecd.processing.ProcessingStep):
         self._print_results_to_command_line()
 
     def _find_initial_negative_area(self):
+        """Get area/values below zero as indicator of the phase deviation."""
         ft_sig_tmp = self._analytic_signal
         if self.parameters['order'] > 0:
             for j in range(self.parameters['order']):
                 ft_sig_tmp = scipy.integrate.cumtrapz(self._analytic_signal,
                                                       initial=0)
-        # import matplotlib.pyplot as plt
-        # xaxis = np.arange(len(ft_sig_tmp))
-        # X = [x.real for x in ft_sig_tmp]
-        # Y = [x.imag for x in ft_sig_tmp]
-        # plt.plot(xaxis, X, color='blue')
-        # plt.plot(xaxis, Y, color='red')
-        # plt.show()
         ft_sig_tmp = self._baseline_correction(signal=np.real(ft_sig_tmp))
         elements_inf_zero = [x for x in ft_sig_tmp if x < 0]
         self._area_under_curve = abs(np.trapz(elements_inf_zero))
@@ -771,45 +797,42 @@ class NormalisationOfDerivativeToArea(aspecd.processing.ProcessingStep):
     """Normalise a spectrum to the area under the curve.
 
     No other (processing) modules are used in order to keep original data.
+
+    .. note::
+        If the integrated spectra has a baseline shift, it is not currently
+        accounted for.
     """
 
     def __init__(self):
         super().__init__()
-        self.parameters["area"] = float()
         self.description = "Normalisation to area"
         self.undoable = True
+        self._area = float()
 
     def _perform_task(self):
         self._integrate_spectrum()
-        self.dataset.data.data /= self.parameters["area"]
+        self.dataset.data.data /= self._area
 
     def _integrate_spectrum(self):
         integrated_spectrum = \
             scipy.integrate.cumtrapz(self.dataset.data.data, initial=0)
-        self.parameters["area"] = np.trapz(integrated_spectrum)
-
-
-class NormalisationToArea(aspecd.processing.ProcessingStep):
-    """Normalise a spectrum concerning the area under the curve.
-
-    Should only be used upon an integrated spectrum.
-    """
-
-    def __init__(self):
-        super().__init__()
-        self.parameters["area"] = float()
-        self.description = "Normalisation to area"
-
-    def _perform_task(self):
-        for data_index, _ in enumerate(self.dataset.data.data):
-            self.dataset.data.data[data_index] /= self.parameters["area"]
+        self._area = np.trapz(integrated_spectrum)
 
 
 class NormalisationToScanNumber(aspecd.processing.ProcessingStep):
     """Normalise a spectrum concerning the number of scans used.
 
     This is necessary to make spectra in which the intensity of different scans
-    is added, comparable to those where it is averaged.
+    is the sum of the single scans, comparable to those where it is averaged.
+
+    .. important::
+        Know what you are doing, sometimes spectrometer software does this
+        step for you silently...
+
+    Attributes
+    ----------
+    parameters["scan_number"]
+        Number of accumulations.
     """
 
     def __init__(self):
@@ -834,8 +857,13 @@ class NormalisationToReceiverGain(aspecd.processing.ProcessingStep):
 
         receiver gain = 10^(receiver gain in dB/20)
 
-    Source: Stefan Stoll, EasySpin sourcecode, according to Xenon Manual 2011
+    Source: Stefan Stoll, EasySpin source code, according to Xenon Manual 2011
 
+
+    Attributes
+    ----------
+    parameters['receiver_gain']
+        Receiver gain in dB. Is taken from metadata if not given.
         """
 
     def __init__(self):
@@ -879,17 +907,21 @@ class Integration(aspecd.processing.ProcessingStep):
 
 
 class AxisInterpolation(aspecd.processing.ProcessingStep):
-    """Interpolating axes to given number of equidistant field points."""
+    """Interpolating axes to given number of equidistant field points.
+
+    Iterates over axes and takes the first axis that is not equidistant and
+    interpolates it and the data as well."""
 
     def __init__(self):
         super().__init__()
         self.description = 'Interpolate magnetic field axis to get ' \
                            'equidistant field points.'
+        self.parameters['points'] = None
 
     def _perform_task(self):
         for nr, axis in enumerate(self.dataset.data.axes):
             if not axis.equidistant:
-                if 'points' not in self.parameters.keys():
+                if not self.parameters['points']:
                     self._get_axis_length(ax_nr=nr)
                 self._interpolate_axis(nr)
                 break
@@ -908,91 +940,45 @@ class AxisInterpolation(aspecd.processing.ProcessingStep):
         self.parameters['points'] = len(self.dataset.data.axes[ax_nr].values)
 
 
-class SliceExtraction(aspecd.processing.ProcessingStep):
-    """Extract slice from 2D dataset and return remaining dataset."""
-
-    def __init__(self):
-        super().__init__()
-        self.description = 'Extract slice from 2D dataset'
-        self.parameters['slice'] = None
-        self.result = {
-            'slice_info': {
-                'value': None,
-                'unit': None
-            }
-        }
-
-    def _perform_task(self):
-        self.dataset.data.data = self.dataset.data.data[:, self.parameters[
-                                                               'slice']]
-        self.result['slice_info']['value'] = \
-            self.dataset.data.axes[1].values[self.parameters['slice']]
-        self.result['slice_info']['unit'] = self.dataset.data.axes[1].unit
-        self.dataset.data.axes[2] = self.dataset.data.axes[1]
-        self.dataset.data.axes[2] = None
-        # TODO: In matlab: Writes figure title. Sufficient to write results
-        #  in result dict?
-
-    @staticmethod
-    def applicable(dataset):
-        return len(dataset.data.axes) == 3
-
-
 class Averaging2DDataset(aspecd.processing.ProcessingStep):
-    """Average over 2D dataset to get one dimensional dataset."""
+    """Average over 2D dataset to get one dimensional dataset.
 
-    def __init__(self):
-        super().__init__()
-        self.parameters['axis'] = 1
-        self.description = 'Project 2D data in one dimension.'
-        self.undoable = True
-
-    def _perform_task(self):
-        self.dataset.data.data = np.average(self.dataset.data.data,
-                                            axis=0)
-        self.dataset.data.axes[self.parameters['axis']] = \
-            self.dataset.data.axes[self.parameters['axis'] + 1]
-        del self.dataset.data.axes[self.parameters['axis'] + 1]
-
-    @staticmethod
-    def applicable(dataset):
-        return len(dataset.data.axes) == 3
-
-
-class Algebra(aspecd.processing.ProcessingStep):
-    """Perform simple algebraic operation on one dataset.
-
-    To compare datasets (by eye), it might be useful to adapt its intensity
-    by algebraic operations. Adding, subtracting, multiplying and dividing
-    are implemented here.
-
+    Attributes
+    ----------
+    parameters['axis']
+        Axis along which should be averaged.
     """
 
     def __init__(self):
         super().__init__()
-        self.description = 'Perform simple algebra on one dataset.'
-        self.parameters['kind'] = None
-        self.parameters['value'] = 1
-        # private properties
-        self._kinds = {
-            'plus': operator.add,
-            '+': operator.add,
-            'minus': operator.sub,
-            '-': operator.sub,
-            'multiply': operator.mul,
-            '*': operator.mul,
-            'divide': operator.truediv,
-            '/': operator.truediv
-        }
+        self.parameters['axis'] = 0
+        self.description = 'Project 2D data in one dimension.'
+        self.undoable = True
 
     def _perform_task(self):
-        operator_ = self._kinds[self.parameters['kind']]
-        self.dataset.data.data = operator_(self.dataset.data.data,
-                                         self.parameters['value'])
+        old_dataset = copy.deepcopy(self.dataset)
+        self.dataset.data.data = np.average(self.dataset.data.data,
+                                            axis=self.parameters['axis'])
+        self.dataset.data.axes[self.parameters['axis']+1] = \
+            old_dataset.data.axes[self.parameters['axis'] + 2]
+        del self.dataset.data.axes[self.parameters['axis'] + 2]
+
+    @staticmethod
+    def applicable(dataset):
+        return len(dataset.data.axes) == 3
 
 
 class SubtractVector(aspecd.processing.ProcessingStep):
-    """Subtract input vector of same length from dataset."""
+    """Subtract vector of same length from dataset.
+
+    With a 2D dataset, the vector is subtracted from
+
+    Attributes
+    ----------
+    parameters['vector']
+        Vector that is subtracted from the data
+
+    """
     def __init__(self):
         super().__init__()
         self.description = 'Subtract vector of same length from dataset.'
@@ -1003,10 +989,10 @@ class SubtractVector(aspecd.processing.ProcessingStep):
             raise DimensionError(message='Vector to subtract is not of the '
                                          'same length as dataset.')
         if self.dataset.data.data.ndim == 1:
-            self.dataset.data.data /= self.parameters['vector']
+            self.dataset.data.data -= self.parameters['vector']
         elif self.dataset.data.data.ndim == 2:
             for second_dim in range(self.dataset.data.data.shape[1]):
-                self.dataset.data.data[:, second_dim] /= \
+                self.dataset.data.data[:, second_dim] -= \
                     self.parameters['vector']
         else:
             raise DimensionError(message='Dataset has weird shape.')

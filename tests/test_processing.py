@@ -1,6 +1,5 @@
 import copy
 import os
-import random
 import unittest
 
 import aspecd.exceptions
@@ -21,14 +20,16 @@ class TestAutomaticPhaseCorrection(unittest.TestCase):
         self.dataset.import_from(importer)
 
     def test_analytic_signal_is_complex(self):
-        apc = cwepr.processing.AutomaticPhaseCorrection(order=1,
-                                                        points_percentage=5)
+        apc = cwepr.processing.AutomaticPhaseCorrection()
+        apc.parameters['order'] = 1
+        apc.parameters['points_percentage'] = 5
         self.dataset.process(apc)
         self.assertTrue(np.iscomplex(apc._analytic_signal).all)
 
     def test_signal_before_and_after_differ(self):
-        apc = cwepr.processing.AutomaticPhaseCorrection(order=1,
-                                                        points_percentage=20)
+        apc = cwepr.processing.AutomaticPhaseCorrection()
+        apc.parameters['order'] = 1
+        apc.parameters['points_percentage'] = 20
         dataset_old = copy.deepcopy(self.dataset)
         self.dataset.process(apc)
         self.assertTrue((dataset_old.data.data != self.dataset.data.data).all())
@@ -105,7 +106,8 @@ class TestNormalisation(unittest.TestCase):
     def test_normalisation_of_derivative_to_area(self):
         area = cwepr.processing.NormalisationOfDerivativeToArea()
         self.dataset.process(area)
-        self.assertEqual(float, type(area.parameters['area']))
+        self.assertEqual(float, type(area._area))
+        self.assertTrue(max(self.dataset.data.data) < 1)
 
 
 class TestNormalisationToPeakToPeakAmplitude(unittest.TestCase):
@@ -149,29 +151,6 @@ class TestBaselineCorrectionWithPolynomial(unittest.TestCase):
         self.assertTrue(blc.parameters['coefficients'])
 
 
-class TestSliceExtraction(unittest.TestCase):
-    def setUp(self):
-        source = os.path.join(ROOTPATH, 'io/testdata/BDPA-2DFieldDelay')
-        importer = cwepr.dataset.DatasetFactory()
-        self.dataset = importer.get_dataset(source=source)
-
-    def test_slice_extraction(self):
-        extractor = cwepr.processing.SliceExtraction()
-        extractor.parameters['slice'] = 2
-        self.assertFalse(extractor.result['slice_info']['value'])
-        extractor = self.dataset.process(extractor)
-        self.assertTrue(extractor.result['slice_info']['value'])
-        
-    def test_slicing_with_1D_dataset_raises(self):
-        source = os.path.join(ROOTPATH, 'io/testdata/BDPA-1DFieldSweep')
-        importer = cwepr.dataset.DatasetFactory()
-        dataset = importer.get_dataset(source=source)
-        slice_ = cwepr.processing.SliceExtraction()
-        slice_.parameters['slice'] = 5
-        with self.assertRaises(aspecd.exceptions.NotApplicableToDatasetError):
-            dataset.process(slice_)
-
-
 class TestAveraging2DDataset(unittest.TestCase):
     def setUp(self):
         source = os.path.join(ROOTPATH, 'io/testdata/BDPA-2DFieldDelay')
@@ -193,49 +172,6 @@ class TestAveraging2DDataset(unittest.TestCase):
             dataset.process(avg)
 
 
-class TestAlgebra(unittest.TestCase):
-    def setUp(self):
-        source = os.path.join(ROOTPATH, 'io/testdata/BDPA-2DFieldDelay')
-        importer = cwepr.dataset.DatasetFactory()
-        self.dataset = importer.get_dataset(source=source)
-
-    def test_algebra_adds(self):
-        algebra = cwepr.processing.Algebra()
-        algebra.parameters['kind'] = '+'
-        algebra.parameters['value'] = 10
-        before = copy.deepcopy(self.dataset.data.data[5, 46])
-        self.dataset.process(algebra)
-        after = self.dataset.data.data[5, 46]
-        self.assertEqual(before+10, after)
-
-    def test_algebra_subtracts(self):
-        algebra = cwepr.processing.Algebra()
-        algebra.parameters['kind'] = 'minus'
-        algebra.parameters['value'] = 0.552
-        before = copy.deepcopy(self.dataset.data.data[5, 729])
-        self.dataset.process(algebra)
-        after = self.dataset.data.data[5, 729]
-        self.assertEqual(before-0.552, after)
-
-    def test_algebra_multiply(self):
-        algebra = cwepr.processing.Algebra()
-        algebra.parameters['kind'] = '*'
-        algebra.parameters['value'] = 4
-        before = copy.deepcopy(self.dataset.data.data[5, 729])
-        self.dataset.process(algebra)
-        after = self.dataset.data.data[5, 729]
-        self.assertEqual(before*4, after)
-
-    def test_algebra_divide(self):
-        algebra = cwepr.processing.Algebra()
-        algebra.parameters['kind'] = '/'
-        algebra.parameters['value'] = 2
-        before = copy.deepcopy(self.dataset.data.data[5, 729])
-        self.dataset.process(algebra)
-        after = self.dataset.data.data[5, 729]
-        self.assertEqual(before/2, after)
-
-
 class TestSubtractVector(unittest.TestCase):
     def setUp(self):
         source1 = os.path.join(ROOTPATH, 'io/testdata/BDPA-1DFieldSweep')
@@ -243,8 +179,10 @@ class TestSubtractVector(unittest.TestCase):
         self.dataset1 = importer.get_dataset(source=source1)
         source2 = os.path.join(ROOTPATH, 'io/testdata/BDPA-2DFieldDelay')
         self.dataset2 = importer.get_dataset(source=source2)
-        self.vector1 = np.random.rand(self.dataset1.data.data.shape[0], )
-        self.vector2 = np.random.rand(self.dataset2.data.data.shape[0], )
+        self.vector1 = np.linspace(1, self.dataset1.data.data.shape[0],
+                                   num=self.dataset1.data.data.shape[0])
+        self.vector2 =  np.linspace(1, self.dataset2.data.data.shape[0],
+                                   num=self.dataset2.data.data.shape[0])
 
     def test_subtract_vector_with_1D_dataset(self):
         subtract = cwepr.processing.SubtractVector()
@@ -254,7 +192,10 @@ class TestSubtractVector(unittest.TestCase):
     def test_subtract_vector_with_2D_dataset(self):
         subtract = cwepr.processing.SubtractVector()
         subtract.parameters['vector'] = self.vector2
+        before = copy.deepcopy(self.dataset2)
         self.dataset2.process(subtract)
+        self.assertAlmostEqual(before.data.data[2, 5]-self.vector2[2],
+                               self.dataset2.data.data[2, 5])
 
     def test_subtract_vector_with_wrong_dim_raises(self):
         subtract = cwepr.processing.SubtractVector()
