@@ -19,19 +19,25 @@ Currently, the following processing steps are implemented:
 
   * :class:`FieldCorrection`
   * :class:`FrequencyCorrection`
-  * :class:`PhaseCorrection`
 
   * :class:`BaselineCorrectionWithPolynomial`
   * :class:`BaselineCorrectionWithCalculatedDataset`
 
-  * :class:`Subtraction`
-  * :class:`Addition`
-
   * :class:`NormalisationToMaximum`
-  * :class:`NormalisationToArea`
+  * :class:`NormalisationToPeakToPeakAmplitude`
+  * :class:`NormalisationOfDerivativeToArea`
   * :class:`NormalisationToScanNumber`
+  * :class:`NormalisationToReceiverGain`
 
   * :class:`Integration`
+
+  * :class:`Averaging2DDataset`
+  * :class:`SubtractVector`
+
+Implemented but not working as they should:
+
+  * :class:`PhaseCorrection`
+  * :class:`AutomaticPhaseCorrection`
 
 
 Categories of processing steps
@@ -105,6 +111,12 @@ spectra with those from the literature (always a good idea, though).
 Algebra
 -------
 
+.. sidebar::
+    Availability
+
+    Algebra is available directly via the ASpecD Module:
+    :class:`aspecd.processing.ScalarAlgebra`
+
 Comparing datasets often involves adding, subtracting, multiplying or
 dividing the intensity values by a given fixed number. This is very simple
 algebra and should probably be implemented in the ASpecD framework eventually.
@@ -124,6 +136,8 @@ and this is handled by a different set of processing steps (see below).
     one-liner in terms of implementation, handling different datasets
     involves ensuring commensurable axis dimensions and ranges, to say the
     least.
+
+
 
 
 Normalisation
@@ -350,7 +364,6 @@ What  follows is the API documentation of each class implemented in this module.
 """
 import copy
 import math
-from typing import Any, Tuple
 
 import numpy as np
 import scipy.signal
@@ -358,7 +371,6 @@ import scipy.integrate
 import scipy.interpolate
 
 import aspecd.processing
-import cwepr.analysis
 
 
 class Error(Exception):
@@ -486,16 +498,19 @@ class BaselineCorrectionWithPolynomial(aspecd.processing.ProcessingStep):
 
     Attributes
     ----------
-    self.parameters['percentage']
-        Percentage of the spectrum to consider as baseline on each side of the
-        spectrum, i.e. 10% means 10% left and 10 % right.
+    parameters : :class:`dict`
+        All parameters necessary for this step.
 
-        Default: 10 %
+        percentage : :class:`float`
+            Percentage of the spectrum to consider as baseline on each side
+            of the spectrum, i.e. 10% means 10% left and 10 % right.
 
-    self.parameters['order']
-        The order for the baseline correction if no coefficients are given.
+            Default: 10 %
 
-        Default: 0
+        order : :class:`int`
+            The order for the baseline correction if no coefficients are given.
+
+            Default: 0
     """
 
     def __init__(self):
@@ -595,83 +610,23 @@ class BaselineCorrectionWithCalculatedDataset(aspecd.processing.ProcessingStep):
         self.dataset.data.data -= self.parameters["baseline_dataset"].data.data
 
 
-class Subtraction(aspecd.processing.ProcessingStep):
-    """Subtract one spectrum from another.
-
-    Tool for subtracting a given spectrum, i.e. in general a background, from
-    the processed spectrum.
-
-    .. TODO:: Big thing! Check first for axes ranges and only add those
-        parts!! Same for addition and others.
-
-    Attributes
-    ----------
-    parameters['second_dataset']: :class:`cwepr.dataset.ExperimentalDataset`
-        Dataset containing the spectrum that should be subtracted.
-
-    """
-
-    def __init__(self):
-        super().__init__()
-        self.parameters["second_dataset"] = None
-        self.description = "Subtract a spectrum"
-
-    def _perform_task(self):
-        """Wrapper around the :meth:`_subtract` method."""
-        self._interpolate()
-        self.dataset.data.data -= self.parameters["second_dataset"].data.data
-
-    def _interpolate(self):
-        """Perform a potentially necessary interpolation.
-
-        Interpolates the spectrum that should be added to the other one on the
-        x values of this other spectrum.
-        """
-        interpolator = AxisInterpolation()
-        interpolator.parameters['points'] = len(self.dataset.data.axes[
-                                                0].values)
-        # self.parameters["second_dataset"] = copy.deepcopy(self.parameters[
-        # "second_dataset"])
-        self.parameters["second_dataset"].process(interpolator)
-
-
-class Addition(aspecd.processing.ProcessingStep):
-    """Add one spectrum to an other.
-
-    Attributes
-    ----------
-    parameters['second_dataset']: :class:`cwepr.dataset.ExperimentalDataset`
-        Dataset containing the spectrum that should be added.
-
-    """
-
-    def __init__(self):
-        super().__init__()
-        self.parameters["second_dataset"] = None
-        self.description = "Add second spectrum"
-
-    def _perform_task(self):
-        """Wrapper around the :meth:`_add` method."""
-        self._interpolate()
-        self.dataset.data.data += self.parameters["second_dataset"].data.data
-
-    def _interpolate(self):
-        """Perform a potentially necessary interpolation.
-
-        Interpolates the spectrum that should be added to the other one on the
-        x values of this other spectrum.
-        """
-        interpolator = cwepr.processing.AxisInterpolation()
-        interpolator.parameters['points'] = len(self.dataset.data.axes[
-                                                0].values)
-        self.parameters["second_dataset"].process(interpolator)
-
-
 class PhaseCorrection(aspecd.processing.ProcessingStep):
     """Phase correction if phase angle is given directly or in metadata.
 
-    Therefore also highly problematic as most phase deviation is not
-    introduced on purpose and listed in the metadata.
+    Therefore the here used implementation of the processing step is also
+    highly problematic as most phase deviation is not introduced on purpose
+    and listed in the metadata.
+
+    Attributes
+    ----------
+    parameters : :class:`dict`
+        phase_angle_value: :class:`float`
+            Value of the phase shift, can be given in Degree or Rad
+
+        phase_angle_unit: :class:`str`
+            Unit of the phase shift.
+
+            Default: deg
     """
 
     def __init__(self):
@@ -716,10 +671,8 @@ class AutomaticPhaseCorrection(aspecd.processing.ProcessingStep):
     """Automatic phase correction via Hilbert transform.
 
     .. todo::
-        Explain what is done here.
-
-    .. todo::
-        Does not work properly. Reimplement with other method...
+        Does not work properly. Already gives wrong values with simulated
+        data without a hyperfine-coupling. Reimplement with other method...
 
     Adapted from the matlab functionality in the cwEPR-toolbox.
     """
@@ -957,7 +910,14 @@ class AxisInterpolation(aspecd.processing.ProcessingStep):
     """Interpolating axes to given number of equidistant field points.
 
     Iterates over axes and takes the first axis that is not equidistant and
-    interpolates it and the data as well."""
+    interpolates it and the data as well.
+
+    Attributes
+    ----------
+    self.parameters['points']
+        Number of points that should be interpolated to.
+
+    """
 
     def __init__(self):
         super().__init__()

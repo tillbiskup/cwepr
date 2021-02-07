@@ -42,25 +42,6 @@ class TestSubtraction(unittest.TestCase):
         self.dataset = cwepr.dataset.ExperimentalDataset()
         self.dataset.import_from(importer)
 
-    def test_subtraction(self):
-        dataset_old = copy.deepcopy(self.dataset)
-        second_dataset = copy.deepcopy(self.dataset)
-        second_dataset.data.data *= 0.5
-        corrector = cwepr.processing.Subtraction()
-        corrector.parameters['second_dataset'] = second_dataset
-        self.dataset.process(corrector)
-        self.assertTrue((dataset_old.data.data != self.dataset.data.data).all())
-
-    def test_second_dataset_contains_original_axis(self):
-        second_dataset = copy.deepcopy(self.dataset)
-        second_dataset.data.axes[0].values += 0.5
-        oldaxis = copy.copy(second_dataset.data.axes[0].values)
-        corrector = cwepr.processing.Subtraction()
-        corrector.parameters['second_dataset'] = second_dataset
-        self.dataset.process(corrector)
-        self.assertTrue(np.array_equal(second_dataset.data.axes[0].values,
-                                       oldaxis))
-
 
 class TestFrequencyCorrection(unittest.TestCase):
     def test_frequency_before_is_different_from_after(self):

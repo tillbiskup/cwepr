@@ -36,7 +36,6 @@ class MissingInformationError(Error):
         self.message = message
 
 
-
 class BaselineControlPlotter(aspecd.plotting.SinglePlotter):
     """Plotter to visualize possible baseline fits.
 
@@ -92,30 +91,25 @@ class BaselineControlPlotter(aspecd.plotting.SinglePlotter):
 
 
 class SimpleSpectrumPlotter(aspecd.plotting.SinglePlotter):
-    """Simple but highly customizable plotter for a single spectrum."""
+    """Simple plotter for a single spectrum.
+
+
+    """
 
     def __init__(self):
         super().__init__()
         self.style = ''
-        self._set_defaults()
+        self.parameters["color"] = "tab:blue"
+        self.parameters["title"] = ""
+        self.parameters["draw_zero"] = True
+        self.parameters["xlim"] = None
         self._zero_line_style = {'y': 0,
                                  'color': '#999999'}
         self._ticklabel_format = {'style': 'sci',
                                   'scilimits': (-2, 4),
                                   'useMathText': True}
 
-    def _set_defaults(self):
-        """Create default values for all settings of the plot."""
-        self.parameters["color"] = "tab:blue"
-        self.parameters["title"] = ""
-        self.parameters["draw_zero"] = True
-        self.parameters["xlim"] = None
-
     def _create_plot(self):
-        """Draw and display the plot.
-
-        The plot settings are put into the parameter attribute.
-        """
         self._set_style()
         self._make_title()
         self._plot_data()
@@ -136,17 +130,9 @@ class SimpleSpectrumPlotter(aspecd.plotting.SinglePlotter):
     def _set_extent(self):
         """Set the limits of the x axis.
 
-        The limits are first fitted to the width of the spectrum (if
-        necessary),then overridden with user specified values (if applicable).
-
-        Parameters
-        ----------
-        self.dataset.data.axes[0].values: :class:`list`
-            x values to plot. These are necessary for determining the correct
-            limits.
-
-        """
-        if self.parameters["xlim"]:
+        Set the limits of the x axis either from first axis or from given
+        parameters. """
+        if self.parameters["xlim"].size:
             self.axes.set_xlim(self.parameters["xlim"])
         else:
             self.axes.set_xlim(self.dataset.data.axes[0].values[0],
@@ -159,7 +145,7 @@ class SimpleSpectrumPlotter(aspecd.plotting.SinglePlotter):
 
 
 class MultiPlotter(aspecd.plotting.MultiPlotter):
-    """Plotter used for plotting multiple spectra at the same time."""
+    """Plotter used for plotting multiple spectra."""
 
     def __init__(self):
         super().__init__()
