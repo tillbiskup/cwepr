@@ -507,8 +507,7 @@ class BaselineCorrectionWithPolynomial(aspecd.processing.ProcessingStep):
         Baseline correction is performed by subtraction of  a previously
         determined polynomial.
         """
-        if 'coefficients' not in self.parameters or \
-                not self.parameters['coefficients']:
+        if not self.parameters['coefficients'].size:
             self._get_coefficients()
         values_to_subtract = np.polyval(
             np.poly1d(self.parameters['coefficients']),
