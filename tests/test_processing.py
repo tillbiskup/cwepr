@@ -130,6 +130,11 @@ class TestBaselineCorrectionWithPolynomial(unittest.TestCase):
         blc = self.dataset.process(baseline_corr)  # Only works upon a copy!
         self.assertAlmostEqual(self.dataset.data.data[5], 0)
 
+    def test_blc_writes_coefficients(self):
+        baseline_corr = cwepr.processing.BaselineCorrectionWithPolynomial()
+        blc = self.dataset.process(baseline_corr)  # Only works upon a copy!
+        self.assertTrue(blc.parameters['coefficients'])
+
 
 class TestAveraging2DDataset(unittest.TestCase):
     def setUp(self):

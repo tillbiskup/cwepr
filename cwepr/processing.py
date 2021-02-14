@@ -487,14 +487,12 @@ class FrequencyCorrection(aspecd.processing.ProcessingStep):
 
 
 class BaselineCorrectionWithPolynomial(aspecd.processing.ProcessingStep):
-    """Perform a baseline correction using a polynomial previously determined.
+    """Perform a baseline correction assuming an underlying polynomial function.
 
-    The respective coefficients can be obtained using
-    :class:`cwepr.analysis.PolynomialBaselineFitting`.
+    The coefficients to use will be calculated using the given order  and
+    written in the parameters. If no order is explicitely given, a shifted
+    baseline of zeroth order is assumed and will be processed for.
     See also: :class:`cwepr.analysis.BaselineCorrectionWithCalculatedDataset`.
-
-    If no coefficients are given, the analysis step will be done with its
-    standard parameters and the result used for the actual correction.
 
     Attributes
     ----------
@@ -511,15 +509,20 @@ class BaselineCorrectionWithPolynomial(aspecd.processing.ProcessingStep):
             The order for the baseline correction if no coefficients are given.
 
             Default: 0
+
+        coefficients:
+            Filled during evaluation of the task, coefficients of the
+            baseline polynomial.
     """
 
     def __init__(self):
         super().__init__()
         self.description = "Subtraction of baseline polynomial"
-        self.parameters["percentage"] = 10
+        self.parameters['percentage'] = 10
         self.parameters['order'] = 0
         self._cut_data_x = np.ndarray([])
         self._cut_data_y = np.ndarray([])
+        self.parameters['coefficients']
 
     @staticmethod
     def applicable(dataset):
@@ -577,10 +580,12 @@ class BaselineCorrectionWithPolynomial(aspecd.processing.ProcessingStep):
             polynomial = np.polynomial.Polynomial.fit(self._cut_data_x,
                                                       self._cut_data_y,
                                                       self.parameters['order'])
+            self.parameters['coefficients'] =  polynomial.coef
             return polynomial(self.dataset.data.axes[0].values)
         else:
             polynomial = np.polyfit(self._cut_data_x, self._cut_data_y,
                                     self.parameters['order'])
+            self.parameters['coefficients'] = polynomial
             return np.polyval(polynomial, self.dataset.data.axes[0].values)
 
 
