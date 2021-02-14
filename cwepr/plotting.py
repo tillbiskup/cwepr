@@ -92,8 +92,6 @@ class BaselineControlPlotter(aspecd.plotting.SinglePlotter):
 
 class SimpleSpectrumPlotter(aspecd.plotting.SinglePlotter):
     """Simple plotter for a single spectrum.
-
-
     """
 
     def __init__(self):
@@ -332,6 +330,7 @@ class StackedPlotter(aspecd.plotting.SinglePlotter):
         not tested
 
     """
+
     def __init__(self):
         super().__init__()
         self.description = 'Stack 2D plots of a 3D dataset.'
@@ -378,4 +377,16 @@ class StackedPlotter(aspecd.plotting.SinglePlotter):
         axis.set(xlim=self.parameters['xlim'],
                  yticks=offsets,
                  yticklabels=self.dataset.data.axes[1].values)
+
+
+class NewGoniometerPlotter(aspecd.plotting.SingleCompositePlotter):
+    """Goniometer plotter based on the composite plotter."""
+
+    def __init__(self):
+        super().__init__()
+        self.grid_dimensions = [2, 2]
+        self.subplot_locations = [[0, 0, 1, 1], [1, 0, 1, 1, ], [0, 1, 2, 1]]
+        self.plotter = [aspecd.plotting.SinglePlotter2D(),
+                        aspecd.plotting.SinglePlotter2D(),
+                        aspecd.plotting.SinglePlotter2DStacked()]
 

@@ -262,6 +262,7 @@ class GoniometerSweepImporter(aspecd.io.DatasetImporter):
         self._get_filenames()
         self._sort_filenames()
         self._import_all_spectra_to_list()
+        self._hand_data_to_dataset()
 
         self._fill_axes()
         self._get_metadata()
@@ -278,14 +279,12 @@ class GoniometerSweepImporter(aspecd.io.DatasetImporter):
             num = num.split('dg')[0]
             return int(num)
         self.filenames = sorted(self.filenames, key=sort_key)
-        return self.filenames
 
     def _import_all_spectra_to_list(self):
         self._data = []
-        interpolate = cwepr.processing.AxisInterpolation()
         # import all files without infofile
         for nr, filename in enumerate(self.filenames):
-            filename = filename[:-4]
+            filename = filename[:-4]  # remove extension
             importer = cwepr.io.MagnettechXmlImporter(source=filename)
             importer.load_infofile = False
             self._data.append(cwepr.dataset.ExperimentalDataset())
@@ -301,13 +300,14 @@ class GoniometerSweepImporter(aspecd.io.DatasetImporter):
                     self._data[0].metadata.bridge.mw_frequency.value
                 self._data[nr].process(freq_correction)
 
+            interpolate = cwepr.processing.AxisInterpolation()
             self._interpolation_to_same_number_of_points(interpolate, nr)
 
-            # make 3D dataset from set of 2d datasets
-        my_array = np.ndarray((len(self._data), len(self._data[0].data.data)))
+    def _hand_data_to_dataset(self):
+        my_array = np.ndarray((len(self._data[0].data.data), len(self._data)))
         self.dataset.data.data = my_array
         for nr, set_ in enumerate(self._data):
-            self.dataset.data.data[nr, :] = set_.data.data
+            self.dataset.data.data[:, nr] = set_.data.data
 
     def _interpolation_to_same_number_of_points(self, interpolate, nr):
         interpolate.parameters['points'] = len(self._data[0].data.data)

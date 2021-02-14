@@ -112,6 +112,12 @@ class TestGoniometerSweepImporter(unittest.TestCase):
         self.assertTrue(callable(
             self.goniometer_importer._import_all_spectra_to_list))
 
+    def test_angles_smaller_than_360_deg(self):
+        dataset = cwepr.dataset.ExperimentalDataset()
+        dataset.import_from(self.goniometer_importer)
+        self.assertTrue(all([x < 359 for x in
+                             self.goniometer_importer._angles]))
+
     def test_import_data_fills_dataset(self):
         dataset = cwepr.dataset.ExperimentalDataset()
         dataset.import_from(self.goniometer_importer)
@@ -123,7 +129,7 @@ class TestGoniometerSweepImporter(unittest.TestCase):
         dataset = cwepr.dataset.ExperimentalDataset()
         dataset.import_from(self.goniometer_importer)
         self.assertEqual(len(self.goniometer_importer.filenames),
-                         self.goniometer_importer.dataset.data.data.shape[0])
+                         self.goniometer_importer.dataset.data.data.shape[1])
 
     def test_all_datasets_have_same_frequency(self):
         dataset = cwepr.dataset.ExperimentalDataset()
@@ -133,6 +139,7 @@ class TestGoniometerSweepImporter(unittest.TestCase):
             frequencies = np.append(frequencies,
                                     set_.metadata.bridge.mw_frequency.value)
         self.assertAlmostEqual(max(frequencies), min(frequencies))
+
 
     def test_goniometer_import(self):
         source = os.path.join(ROOTPATH, 'testdata/magnettech-goniometer/')

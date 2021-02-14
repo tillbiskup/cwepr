@@ -522,7 +522,7 @@ class BaselineCorrectionWithPolynomial(aspecd.processing.ProcessingStep):
         self.parameters['order'] = 0
         self._cut_data_x = np.ndarray([])
         self._cut_data_y = np.ndarray([])
-        self.parameters['coefficients']
+        self.parameters['coefficients'] = None
 
     @staticmethod
     def applicable(dataset):
@@ -580,7 +580,7 @@ class BaselineCorrectionWithPolynomial(aspecd.processing.ProcessingStep):
             polynomial = np.polynomial.Polynomial.fit(self._cut_data_x,
                                                       self._cut_data_y,
                                                       self.parameters['order'])
-            self.parameters['coefficients'] =  polynomial.coef
+            self.parameters['coefficients'] = polynomial.coef
             return polynomial(self.dataset.data.axes[0].values)
         else:
             polynomial = np.polyfit(self._cut_data_x, self._cut_data_y,
