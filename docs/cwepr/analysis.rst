@@ -93,7 +93,7 @@ But now for comparing spectral shapes. Probably there is no one "true" or "corre
   * Minimum
   * Area under curve
 
-    (Nore: For first-derivative spectra, the area under the curve is *not* identical to the number of spins contributing to the signal!)
+    (Note: For first-derivative spectra, the area under the curve is *not* identical to the number of spins contributing to the signal!)
 
 You should, however, never simply plot the spectra "as is" and start interpreting some overlapping parts in some way. This would mean that you implicitly perform a semi-quantitative analysis, and this is in this way most certainly wrong. For details why this is the case and how to do better, see above.
 
