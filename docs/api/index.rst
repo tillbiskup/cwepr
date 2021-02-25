@@ -25,7 +25,6 @@ An alphabetic list of the submodules available within the cwEPR package. The act
    :maxdepth: 1
 
    cwepr.analysis
-   cwepr.composite_processing
    cwepr.dataset
    cwepr.metadata
    cwepr.plotting
