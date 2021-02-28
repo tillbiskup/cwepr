@@ -453,10 +453,10 @@ class FrequencyCorrection(aspecd.processing.ProcessingStep):
             # TODO: Question: Better check for quantity rather than unit? (
             #   Difficult if not filled)
             # if axis.quantity == 'magnetic field'
-            if axis.unit == ('mT', 'G'):
+            if axis.unit in ('mT', 'G'):
                 axis.values = self._correct_field_for_frequency(nu_target,
                                                                 axis.values)
-        self._write_new_frequency()
+                self._write_new_frequency()
 
     def _correct_field_for_frequency(self, nu_target=None,
                                      b_initial=None):
@@ -478,7 +478,7 @@ class FrequencyCorrection(aspecd.processing.ProcessingStep):
 
         """
         nu_initial = self.dataset.metadata.bridge.mw_frequency.value
-        b_target = nu_target / nu_initial * b_initial
+        b_target = (nu_target / nu_initial) * b_initial
         return b_target
 
     def _write_new_frequency(self):

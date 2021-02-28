@@ -44,17 +44,29 @@ class TestSubtraction(unittest.TestCase):
 
 
 class TestFrequencyCorrection(unittest.TestCase):
-    def test_frequency_before_is_different_from_after(self):
+    def setUp(self):
         source = os.path.join(ROOTPATH, 'io/testdata/test-magnettech')
         importer = cwepr.io.magnettech.MagnettechXmlImporter(source=source)
-        dataset = cwepr.dataset.ExperimentalDataset()
-        dataset.import_from(importer)
-        old_freq = copy.deepcopy(dataset.metadata.bridge.mw_frequency)
-        corrector = cwepr.processing.FrequencyCorrection()
-        corrector.parameters['frequency'] = 9.5
-        dataset.process(corrector)
-        new_freq = dataset.metadata.bridge.mw_frequency
-        self.assertNotEqual(new_freq, old_freq)
+        self.dataset = cwepr.dataset.ExperimentalDataset()
+        self.dataset.import_from(importer)
+        self.corrector = cwepr.processing.FrequencyCorrection()
+
+    def test_frequency_before_is_different_from_after(self):
+        old_freq = copy.deepcopy(self.dataset.metadata.bridge.mw_frequency)
+        self.corrector.parameters['frequency'] = 9.5
+        self.dataset.process(self.corrector)
+        new_freq = self.dataset.metadata.bridge.mw_frequency
+        self.assertNotEqual(new_freq.value, old_freq.value)
+
+    def test_magnetic_field_axis_is_different(self):
+        old_field_axis = copy.deepcopy(
+            self.dataset.data.axes[0].values)
+        self.corrector.parameters['frequency'] = 8.
+        self.dataset.process(self.corrector)
+        new_field_axis = self.dataset.data.axes[0].values
+        diffs = old_field_axis - new_field_axis
+        conditions = (diff == 0 for diff in diffs)
+        self.assertFalse(all(conditions))
 
 
 class TestAxisInterpolation(unittest.TestCase):
