@@ -281,7 +281,7 @@ class GoniometerSweepPlotter(aspecd.plotting.SinglePlotter):
         offsets = []
 
         for idx, _ in enumerate(angles):
-            axis.plot(b_field, self.dataset.data.data[idx, :] + offset, 'k',
+            axis.plot(b_field, self.dataset.data.data[:, idx] + offset, 'k',
                       linewidth=0.7)
             offsets.append(offset)
             offset += stack_offset
@@ -297,8 +297,8 @@ class GoniometerSweepPlotter(aspecd.plotting.SinglePlotter):
         b_field = self.dataset.data.axes[0].values
         angles = self.dataset.data.axes[1].values
 
-        axis.contourf(b_field, angles, self.dataset.data.data, 30, )
-        axis.contour(b_field, angles, self.dataset.data.data, 15,
+        axis.contourf(b_field, angles, self.dataset.data.data.T, 30, )
+        axis.contour(b_field, angles, self.dataset.data.data.T, 15,
                      colors='black', linewidths=0.5)
 
         axis.set(xlim=self.parameters['xlim'])
@@ -307,7 +307,7 @@ class GoniometerSweepPlotter(aspecd.plotting.SinglePlotter):
         b_field = self.dataset.data.axes[0].values
         angles = self.dataset.data.axes[1].values
 
-        axis.contourf(b_field, angles, self.dataset.data.data, 30, )
+        axis.contourf(b_field, angles, self.dataset.data.data.T, 30, )
         axis.set(xlim=self.parameters['xlim'])
 
     def _adjust_spacing(self):
@@ -323,64 +323,16 @@ class GoniometerSweepPlotter(aspecd.plotting.SinglePlotter):
         self.figure.suptitle(self.parameters["title"])
 
 
-class StackedPlotter(aspecd.plotting.SinglePlotter):
-    """Make stacked plot of data in a 2D dataset.
+class NewGoniometerPlotter(aspecd.plotting.SingleCompositePlotter):
+    """Goniometer plotter based on the composite plotter.
 
-    ..note::
-        not tested
+    ..todo::
+        Suche: Möglichkeit, properties für alle Plotter gleich zu machen.
+        Scheitert bislang daran, dass die self.properties nicht zu belegen
+        sind sondern bereits im Rezept jede eigene Achse gesetzt werden
+        müsste.
 
     """
-
-    def __init__(self):
-        super().__init__()
-        self.description = 'Stack 2D plots of a 3D dataset.'
-        self.parameters['xlim'] = tuple()
-        self.style = ''
-
-    def _create_plot(self):
-        """Plot the given dataset in three different representations."""
-        self._set_xlims()
-        self._set_style()  # xkcd
-        self._make_stacked_plot()
-
-    def _set_xlims(self):
-        if not self.parameters['xlim']:
-            self.parameters['xlim'] = \
-                tuple([self.dataset.data.axes[0].values[0],
-                       self.dataset.data.axes[0].values[-1]])
-            assert len(self.parameters['xlim']) == 2
-
-    def _set_style(self):
-        """Set the style to xkcd if indicated."""
-        if self.style == 'xkcd':
-            plt.xkcd()
-
-    def _make_stacked_plot(self, axis=None):
-        if not axis:
-            raise MissingInformationError(message='No axis provided for '
-                                                  'plotting.')
-
-        b_field = self.dataset.data.axes[0].values
-        variable_parameter = self.dataset.data.axes[1].values
-
-        stack_offset = 0.5 * max(self.dataset.data.data[0, :])
-        offset = 0
-        offsets = []
-
-        for idx, _ in enumerate(variable_parameter):
-            axis.plot(b_field, self.dataset.data.data[idx, :] + offset, 'k',
-                      linewidth=0.7)
-            offsets.append(offset)
-            offset += stack_offset
-
-        axis.grid(axis='x')
-        axis.set(xlim=self.parameters['xlim'],
-                 yticks=offsets,
-                 yticklabels=self.dataset.data.axes[1].values)
-
-
-class NewGoniometerPlotter(aspecd.plotting.SingleCompositePlotter):
-    """Goniometer plotter based on the composite plotter."""
 
     def __init__(self):
         super().__init__()
@@ -390,3 +342,12 @@ class NewGoniometerPlotter(aspecd.plotting.SingleCompositePlotter):
                         aspecd.plotting.SinglePlotter2D(),
                         aspecd.plotting.SinglePlotter2DStacked()]
 
+    def _create_plot(self):
+        super()._create_plot()
+        self._set_properties()
+
+    def _set_properties(self):
+        for nr, plotter in enumerate(self.plotter):
+            pass
+            #print('Achsen:', len(self.properties.axes))
+            #plotter.properties.axes.xlim = self.properties.axes[0]['xlim']
