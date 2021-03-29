@@ -494,6 +494,11 @@ class BaselineCorrectionWithPolynomial(aspecd.processing.ProcessingStep):
     baseline of zeroth order is assumed and will be processed for.
     See also: :class:`cwepr.analysis.BaselineCorrectionWithCalculatedDataset`.
 
+    ..todo::
+        Percentage could also be list to include different numbers of points
+        on both sides.
+
+
     Attributes
     ----------
     parameters : :class:`dict`
@@ -501,7 +506,7 @@ class BaselineCorrectionWithPolynomial(aspecd.processing.ProcessingStep):
 
         percentage : :class:`float`
             Percentage of the spectrum to consider as baseline on each side
-            of the spectrum, i.e. 10% means 10% left and 10 % right.
+            of the spectrum, i.e. 10 means 10% left and 10 % right.
 
             Default: 10 %
 
