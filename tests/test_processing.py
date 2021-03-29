@@ -134,18 +134,48 @@ class TestNormalisationToReceiverGain(unittest.TestCase):
 class TestBaselineCorrectionWithPolynomial(unittest.TestCase):
     def setUp(self):
         self.dataset = cwepr.dataset.ExperimentalDataset()
-        self.dataset.data.data = np.ones(100) + 10
-        self.dataset.data.axes[0].values = np.linspace(1, 100, num=100)
+
 
     def test_baseline_correction_without_coefficients_works(self):
+        self.dataset.data.data = np.ones(100) + 10
+        self.dataset.data.axes[0].values = np.linspace(1, 100, num=100)
         baseline_corr = cwepr.processing.BaselineCorrectionWithPolynomial()
         blc = self.dataset.process(baseline_corr)  # Only works upon a copy!
         self.assertAlmostEqual(self.dataset.data.data[5], 0)
 
     def test_blc_writes_coefficients(self):
+        self.dataset.data.data = np.ones(100) + 10
+        self.dataset.data.axes[0].values = np.linspace(1, 100, num=100)
         baseline_corr = cwepr.processing.BaselineCorrectionWithPolynomial()
         blc = self.dataset.process(baseline_corr)  # Only works upon a copy!
         self.assertTrue(blc.parameters['coefficients'])
+
+    def test_baseline_correction_with_unequal_no_of_points_per_side(self):
+        baseline_corr = cwepr.processing.BaselineCorrectionWithPolynomial()
+        self.dataset.data.data = np.r_[np.ones(5) + 5, np.ones(75), np.ones(
+            20)+5]
+        self.dataset.data.axes[0].values = np.linspace(1, 100, num=100)
+        baseline_corr.parameters['percentage'] = [5, 20]
+        blc = self.dataset.process(baseline_corr)  # Only works upon a copy!
+        self.assertAlmostEqual(self.dataset.data.data[-20], 0)
+
+    def test_baseline_correction_with_percentage_float(self):
+        baseline_corr = cwepr.processing.BaselineCorrectionWithPolynomial()
+        self.dataset.data.data = np.r_[np.ones(20) + 5, np.ones(60), np.ones(
+            20)+5]
+        self.dataset.data.axes[0].values = np.linspace(1, 100, num=100)
+        baseline_corr.parameters['percentage'] = 20
+        blc = self.dataset.process(baseline_corr)  # Only works upon a copy!
+        self.assertAlmostEqual(self.dataset.data.data[19], 0)
+
+    def test_baseline_correction_with_percentage_list_one_element(self):
+        baseline_corr = cwepr.processing.BaselineCorrectionWithPolynomial()
+        self.dataset.data.data = np.r_[np.ones(20) + 5, np.ones(60), np.ones(
+            20)+5]
+        self.dataset.data.axes[0].values = np.linspace(1, 100, num=100)
+        baseline_corr.parameters['percentage'] = [20,]
+        blc = self.dataset.process(baseline_corr)  # Only works upon a copy!
+        self.assertAlmostEqual(self.dataset.data.data[19], 0)
 
 
 class TestAveraging2DDataset(unittest.TestCase):

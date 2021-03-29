@@ -494,21 +494,21 @@ class BaselineCorrectionWithPolynomial(aspecd.processing.ProcessingStep):
     baseline of zeroth order is assumed and will be processed for.
     See also: :class:`cwepr.analysis.BaselineCorrectionWithCalculatedDataset`.
 
-    ..todo::
-        Percentage could also be list to include different numbers of points
-        on both sides.
-
-
     Attributes
     ----------
     parameters : :class:`dict`
         All parameters necessary for this step.
 
-        percentage : :class:`float`
-            Percentage of the spectrum to consider as baseline on each side
-            of the spectrum, i.e. 10 means 10% left and 10 % right.
+        percentage :
+            Parts of the spectrum to be considered as baseline, can be given
+            as list or single number. If one number is given, it takes that
+            percentage from both sides, respectively, i.e. 10 means 10% left
+            and 10 % right. If a list of two numbers is provided,
+            the corresponding percentages are taken from each side of the
+            spectrum, i.e. ``[5, 20]`` takes 5% from the left side and 20%
+            from the right.
 
-            Default: 10 %
+            Default: [10, 10]
 
         order : :class:`int`
             The order for the baseline correction if no coefficients are given.
@@ -523,15 +523,24 @@ class BaselineCorrectionWithPolynomial(aspecd.processing.ProcessingStep):
     def __init__(self):
         super().__init__()
         self.description = "Subtraction of baseline polynomial"
-        self.parameters['percentage'] = 10
+        self.parameters['percentage'] = [10, 10]
         self.parameters['order'] = 0
-        self._cut_data_x = np.ndarray([])
-        self._cut_data_y = np.ndarray([])
+        self._cut_x_data = np.ndarray([])
+        self._cut_y_data = np.ndarray([])
         self.parameters['coefficients'] = None
 
     @staticmethod
     def applicable(dataset):
         return dataset.data.data.ndim == 1
+
+    def _sanitise_parameters(self):
+        if isinstance(self.parameters['percentage'], (float, int)):
+            percentage = self.parameters['percentage']
+            self.parameters['percentage'] = [percentage, percentage]
+        if isinstance(self.parameters['percentage'], list) and len(
+                self.parameters['percentage']) == 1:
+            percentage = self.parameters['percentage'][0]
+            self.parameters['percentage'] = [percentage, percentage]
 
     def _perform_task(self):
         """Perform the actual correction.
@@ -545,50 +554,25 @@ class BaselineCorrectionWithPolynomial(aspecd.processing.ProcessingStep):
 
     def _get_spectrum_to_evaluate(self):
         number_of_points = len(self.dataset.data.data)
-        points_per_side = \
-            math.ceil(number_of_points * self.parameters["percentage"] / 100.0)
-        self._cut_data_y = self._get_points_to_use(self.dataset.data.data,
-                                             points_per_side)
-        self._cut_data_x = self._get_points_to_use(self.dataset.data.axes[
-                                                    0].values,
-                                             points_per_side)
-
-    @staticmethod
-    def _get_points_to_use(data, points_per_side):
-        """Get a number of points from the spectrum to use for a fit.
-
-        Slice the list of all data points to have a list of points from each
-        side of the spectrum to use for polynomial fitting.
-
-        Parameters
-        ----------
-        data: :class:`list`
-            List from which points should be used on each side.
-
-        points_per_side: :class:'int'
-            How many points from each end of the list should be used.
-
-        Returns
-        -------
-        points_to_use: :class:`list`
-            List only containing the correct number of points from each side
-            and not the points in between.
-
-        """
-        left_part = data[:points_per_side + 1]
-        right_part = data[- points_per_side - 1:]
-        points_to_use = np.concatenate((left_part, right_part))
-        return points_to_use
+        points_left = math.ceil(number_of_points * self.parameters[
+            "percentage"][0] / 100.0)
+        points_right = math.ceil(number_of_points * self.parameters[
+            "percentage"][1] / 100.0)
+        data = self.dataset.data.data
+        x_axis = self.dataset.data.axes[0].values
+        self._cut_y_data = np.r_[data[:(points_left-1)], data[-points_right:]]
+        self._cut_x_data = np.r_[x_axis[:points_left - 1], x_axis[
+                                                           -points_right:]]
 
     def _get_values_to_subtract(self):
         if np.polynomial.Polynomial:
-            polynomial = np.polynomial.Polynomial.fit(self._cut_data_x,
-                                                      self._cut_data_y,
+            polynomial = np.polynomial.Polynomial.fit(self._cut_x_data,
+                                                      self._cut_y_data,
                                                       self.parameters['order'])
             self.parameters['coefficients'] = polynomial.coef
             return polynomial(self.dataset.data.axes[0].values)
         else:
-            polynomial = np.polyfit(self._cut_data_x, self._cut_data_y,
+            polynomial = np.polyfit(self._cut_x_data, self._cut_y_data,
                                     self.parameters['order'])
             self.parameters['coefficients'] = polynomial
             return np.polyval(polynomial, self.dataset.data.axes[0].values)
