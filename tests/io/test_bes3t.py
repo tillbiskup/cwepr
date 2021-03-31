@@ -19,6 +19,13 @@ class TestBES3TImporter(unittest.TestCase):
         self.assertTrue(self.dataset.data.axes[0].unit)
         self.assertFalse(self.dataset.data.axes[1].unit)
 
+    def test_import_with_1D_dataset_dimensions(self):
+        source = os.path.join(ROOTPATH, 'testdata/test-bes3t-1D-fieldsweep.DSC')
+        importer = cwepr.io.bes3t.BES3TImporter(source=source)
+        self.dataset.import_from(importer)
+        self.assertEqual(2, len(self.dataset.data.axes))
+        self.assertEqual(1, self.dataset.data.data.ndim)
+
     def test_import_gives_correct_units(self):
         source = os.path.join(ROOTPATH, 'testdata/BDPA-1DFieldSweep')
         importer = cwepr.io.bes3t.BES3TImporter(source=source)

@@ -270,7 +270,7 @@ class GoniometerSweepImporter(aspecd.io.DatasetImporter):
     def _get_filenames(self):
         if not os.path.exists(self.source):
             raise FileNotFoundError
-        self.filenames = glob.glob(os.path.join(self.source, '*[0-9]dg.xml'))
+        self.filenames = glob.glob(os.path.join(self.source, '*[0-9]dg*.xml'))
 
     def _sort_filenames(self):
 

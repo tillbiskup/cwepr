@@ -79,10 +79,12 @@ class BES3TImporter(aspecd.io.DatasetImporter):
         complete_filename = self.source + ".DTA"
         raw_data = np.fromfile(complete_filename, dtype=self._file_encoding)
         raw_data = np.reshape(raw_data, self._dimensions)
+        if self._is_two_dimensional:
+            raw_data = raw_data.T
         self.dataset.data.data = raw_data
 
     def _set_dataset_dimension(self):
-        for key in ('XPTS', 'YPTS'):
+        for key in ('YPTS', 'XPTS'):
             if key in self._dsc_dict.keys():
                 self._dimensions.append(int(self._dsc_dict[key]))
         if len(self._dimensions) == 2:
