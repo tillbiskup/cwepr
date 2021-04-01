@@ -908,7 +908,7 @@ class AxisInterpolation(aspecd.processing.ProcessingStep):
 
     Attributes
     ----------
-    self.parameters['points']
+    parameters['points']
         Number of points that should be interpolated to.
 
     """
@@ -948,11 +948,13 @@ class Averaging2DDataset(aspecd.processing.ProcessingStep):
     ----------
     parameters['axis']
         Axis along which should be averaged.
+
+        Default: 1
     """
 
     def __init__(self):
         super().__init__()
-        self.parameters['axis'] = 0
+        self.parameters['axis'] = 1
         self.description = 'Project 2D data in one dimension.'
         self.undoable = True
 
@@ -960,9 +962,9 @@ class Averaging2DDataset(aspecd.processing.ProcessingStep):
         old_dataset = copy.deepcopy(self.dataset)
         self.dataset.data.data = np.average(self.dataset.data.data,
                                             axis=self.parameters['axis'])
-        self.dataset.data.axes[self.parameters['axis']+1] = \
-            old_dataset.data.axes[self.parameters['axis'] + 2]
-        del self.dataset.data.axes[self.parameters['axis'] + 2]
+        if self.parameters['axis'] == 1:
+            self.dataset.data.axes[1] = old_dataset.data.axes[2]
+            del self.dataset.data.axes[2]
 
     @staticmethod
     def applicable(dataset):
