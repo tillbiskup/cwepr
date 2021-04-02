@@ -24,7 +24,7 @@ class TestExperimentalDatasetLaTeXReporter(unittest.TestCase):
         self.dataset.process(algebra)
         self.filename = 'test.tex'
         template_ = '/Users/mirjamschroder/Programmierkram/Python/cwepr' \
-                    '/templates/de/report.tex'
+                    '/templates/de/report.tex.jinja'
         self.reporter = \
             cwepr.report.ExperimentalDatasetLaTeXReporter(template=template_,
                                                           filename=self.filename)
@@ -52,7 +52,7 @@ class TestPowerSweepAnalysisReport(unittest.TestCase):
         self.filename = 'PowerSweepReport.tex'
         self.filename2 = 'PowerSweepAnalysis.pdf'
         template_ = '/Users/mirjamschroder/Programmierkram/Python/cwepr' \
-                    '/templates/de/power_sweep_report.tex'
+                    '/templates/de/power_sweep_report.tex.jinja'
         self.reporter = \
             cwepr.report.PowerSweepAnalysisReporter(template=template_,
                                                     filename=self.filename)
@@ -68,3 +68,27 @@ class TestPowerSweepAnalysisReport(unittest.TestCase):
 
     def test_reporter(self):
         self.chef.serve(recipe_filename=self.recipe_filename)
+
+
+class TestDokuwikiCaptionsReporter(unittest.TestCase):
+    def setUp(self):
+        self.filename = 'Dokuwiki-caption.txt'
+        self.template_ = '/Users/mirjamschroder/Programmierkram/Python/cwepr' \
+                    '/templates/de/DokuwikiCaption.txt.jinja'
+        self.reporter = cwepr.report.DokuwikiCaptionsReporter()
+        self.reporter.filename = self.filename
+        self.reporter.template = self.template_
+        self.dataset = cwepr.dataset.ExperimentalDataset()
+        source = os.path.join(ROOTPATH, "io/testdata/test-bes3t-1D-fieldsweep")
+        factory = cwepr.dataset.DatasetFactory()
+        self.dataset = factory.get_dataset(source=source)
+        self.reporter.context['dataset'] = self.dataset.to_dict()
+
+#    def tearDown(self):
+ #       if os.path.exists(self.filename):
+  #          os.remove(self.filename)
+
+    def test_reporter(self):
+        #print(self.reporter.context['dataset']['metadata'].keys())
+        self.reporter.create()
+        self.assertTrue(os.path.exists(self.filename))

@@ -26,9 +26,6 @@ import cwepr.dataset
 
 class ExperimentalDatasetLaTeXReporter(aspecd.report.LaTeXReporter):
     """Report implementation for cwepr module.
-
-    This class is needed because recipes cannot load aspecd reporter classes
-    when run with cwEPR.
     """
 
     def __init__(self,  template='', filename=''):
@@ -110,6 +107,7 @@ class ExperimentalDatasetLaTeXReporter(aspecd.report.LaTeXReporter):
         self.context['FIGURENAMES'] = self.includes
 
     def _sanitise_context(self, dict_=None):
+        """Removes corresponding keys to empty values from context."""
         tmp_dict = copy.deepcopy(dict_)
         for key, value in dict_.items():
             if key == 'dataset':
@@ -149,7 +147,7 @@ class PowerSweepAnalysisReporter(aspecd.report.LaTeXReporter):
         #TODO:
         # nicht auf das angegebene Datenset aus den Rezept-Properties
         # verlassen. Stattdessen das Dataset, das aus Apply_To in den Kontext
-        # gebaut wird verwenden.
+        # gebaut wird, verwenden.
         # Die Datensets aus dem Kontext soweit verhauen, dass sie (leicht?)
         # in Template einbaubar sind.
         # Passendes Template bauen.
@@ -207,3 +205,36 @@ class PowerSweepAnalysisReporter(aspecd.report.LaTeXReporter):
                 tmp_dict.pop(key)
         dict_ = tmp_dict
         return dict_
+
+
+class DokuwikiCaptionsReporter(aspecd.report.Reporter):
+    def __init__(self):
+        self.template = 'DokuwikiCaption.txt.jinja'
+        self.filename = ''
+        super().__init__(template=self.template, filename=self.filename)
+        self.dataset = cwepr.dataset.ExperimentalDataset()
+        # private properties
+        self._metadata = dict()
+        self._figure_name = dict()
+
+    def create(self):
+        self._prepare_metadata()
+        self._create_context()
+        super().create()
+
+    def _prepare_metadata(self):
+        self._metadata = self.context['dataset']['metadata']
+        self._metadata['parameter'] = collections.OrderedDict()
+        self._collect_experimental_parameters()
+
+    def _collect_experimental_parameters(self):
+        """Collect all the metadata keys."""
+        for key in self._metadata.keys():
+            if key not in ['sample', 'measurement', 'parameter']:
+                self._metadata['parameter'][key] = \
+                    self._metadata[key]
+
+    def _create_context(self):
+
+        self.context['METADATA'] = self._metadata
+
