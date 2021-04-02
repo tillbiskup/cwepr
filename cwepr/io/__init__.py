@@ -11,10 +11,6 @@ there are a series of more general modules:
 
   Error classes used throughout the other modules
 
-* general
-
-  General classes such as the GeneralImporter that will become InfofileMixin
-
 * factory
 
   Factory classes, currently the DatasetImporterFactory
@@ -28,5 +24,6 @@ there are a series of more general modules:
 
 from .factory import DatasetImporterFactory
 from .magnettech import MagnettechXmlImporter
-from .exporter import ASCIIExporter
 from .txt_file import TxtImporter
+from .bes3t import BES3TImporter
+from .exporter import ASCIIExporter

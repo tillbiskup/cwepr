@@ -283,8 +283,8 @@ class GoniometerSweepPlotter(aspecd.plotting.SinglePlotter):
         for idx, _ in enumerate(angles):
             axis.plot(b_field, self.dataset.data.data[:, idx] + offset, 'k',
                       linewidth=0.7)
-            offsets.append(offset)
             offset += stack_offset
+            offsets.append(offset)
 
         axis.grid(axis='x')
         axis.set(xlim=self.parameters['xlim'],

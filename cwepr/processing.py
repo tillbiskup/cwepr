@@ -560,8 +560,8 @@ class BaselineCorrectionWithPolynomial(aspecd.processing.ProcessingStep):
             "percentage"][1] / 100.0)
         data = self.dataset.data.data
         x_axis = self.dataset.data.axes[0].values
-        self._cut_y_data = np.r_[data[:(points_left-1)], data[-points_right:]]
-        self._cut_x_data = np.r_[x_axis[:points_left - 1], x_axis[
+        self._cut_y_data = np.r_[data[:points_left], data[-points_right:]]
+        self._cut_x_data = np.r_[x_axis[:points_left], x_axis[
                                                            -points_right:]]
 
     def _get_values_to_subtract(self):

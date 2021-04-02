@@ -135,7 +135,6 @@ class TestBaselineCorrectionWithPolynomial(unittest.TestCase):
     def setUp(self):
         self.dataset = cwepr.dataset.ExperimentalDataset()
 
-
     def test_baseline_correction_without_coefficients_works(self):
         self.dataset.data.data = np.ones(100) + 10
         self.dataset.data.axes[0].values = np.linspace(1, 100, num=100)
