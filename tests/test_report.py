@@ -74,7 +74,7 @@ class TestDokuwikiCaptionsReporter(unittest.TestCase):
     def setUp(self):
         self.filename = 'Dokuwiki-caption.txt'
         self.template_ = '/Users/mirjamschroder/Programmierkram/Python/cwepr' \
-                    '/templates/de/DokuwikiCaption.txt.jinja'
+                         '/templates/en/DokuwikiCaption.txt.jinja'
         self.reporter = cwepr.report.DokuwikiCaptionsReporter()
         self.reporter.filename = self.filename
         self.reporter.template = self.template_
@@ -84,11 +84,10 @@ class TestDokuwikiCaptionsReporter(unittest.TestCase):
         self.dataset = factory.get_dataset(source=source)
         self.reporter.context['dataset'] = self.dataset.to_dict()
 
-#    def tearDown(self):
- #       if os.path.exists(self.filename):
-  #          os.remove(self.filename)
+    def tearDown(self):
+        if os.path.exists(self.filename):
+            os.remove(self.filename)
 
     def test_reporter(self):
-        #print(self.reporter.context['dataset']['metadata'].keys())
         self.reporter.create()
         self.assertTrue(os.path.exists(self.filename))
