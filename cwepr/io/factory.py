@@ -16,7 +16,7 @@ import aspecd.io
 
 from cwepr.io.bes3t import BES3TImporter
 from cwepr.io.magnettech import MagnettechXmlImporter, GoniometerSweepImporter
-from cwepr.io.txt_file import TxtImporter
+from cwepr.io.txt_file import TxtImporter, CsvImporter
 from cwepr.io.errors import NoMatchingFilePairError
 
 
@@ -31,10 +31,12 @@ class DatasetImporterFactory(aspecd.io.DatasetImporterFactory):
         super().__init__()
         self.supported_formats = {"BES3T": [".DTA", ".DSC"],
                                   "Magnettech": [".xml"],
-                                  "Txt": [".txt"]}
+                                  "Txt": [".txt"],
+                                  "Csv": [".csv"]}
         self.importers_for_formats = {"BES3T": BES3TImporter,
                                       "Magnettech": MagnettechXmlImporter,
-                                      "Txt": TxtImporter}
+                                      "Txt": TxtImporter,
+                                      'Csv': CsvImporter}
         self.data_format = None
 
     def _get_importer(self, source):
@@ -78,5 +80,5 @@ class DatasetImporterFactory(aspecd.io.DatasetImporterFactory):
                 file_exists.append(os.path.isfile(source + extension))
             if all(file_exists):
                 return file_format
-        msg = ["No file format was found for path: " + source]
+        msg = "No file format was found for path: " + source
         raise NoMatchingFilePairError(message=msg)

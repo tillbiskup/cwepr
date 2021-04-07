@@ -988,7 +988,8 @@ class SubtractVector(aspecd.processing.ProcessingStep):
         self.parameters['vector'] = []
 
     def _perform_task(self):
-        if len(self.parameters['vector']) != self.dataset.data.data.shape[0]:
+        if len(self.parameters['vector']) != \
+                self.dataset.data.data.shape[0]:
             raise DimensionError(message='Vector to subtract is not of the '
                                          'same length as dataset.')
         if self.dataset.data.data.ndim == 1:
