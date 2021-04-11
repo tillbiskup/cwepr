@@ -1,5 +1,5 @@
 default_package: cwepr
-datasets_source_directory: /Users/mirjamschroder/Programmierkram/Python/cwepr/tests/io/testdata/
+datasets_source_directory: io/testdata/
 
 datasets:
   - BDPA-2DFieldPower

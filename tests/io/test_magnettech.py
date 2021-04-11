@@ -60,7 +60,7 @@ class TestMagnettechXmlImporter(unittest.TestCase):
     def test_import_with_no_infofile_continues(self):
         source = os.path.join(ROOTPATH, 'testdata/test-magnettech.xml')
         with tempfile.TemporaryDirectory() as testdir:
-            new_source = os.path.join(testdir, 'test-wo_infofile')
+            new_source = os.path.join(testdir, 'test-wo-infofile')
             shutil.copyfile(source, new_source + '.xml')
             dataset = cwepr.dataset.ExperimentalDataset()
             importer = cwepr.io.magnettech.MagnettechXmlImporter(

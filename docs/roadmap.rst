@@ -6,10 +6,7 @@ Roadmap
 
 A few ideas how to develop the project further, currently a list as a reminder for the main developers themselves, in no particular order, though with a tendency to list more important aspects first:
 
-* Create subpackages and split modules
-
-  * At least analysis and processing should be split
-  * Next would probably be plotters
+* Processing: create g-axis.
 
 * Implement derived importers for Magnettech files
 

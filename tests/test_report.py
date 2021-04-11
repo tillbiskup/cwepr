@@ -7,12 +7,13 @@ import cwepr.dataset
 import cwepr.processing
 import cwepr.report
 
-ROOTPATH = os.path.split(os.path.abspath(__file__))[0]
-
+TEST_ROOTPATH = os.path.split(os.path.abspath(__file__))[0]
+MODULE_ROOTPATH = os.path.split(os.path.split(os.path.abspath(__file__))[0])[0]
+print(MODULE_ROOTPATH)
 
 class TestExperimentalDatasetLaTeXReporter(unittest.TestCase):
     def setUp(self):
-        source = os.path.join(ROOTPATH, "io/testdata/test-bes3t-1D-fieldsweep")
+        source = os.path.join(TEST_ROOTPATH, "io/testdata/test-bes3t-1D-fieldsweep")
         factory = cwepr.dataset.DatasetFactory()
         self.dataset = factory.get_dataset(source=source)
         analysator = cwepr.analysis.Amplitude()
@@ -23,8 +24,8 @@ class TestExperimentalDatasetLaTeXReporter(unittest.TestCase):
         algebra.comment = 'Does this show up in the report?'
         self.dataset.process(algebra)
         self.filename = 'test.tex'
-        template_ = '/Users/mirjamschroder/Programmierkram/Python/cwepr' \
-                    '/templates/de/report.tex.jinja'
+        template_ = os.path.join(
+            MODULE_ROOTPATH, 'templates', 'de', 'report.tex.jinja')
         self.reporter = \
             cwepr.report.ExperimentalDatasetLaTeXReporter(template=template_,
                                                           filename=self.filename)
@@ -48,11 +49,11 @@ class TestExperimentalDatasetLaTeXReporter(unittest.TestCase):
 class TestPowerSweepAnalysisReport(unittest.TestCase):
     def setUp(self):
         self.recipe_filename = \
-            os.path.join(ROOTPATH, 'io/testdata/power-sweep-analysis.yaml')
+            os.path.join(TEST_ROOTPATH, 'io/testdata/power-sweep-analysis.yaml')
         self.filename = 'PowerSweepReport.tex'
         self.filename2 = 'PowerSweepAnalysis.pdf'
-        template_ = '/Users/mirjamschroder/Programmierkram/Python/cwepr' \
-                    '/templates/de/power_sweep_report.tex.jinja'
+        template_ = os.path.join(
+            MODULE_ROOTPATH, 'templates', 'de', 'power_sweep_report.tex.jinja')
         self.reporter = \
             cwepr.report.PowerSweepAnalysisReporter(template=template_,
                                                     filename=self.filename)
@@ -73,13 +74,13 @@ class TestPowerSweepAnalysisReport(unittest.TestCase):
 class TestDokuwikiCaptionsReporter(unittest.TestCase):
     def setUp(self):
         self.filename = 'Dokuwiki-caption.txt'
-        self.template_ = '/Users/mirjamschroder/Programmierkram/Python/cwepr' \
-                         '/templates/en/DokuwikiCaption.txt.jinja'
+        self.template_ = os.path.join(
+            MODULE_ROOTPATH, 'templates', 'en', 'DokuwikiCaption.txt.jinja')
         self.reporter = cwepr.report.DokuwikiCaptionsReporter()
         self.reporter.filename = self.filename
         self.reporter.template = self.template_
         self.dataset = cwepr.dataset.ExperimentalDataset()
-        source = os.path.join(ROOTPATH, "io/testdata/test-bes3t-1D-fieldsweep")
+        source = os.path.join(TEST_ROOTPATH, "io/testdata/test-bes3t-1D-fieldsweep")
         factory = cwepr.dataset.DatasetFactory()
         self.dataset = factory.get_dataset(source=source)
         self.reporter.context['dataset'] = self.dataset.to_dict()

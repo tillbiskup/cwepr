@@ -66,7 +66,7 @@ class TestBES3TImporter(unittest.TestCase):
         source = os.path.join(ROOTPATH, 'testdata/BDPA-2DFieldDelay')
         with tempfile.TemporaryDirectory() as testdir:
             for extension in ('.DSC', '.DTA', '.YGF'):
-                new_source = os.path.join(testdir, 'test-wo_infofile')
+                new_source = os.path.join(testdir, 'test-wo-infofile')
                 shutil.copyfile(source + extension, new_source + extension)
             dataset = cwepr.dataset.ExperimentalDataset()
             importer = cwepr.io.bes3t.BES3TImporter(
