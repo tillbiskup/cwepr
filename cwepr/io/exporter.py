@@ -4,6 +4,8 @@
     not tested.
 
 """
+import collections
+import datetime
 
 import numpy as np
 import aspecd.io
@@ -72,3 +74,25 @@ class ASCIIExporter(aspecd.io.DatasetExporter):
             if isinstance(value, np.ndarray):
                 dictionary[key].to_list()
         return dictionary
+
+
+class MetadataExporter(aspecd.io.DatasetExporter):
+
+    def __init__(self):
+        super().__init__()
+        self.metadata_dict = collections.OrderedDict()
+        self.filename = ''
+
+    def _export(self):
+        if not self.filename:
+            timestamp = datetime.datetime.now().strftime('%Y%m%dT%H%M%S')
+            self.filename = 'metadata-' + timestamp + '.yaml'
+        if not self.filename.endswith(('.yaml', '.yml')):
+            self.filename = self.filename + '.yaml'
+        self._write_metadata()
+
+    def _write_metadata(self):
+        self.metadata_dict = self.dataset.metadata.to_dict()
+        yaml_file = aspecd.utils.Yaml()
+        yaml_file.dict = self.metadata_dict
+        yaml_file.write_to(self.filename)

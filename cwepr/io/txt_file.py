@@ -1,6 +1,4 @@
 """Functionalities to simply import a txt file containing data."""
-import pandas as pd
-
 import numpy as np
 
 import aspecd.io
