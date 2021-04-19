@@ -6,8 +6,6 @@ Roadmap
 
 A few ideas how to develop the project further, currently a list as a reminder for the main developers themselves, in no particular order, though with a tendency to list more important aspects first:
 
-* Processing: create g-axis.
-
 * Implement derived importers for Magnettech files
 
   * Magnettech stores datasets in individual files, be it individual scans for accumulations or different steps in a series of measurements.

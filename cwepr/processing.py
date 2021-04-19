@@ -364,11 +364,11 @@ What  follows is the API documentation of each class implemented in this module.
 """
 import copy
 import math
-
 import numpy as np
-import scipy.signal
+import scipy.constants
 import scipy.integrate
 import scipy.interpolate
+import scipy.signal
 
 import aspecd.processing
 
@@ -484,6 +484,27 @@ class FrequencyCorrection(aspecd.processing.ProcessingStep):
     def _write_new_frequency(self):
         self.dataset.metadata.bridge.mw_frequency.value = \
             self.parameters['frequency']
+
+
+class GAxisCreation(aspecd.processing.ProcessingStep):
+
+    def __init__(self):
+        super().__init__()
+        self.parameters["frequency"] = 9.5
+        self.description = "Return a g-axis."
+
+    def _perform_task(self):
+        for axis in self.dataset.data.axes:
+            if axis.unit in ('mT', 'G'):
+                axis.values = self._create_g_axis(axis.values)
+                axis.unit = ''
+
+    def _create_g_axis(self, field_values=None):
+        planck_constant = scipy.constants.value('Planck constant')
+        mu_b = scipy.constants.value('electron-muon mag. mom. ratio')
+        nu = self.dataset.metadata.bridge.mw_frequency.value
+        g_ = (planck_constant * nu) / (mu_b * field_values)
+        return g_
 
 
 class BaselineCorrectionWithPolynomial(aspecd.processing.ProcessingStep):

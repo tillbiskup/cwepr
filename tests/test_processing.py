@@ -69,8 +69,38 @@ class TestFrequencyCorrection(unittest.TestCase):
         self.assertFalse(all(conditions))
 
 
-class TestAxisInterpolation(unittest.TestCase):
+class GAxisCreation(unittest.TestCase):
+    def setUp(self):
+        self.proc = cwepr.processing.GAxisCreation()
+        self.dataset = cwepr.dataset.ExperimentalDataset()
+        self.dataset.data.data = np.random.random(100)
+        self.dataset.data.axes[0].values = np.linspace(300, 400, num=100)
+        self.dataset.data.axes[0].unit = 'mT'
 
+    def test_instantiate_class(self):
+        proc = cwepr.processing.GAxisCreation()
+        self.assertTrue(proc.description)
+
+    def test_description_is_appropriate(self):
+        self.assertTrue(self.proc.description)
+        self.assertIn('g-axis', self.proc.description)
+
+    def test_axis_values_differs_after(self):
+        values_before = np.copy(self.dataset.data.axes[0].values)
+        self.dataset.process(self.proc)
+        values_after = self.dataset.data.axes[0].values
+        diffs = values_before - values_after
+        conditions = (diff == 0 for diff in diffs)
+        self.assertFalse(all(conditions))
+
+    def test_axis_units_differ(self):
+        unit_before = np.copy(self.dataset.data.axes[0].unit)
+        self.dataset.process(self.proc)
+        unit_after = self.dataset.data.axes[0].unit
+        self.assertNotEqual(unit_before, unit_after)
+
+
+class TestAxisInterpolation(unittest.TestCase):
     def setUp(self):
         self.interpolator = cwepr.processing.AxisInterpolation()
 
