@@ -13,7 +13,7 @@
 
 
 .. note::
-    Still in active developing and not fail save and easy to use.
+    Still in active developing and not fail safe and easy to use.
 """
 
 import collections

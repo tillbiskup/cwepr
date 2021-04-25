@@ -2,7 +2,41 @@
 cwEPR documentation
 ===================
 
-Welcome! This is the documentation for cwEPR, a Python package for processing and analysis of continuous-wave electron paramagnetic resonance (cw-EPR) spectra based on the `ASpecD framework <https://www.aspecd.de/>`_. For general information see its `Homepage <https://www.cwepr.de/>`_.
+Welcome! This is the documentation for cwEPR, a Python package for **processing and analysis of continuous-wave electron paramagnetic resonance (cw-EPR) spectra** based on the `ASpecD framework <https://www.aspecd.de/>`_. For general information see its `Homepage <https://www.cwepr.de/>`_.Due to the inheritance from the ASpecD framework, all data generated with the trepr package are completely reproducible and have a complete history.
+
+What is even better: Actual data processing and analysis **no longer requires programming skills**, but is as simple as writing a text file summarising all the steps you want to have been performed on your dataset(s) in an organised way. Curious? Have a look at the following example:
+
+
+.. code-block:: yaml
+    :linenos:
+
+    default_package: cwepr
+
+    datasets:
+      - /path/to/first/dataset
+      - /path/to/second/dataset
+
+    tasks:
+      - kind: processing
+        type: FrequencyCorrection
+        properties:
+          parameters:
+            frequency: 9.8
+      - kind: aspecd.processing
+        type: BaselineCorrection
+        properties:
+          parameters:
+            order: 0
+      - kind: aspecd.singleplot
+        type: SinglePlotter1D
+        properties:
+          filename:
+            - first-dataset.pdf
+            - second-dataset.pdf
+
+
+Interested in more real-live examples? Check out the :doc:`use cases section <usecases>`.
+
 
 
 Features
@@ -10,7 +44,7 @@ Features
 
 A list of features, not all implemented yet but aimed at for the first public release (cwEPR 0.1):
 
-* History of each processing step, automatically generated, aiming at full reproducibility
+* Fully reproducible processing of cw-EPR data
 
 * Import of EPR data from diverse sources (Bruker ESP, EMX, Elexsys; Magnettech)
 
@@ -42,19 +76,53 @@ Those interested in a hands-on primer on cw-EPR spectroscopy, covering necessary
 The :doc:`API documentation <api/index>` is the definite source of information for developers, besides having a look at the source code.
 
 
+Installation
+------------
+
+To install the cwepr package on your computer (sensibly within a Python virtual environment), open a terminal (activate your virtual environment), and type in the following:
+
+.. code-block:: bash
+
+    pip install cwepr
+
+Have a look at the more detailed :doc:`installation instructions <installing>` as well.
+
+
+Related projects
+----------------
+
+There is a number of related packages users of the trepr package may well be interested in, as they have a similar scope, focussing on spectroscopy and reproducible research.
+
+* `ASpecD <https://docs.aspecd.de/>`_
+
+  A Python framework for the analysis of spectroscopic data focussing on reproducibility and good scientific practice. The framework the trepr package is based on, developed by T. Biskup.
+
+* `trepr <https://docs.trepr.de/>`_
+
+  Package for processing and analysing time-resolved electron paramagnetic resonance (TREPR) data, developed by J. Popp and maintained by T. Biskup.
+
+You may as well be interested in the `LabInform project <https://www.labinform.de/>`_ focussing on the necessary more global infrastructure in a laboratory/scientific workgroup interested in more `reproducible research <https://www.reproducible-research.de/>`_. In short, LabInform is "The Open-Source Laboratory Information System".
+
+Finally, don't forget to check out the website on `reproducible research <https://www.reproducible-research.de/>`_ covering in more general terms aspects of reproducible research and good scientific practice.
+
+
+
 .. toctree::
    :maxdepth: 2
    :caption: User Manual:
+   :hidden:
 
    audience
    introduction
    concepts
    usecases
+   installing
 
 
 .. toctree::
    :maxdepth: 2
    :caption: cw-EPR Primer:
+   :hidden:
 
    cwepr/index
    cwepr/recording
@@ -64,9 +132,11 @@ The :doc:`API documentation <api/index>` is the definite source of information f
 .. toctree::
    :maxdepth: 2
    :caption: Developers:
+   :hidden:
 
    people
    developers
+   changelog
    roadmap
    api/index
 
