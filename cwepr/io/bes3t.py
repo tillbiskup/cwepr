@@ -17,7 +17,6 @@ import glob
 import os
 import re
 
-import cwepr.metadata
 import numpy as np
 
 import aspecd.annotation
@@ -26,8 +25,7 @@ import aspecd.metadata
 import aspecd.io
 import aspecd.utils
 
-import cwepr.dataset
-from cwepr.io.errors import ExperimentTypeError
+import cwepr.metadata
 
 
 class BES3TImporter(aspecd.io.DatasetImporter):
@@ -101,9 +99,9 @@ class BES3TImporter(aspecd.io.DatasetImporter):
         if self._get_infofile_name() and os.path.exists(
                 self._get_infofile_name()[0]):
             return True
-        else:
-            print('No infofile found for dataset %s, import continued without '
-                  'infofile.' % os.path.split(self.source)[1])
+        print('No infofile found for dataset %s, import continued without '
+              'infofile.' % os.path.split(self.source)[1])
+        return False
 
     def _extract_metadata_from_dsc(self):
         dsc_filename = self.source + '.DSC'
@@ -160,7 +158,7 @@ class BES3TImporter(aspecd.io.DatasetImporter):
         points = self._points
         sweep_width = self.dataset.metadata.magnetic_field.sweep_width.value
         # because Bruker confounds number of steps and points
-        stop = start + sweep_width - (sweep_width/(points+1))
+        stop = start + sweep_width - (sweep_width / (points + 1))
         # Set axis
         magnetic_field_axis = np.linspace(start, stop, points)
         assert len(magnetic_field_axis) == points, \
@@ -236,6 +234,6 @@ class BES3TImporter(aspecd.io.DatasetImporter):
 
     def _check_experiment(self):
         if self._dsc_dict['EXPT'] != 'CW':
-            raise ExperimentTypeError(message='Experiment seems not to be a '
-                                              'cw-Experiment.')
-
+            raise cwepr.io.errors.ExperimentTypeError(
+                message='Experiment seems not to be a cw-Experiment.'
+            )

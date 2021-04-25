@@ -20,6 +20,7 @@ pep257:
 pylint:
   options:
     max-attributes: 12
+    max-module-lines: 3000
 
 pyroma:
   run: true

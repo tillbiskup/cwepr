@@ -147,6 +147,7 @@ class MagneticField(aspecd.metadata.Metadata):
         self.stop = aspecd.metadata.PhysicalQuantity()
         self.sweep_width = aspecd.metadata.PhysicalQuantity()
         self.step_width = aspecd.metadata.PhysicalQuantity()
+        self.step_count = int()
         self.field_probe_type = ""
         self.field_probe_model = ""
         self.sequence = ""
@@ -246,8 +247,8 @@ class MagneticField(aspecd.metadata.Metadata):
             self.step_count = int(round((self.sweep_width.value /
                                          self.step_width.value), 0)) + 1
         if self.step_width.value == 0.:
-            self.step_width.value = self.sweep_width.value / \
-                                     (self.step_count - 1)
+            self.step_width.value = \
+                self.sweep_width.value / (self.step_count - 1)
             self.step_width.unit = self.stop.unit
 
     def gauss_to_millitesla(self):
@@ -411,7 +412,6 @@ class TemperatureControl(aspecd.metadata.TemperatureControl):
 
 
 class MetadataMapper(aspecd.metadata.MetadataMapper):
-
     """Bring metadata to common format using mapper.
 
     Bring the metadata from an external source into a layout understood by
@@ -554,4 +554,3 @@ class MetadataMapper(aspecd.metadata.MetadataMapper):
                       self._mapping_recipe['move item'][i]['target dict'],
                       True]]
                 self.mappings.append(mapping)
-

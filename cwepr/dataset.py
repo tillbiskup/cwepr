@@ -6,8 +6,6 @@ general structure is inherited from :class:`aspecd.dataset.Dataset` and
 adapted for cwEPR data.
 """
 
-import os
-
 import aspecd.dataset
 import aspecd.utils
 
@@ -57,4 +55,3 @@ class DatasetFactory(aspecd.dataset.DatasetFactory):
 
         """
         return cwepr.dataset.ExperimentalDataset()
-

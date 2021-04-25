@@ -487,6 +487,14 @@ class FrequencyCorrection(aspecd.processing.ProcessingStep):
 
 
 class GAxisCreation(aspecd.processing.ProcessingStep):
+    """Change magnetic field axis to g axis.
+
+    Attributes
+    ----------
+    self.parameters['frequency']
+        frequency to calculate g axis with.
+
+    """
 
     def __init__(self):
         super().__init__()
@@ -501,7 +509,8 @@ class GAxisCreation(aspecd.processing.ProcessingStep):
 
     def _create_g_axis(self, field_values=None):
         planck_constant = scipy.constants.value('Planck constant')
-        mu_b = scipy.constants.value('electron-muon mag. mom. ratio')
+        mu_b = scipy.constants.value('electron mag. mom.')
+        # pylint: disable=invalid-name
         nu = self.dataset.metadata.bridge.mw_frequency.value
         g_ = (planck_constant * nu) / (mu_b * field_values)
         return g_
@@ -539,6 +548,7 @@ class BaselineCorrectionWithPolynomial(aspecd.processing.ProcessingStep):
         coefficients:
             Filled during evaluation of the task, coefficients of the
             baseline polynomial.
+
     """
 
     def __init__(self):
@@ -551,7 +561,7 @@ class BaselineCorrectionWithPolynomial(aspecd.processing.ProcessingStep):
         self.parameters['coefficients'] = None
 
     @staticmethod
-    def applicable(dataset):
+    def applicable(dataset):  # noqa: D102
         return dataset.data.data.ndim == 1
 
     def _sanitise_parameters(self):
@@ -582,8 +592,7 @@ class BaselineCorrectionWithPolynomial(aspecd.processing.ProcessingStep):
         data = self.dataset.data.data
         x_axis = self.dataset.data.axes[0].values
         self._cut_y_data = np.r_[data[:points_left], data[-points_right:]]
-        self._cut_x_data = np.r_[x_axis[:points_left], x_axis[
-                                                           -points_right:]]
+        self._cut_x_data = np.r_[x_axis[:points_left], x_axis[-points_right:]]
 
     def _get_values_to_subtract(self):
         if np.polynomial.Polynomial:
@@ -592,11 +601,10 @@ class BaselineCorrectionWithPolynomial(aspecd.processing.ProcessingStep):
                                                       self.parameters['order'])
             self.parameters['coefficients'] = polynomial.coef
             return polynomial(self.dataset.data.axes[0].values)
-        else:
-            polynomial = np.polyfit(self._cut_x_data, self._cut_y_data,
-                                    self.parameters['order'])
-            self.parameters['coefficients'] = polynomial
-            return np.polyval(polynomial, self.dataset.data.axes[0].values)
+        polynomial = np.polyfit(self._cut_x_data, self._cut_y_data,
+                                self.parameters['order'])
+        self.parameters['coefficients'] = polynomial
+        return np.polyval(polynomial, self.dataset.data.axes[0].values)
 
 
 class BaselineCorrectionWithCalculatedDataset(aspecd.processing.ProcessingStep):
@@ -642,6 +650,7 @@ class PhaseCorrection(aspecd.processing.ProcessingStep):
             Unit of the phase shift.
 
             Default: deg
+
     """
 
     def __init__(self):
@@ -715,7 +724,7 @@ class AutomaticPhaseCorrection(aspecd.processing.ProcessingStep):
         """Get area/values below zero as indicator of the phase deviation."""
         ft_sig_tmp = self._analytic_signal
         if self.parameters['order'] > 0:
-            for j in range(self.parameters['order']):
+            for j in range(self.parameters['order']):  # integrate j times
                 ft_sig_tmp = scipy.integrate.cumtrapz(self._analytic_signal,
                                                       initial=0)
         ft_sig_tmp = self._baseline_correction(signal=np.real(ft_sig_tmp))
@@ -770,7 +779,7 @@ class AutomaticPhaseCorrection(aspecd.processing.ProcessingStep):
     def _reconstruct_real_signal(self):
         self.dataset.data.data = np.real(np.exp(1j * self.parameters[
             'phase_angle']) * self._analytic_signal)
-        assert np.iscomplex(self.dataset.data.data).all() == False
+        assert not np.iscomplex(self.dataset.data.data).all()
 
     def _print_results_to_command_line(self):
         phi_degree = self.parameters['phase_angle'] * 180 / np.pi
@@ -848,6 +857,7 @@ class NormalisationToScanNumber(aspecd.processing.ProcessingStep):
     ----------
     parameters["scan_number"]
         Number of accumulations.
+
     """
 
     def __init__(self):
@@ -879,7 +889,8 @@ class NormalisationToReceiverGain(aspecd.processing.ProcessingStep):
     ----------
     parameters['receiver_gain']
         Receiver gain in dB. Is taken from metadata if not given.
-        """
+
+    """
 
     def __init__(self):
         super().__init__()
@@ -941,11 +952,11 @@ class AxisInterpolation(aspecd.processing.ProcessingStep):
         self.parameters['points'] = None
 
     def _perform_task(self):
-        for nr, axis in enumerate(self.dataset.data.axes):
+        for num, axis in enumerate(self.dataset.data.axes):
             if not axis.equidistant:
                 if not self.parameters['points']:
-                    self._get_axis_length(ax_nr=nr)
-                self._interpolate_axis(nr)
+                    self._get_axis_length(ax_nr=num)
+                self._interpolate_axis(num)
                 break
 
     def _interpolate_axis(self, ax_number=None):
@@ -971,6 +982,7 @@ class Averaging2DDataset(aspecd.processing.ProcessingStep):
         Axis along which should be averaged.
 
         Default: 1
+
     """
 
     def __init__(self):
@@ -988,7 +1000,7 @@ class Averaging2DDataset(aspecd.processing.ProcessingStep):
             del self.dataset.data.axes[2]
 
     @staticmethod
-    def applicable(dataset):
+    def applicable(dataset):  # noqa: D102
         return len(dataset.data.axes) == 3
 
 
@@ -1003,6 +1015,7 @@ class SubtractVector(aspecd.processing.ProcessingStep):
         Vector that is subtracted from the data
 
     """
+
     def __init__(self):
         super().__init__()
         self.description = 'Subtract vector of same length from dataset.'

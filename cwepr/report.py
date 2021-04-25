@@ -14,9 +14,11 @@
 
 .. note::
     Still in active developing and not fail save and easy to use.
-    """
+"""
+
 import collections
 import copy
+import os
 
 import aspecd.report
 import aspecd.dataset
@@ -25,10 +27,9 @@ import cwepr.dataset
 
 
 class ExperimentalDatasetLaTeXReporter(aspecd.report.LaTeXReporter):
-    """Report implementation for cwepr module.
-    """
+    """Report implementation for cwepr module."""
 
-    def __init__(self,  template='', filename=''):
+    def __init__(self, template='', filename=''):
         super().__init__(template=template, filename=filename)
         self.dataset = cwepr.dataset.ExperimentalDataset()
         # private properties
@@ -90,7 +91,7 @@ class ExperimentalDatasetLaTeXReporter(aspecd.report.LaTeXReporter):
                 continue
             if task['kind'] == 'analysis':
                 if isinstance(task['task'].analysis.result,
-                        aspecd.dataset.CalculatedDataset):
+                              aspecd.dataset.CalculatedDataset):
                     self._get_tasks_recursively(task['task'].analysis.result)
 
             self._tasks[(getattr(task['task'],
@@ -112,7 +113,7 @@ class ExperimentalDatasetLaTeXReporter(aspecd.report.LaTeXReporter):
         for key, value in dict_.items():
             if key == 'dataset':
                 continue
-            elif isinstance(value, (collections.OrderedDict, dict)):
+            if isinstance(value, (collections.OrderedDict, dict)):
                 tmp_dict[key] = self._sanitise_context(value)
             elif not value:
                 tmp_dict.pop(key)
@@ -135,7 +136,9 @@ class ExperimentalDatasetLaTeXReporter(aspecd.report.LaTeXReporter):
 
 
 class PowerSweepAnalysisReporter(aspecd.report.LaTeXReporter):
-    def __init__(self,  template='', filename=''):
+    """Create report for power sweep analysis."""
+
+    def __init__(self, template='', filename=''):
         super().__init__(template=template, filename=filename)
         self.dataset = cwepr.dataset.ExperimentalDataset()
         # private properties
@@ -199,7 +202,7 @@ class PowerSweepAnalysisReporter(aspecd.report.LaTeXReporter):
         for key, value in dict_.items():
             if key == 'dataset':
                 continue
-            elif isinstance(value, (collections.OrderedDict, dict)):
+            if isinstance(value, (collections.OrderedDict, dict)):
                 tmp_dict[key] = self._sanitise_context(value)
             elif not value:
                 tmp_dict.pop(key)
@@ -208,9 +211,12 @@ class PowerSweepAnalysisReporter(aspecd.report.LaTeXReporter):
 
 
 class DokuwikiCaptionsReporter(aspecd.report.Reporter):
+    """Write DokuWiki Captions."""
+
     def __init__(self):
-        self.template = 'DokuwikiCaption.txt.jinja'
         self.filename = ''
+        self.language = 'de'
+        self.template = self._get_template()
         super().__init__(template=self.template, filename=self.filename)
         self.dataset = cwepr.dataset.ExperimentalDataset()
         # private properties
@@ -218,9 +224,17 @@ class DokuwikiCaptionsReporter(aspecd.report.Reporter):
         self._figure_name = dict()
 
     def create(self):
+        """Perform all methods to create the captions."""
         self._prepare_metadata()
         self._create_context()
         super().create()
+
+    def _get_template(self):
+        language = self.language
+        module_rootpath = os.path.split(os.path.split(os.path.abspath(
+            __file__))[0])[0]
+        return os.path.join(module_rootpath, 'templates', language,
+                            'DokuwikiCaption.txt.jinja')
 
     def _prepare_metadata(self):
         self._metadata = self.context['dataset']['metadata']
@@ -237,4 +251,3 @@ class DokuwikiCaptionsReporter(aspecd.report.Reporter):
     def _create_context(self):
 
         self.context['METADATA'] = self._metadata
-

@@ -1,5 +1,5 @@
 default_package: cwepr
-datasets_source_directory: io/testdata/
+datasets_source_directory: /Users/mirjamschroder/Programmierkram/Python/cwepr/tests/io/testdata/
 
 datasets:
   - BDPA-2DFieldPower
@@ -20,12 +20,12 @@ tasks:
     apply_to: 
         - calcAmplitudePower
 
-  - kind: multiplot
-    type: MultiPlotter
+  - kind: aspecd.multiplot
+    type: MultiPlotter1D
     properties:
       filename: PowerSweepAnalysis.pdf
       parameters:
-        draw_zero: False
+        draw_zero_lines: False
     label: PSAPlot
     apply_to:
         - fittedCurve

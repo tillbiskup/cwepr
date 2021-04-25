@@ -1,206 +1,8 @@
 """Module containing data plotters for different applications."""
 
-import numpy as np
 import matplotlib.pyplot as plt
 
 import aspecd.plotting
-
-
-class Error(Exception):
-    """Base class for exceptions in this module."""
-
-
-class NoIntegralDataProvidedError(Error):
-    """Exception raised when integral data is missing.
-
-    This happens when a spectrum with integration should be plotted but no data
-    for the integral is provided.
-
-    Attributes
-    ----------
-    message : :class:`str`
-        explanation of the error
-
-    """
-
-    def __init__(self, message=''):
-        super().__init__()
-        self.message = message
-
-
-class MissingInformationError(Error):
-    """Exception raised when not enough information is provided."""
-
-    def __init__(self, message=''):
-        super().__init__()
-        self.message = message
-
-
-class BaselineControlPlotter(aspecd.plotting.SinglePlotter):
-    """Plotter to visualize possible baseline fits.
-
-    Visualise the spectrum and a number of possible baseline correction
-    polynomials.
-
-    .. warning::
-        This should be written as a recipe rather than as a plotter.
-
-    Attributes
-    ----------
-    self.parameters['coefficients']: :class:`list`
-        List containing any number of other lists each containing a set of
-        polynomial coefficients for a polynomial that might be used for the
-        baseline correction. The order of the coefficients is considered to
-        highest to lowest as returned by :meth:`numpy.polyfit`.
-
-    self.parameters['data']: :class:`numpy.array`
-        Array containing the x (field) and y (intensity) values of the
-        spectrum that shall be visualized with the polynomials
-
-    """
-
-    def __init__(self):
-        super().__init__()
-        self.parameters["coefficients"] = None
-        self.parameters["data"] = None
-
-    def _create_plot(self):
-        """Plot the spectrum and one or more baselines.
-
-        Plots the spectrum as well as one curve for each set of polynomial
-        coefficients provided. The polynomial are indicated in the legend by
-        their order. The final diagram is displayed.
-        """
-        data = self.parameters["data"]
-        coefficients_list = self.parameters["coefficients"]
-        x_coordinates = data.axes[0].values
-        y_coordinates = data.data
-
-        plt.title("Baseline Comparison")
-        plt.xlabel("$B_0$ / mT")
-        plt.ylabel("$Intensity\\ Change and possible baselines$")
-
-        plt.plot(x_coordinates, y_coordinates, label="Spectrum")
-        for coefficients in coefficients_list:
-            plt.plot(x_coordinates,
-                     np.polyval(np.poly1d(coefficients), x_coordinates),
-                     label=str(len(coefficients) - 1))
-
-        plt.legend()
-        plt.show()
-
-
-class SimpleSpectrumPlotter(aspecd.plotting.SinglePlotter):
-    """Simple plotter for a single spectrum.
-    """
-
-    def __init__(self):
-        super().__init__()
-        self.style = ''
-        self.parameters["color"] = "tab:blue"
-        self.parameters["title"] = ""
-        self.parameters["draw_zero"] = True
-        self.parameters["xlim"] = None
-        self._zero_line_style = {'y': 0,
-                                 'color': '#999999'}
-        self._ticklabel_format = {'style': 'sci',
-                                  'scilimits': (-2, 4),
-                                  'useMathText': True}
-
-    def _create_plot(self):
-        self._set_style()
-        self._make_title()
-        self._plot_data()
-        self._set_extent()
-
-    def _make_title(self):
-        """Set title."""
-        plt.title(self.parameters["title"])
-
-    def _plot_data(self):
-        """Draw the spectrum and the zero line (if desired)."""
-        if self.parameters["draw_zero"]:
-            plt.axhline(**self._zero_line_style)
-
-        plt.plot(self.dataset.data.axes[0].values, self.dataset.data.data,
-                 color=self.parameters["color"])
-
-    def _set_extent(self):
-        """Set the limits of the x axis.
-
-        Set the limits of the x axis either from first axis or from given
-        parameters. """
-        if self.parameters["xlim"].size:
-            self.axes.set_xlim(self.parameters["xlim"])
-        else:
-            self.axes.set_xlim(self.dataset.data.axes[0].values[0],
-                               self.dataset.data.axes[0].values[-1])
-
-    def _set_style(self):
-        """Set the style to xkcd if indicated."""
-        if self.style == 'xkcd':
-            plt.xkcd()
-
-
-class MultiPlotter(aspecd.plotting.MultiPlotter):
-    """Plotter used for plotting multiple spectra."""
-
-    def __init__(self):
-        super().__init__()
-        # multiple datasets in self.datasets
-        self.description = "1D plotter for multiple datasets."
-        self._zero_line_style = {'y': 0,
-                                 'color': '#999999'}
-        self._ticklabel_format = {'style': 'sci',
-                                  'scilimits': (-2, 4),
-                                  'useMathText': True}
-
-        self.parameters["title"] = ''
-        self.parameters["draw_zero"] = True
-        self.parameters["fit_axis"] = True
-        self.parameters["color"] = None
-        self.parameters["xlim"] = None
-        self.parameters['text'] = {
-            'position': [],
-            'text': str()
-        }
-
-    def _create_plot(self):
-        """Draw and display the plot."""
-        for i, dataset_ in enumerate(self.datasets):
-            if self.parameters['color']:
-                self.axes.plot(dataset_.data.axes[0].values,
-                               dataset_.data.data,
-                               color=self.parameters['color'][i])
-            else:
-                self.axes.plot(dataset_.data.axes[0].values, dataset_.data.data)
-        if self.parameters["draw_zero"]:
-            self._display_zero_line()
-        self._set_axes()
-        self._set_title()
-        self._set_text()
-
-    def _display_zero_line(self):
-        """Create a horizontal line at zero."""
-        plt.axhline(**self._zero_line_style)
-
-    def _set_title(self):
-        """Set title."""
-        plt.title(self.parameters["title"])
-
-    def _set_axes(self):
-        if self.parameters['xlim']:
-            self.axes.set_xlim(self.parameters['xlim'])
-        else:
-            self.axes.set_xlim([self.datasets[0].data.axes[0].values[0],
-                                self.datasets[0].data.axes[0].values[-1]])
-        plt.ticklabel_format(**self._ticklabel_format)
-
-    def _set_text(self):
-        if self.parameters['text']['position'] and \
-                self.parameters['text']['text']:
-            plt.text(self.parameters['text']['position'][0], self.parameters[
-                'text']['position'][1], self.parameters['text']['text'])
 
 
 class Saver(aspecd.plotting.Saver):
@@ -212,7 +14,8 @@ class GoniometerSweepPlotter(aspecd.plotting.SinglePlotter):
 
     .. important::
         As aspecd developed further, there is the composite plotter to
-        inherit from. This plotter should thus get reworked."""
+        inherit from. This plotter should thus get reworked.
+    """
 
     def __init__(self):
         super().__init__()
@@ -269,10 +72,6 @@ class GoniometerSweepPlotter(aspecd.plotting.SinglePlotter):
         self.axes = self.subs[2]
 
     def _make_stacked_plot(self, axis=None):
-        if not axis:
-            raise MissingInformationError(message='No axis provided fpr '
-                                                  'plotting.')
-
         b_field = self.dataset.data.axes[0].values
         angles = self.dataset.data.axes[1].values
 
@@ -341,13 +140,3 @@ class NewGoniometerPlotter(aspecd.plotting.SingleCompositePlotter):
         self.plotter = [aspecd.plotting.SinglePlotter2D(),
                         aspecd.plotting.SinglePlotter2D(),
                         aspecd.plotting.SinglePlotter2DStacked()]
-
-    def _create_plot(self):
-        super()._create_plot()
-        self._set_properties()
-
-    def _set_properties(self):
-        for nr, plotter in enumerate(self.plotter):
-            pass
-            #print('Achsen:', len(self.properties.axes))
-            #plotter.properties.axes.xlim = self.properties.axes[0]['xlim']

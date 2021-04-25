@@ -178,6 +178,7 @@ class FieldCorrectionValue(aspecd.analysis.SingleAnalysisStep):
     MissingInformationError
         Raised if no microwave frequency is given neither in the dataset nor
         as parameter.
+
     """
 
     G_LILIF = 2.002293
@@ -244,7 +245,6 @@ class FieldCorrectionValue(aspecd.analysis.SingleAnalysisStep):
 class LinewidthPeakToPeak(aspecd.analysis.SingleAnalysisStep):
     """Linewidth measurement (peak to peak in derivative).
 
-
     .. todo::
         Combine all linewidth classes into one with a switch for the method
         to use?
@@ -263,8 +263,8 @@ class LinewidthPeakToPeak(aspecd.analysis.SingleAnalysisStep):
         self.result = self.get_peak_to_peak_linewidth()
 
     @staticmethod
-    def applicable(dataset):
-        return type(dataset.data.data.size) == int
+    def applicable(dataset):  # noqa: D102
+        return isinstance(dataset.data.data.size, int)
 
     def get_peak_to_peak_linewidth(self):
         """Calculates the peak-to-peak linewidth.
@@ -391,11 +391,11 @@ class Amplitude(aspecd.analysis.SingleAnalysisStep):
 
     def _perform_task(self):
         if len(self.dataset.data.axes) == 2:
-            self.result = max(self.dataset.data.data) - \
-                          min(self.dataset.data.data)
+            self.result = max(self.dataset.data.data) - min(
+                self.dataset.data.data)
         else:
-            self.result = np.amax(self.dataset.data.data, axis=0) - \
-                          np.amin(self.dataset.data.data, axis=0)
+            self.result = np.amax(self.dataset.data.data, axis=0) - np.amin(
+                self.dataset.data.data, axis=0)
 
 
 class AmplitudeVsPower(aspecd.analysis.SingleAnalysisStep):
@@ -423,7 +423,7 @@ class AmplitudeVsPower(aspecd.analysis.SingleAnalysisStep):
         self._roots_of_mw_power = np.ndarray([])
 
     @staticmethod
-    def applicable(dataset):
+    def applicable(dataset):  # noqa: D102
         return len(dataset.data.axes) > 2
 
     def _perform_task(self):
@@ -438,8 +438,10 @@ class AmplitudeVsPower(aspecd.analysis.SingleAnalysisStep):
         self._analysis = self.dataset.analyse(amplitude)
 
     def _check_mw_axis(self):
-        """Check for ascending order, if not, revert both, root of mw-power
-        and amplitude."""
+        """Check for ascending order.
+
+        If not, revert both, root of mw-power and amplitude.
+        """
         if self._roots_of_mw_power[-1] - self._roots_of_mw_power[0] < 0:
             self._roots_of_mw_power = self._roots_of_mw_power[::-1]
             self._analysis.result = self._analysis.result[::-1]
@@ -486,7 +488,9 @@ class PolynomialFitOnData(aspecd.analysis.SingleAnalysisStep):
         the fit really passes the origin.
 
         Default: False.
+
     """
+
     def __init__(self):
         super().__init__()
         self.description = "Perform linear fit and return parameters."
@@ -530,8 +534,8 @@ class PolynomialFitOnData(aspecd.analysis.SingleAnalysisStep):
 
     def _add_origin(self):
         self.dataset.data.data = np.insert(self.dataset.data.data, 0, 0)
-        self.dataset.data.axes[0].values = np.insert(self.dataset.data.axes[
-                                                    0].values, 0, 0)
+        self.dataset.data.axes[0].values = \
+            np.insert(self.dataset.data.axes[0].values, 0, 0)
 
 
 class PtpVsModAmp(aspecd.analysis.SingleAnalysisStep):
@@ -550,7 +554,7 @@ class PtpVsModAmp(aspecd.analysis.SingleAnalysisStep):
         self.result = self.new_dataset
 
     @staticmethod
-    def applicable(dataset):
+    def applicable(dataset):  # noqa: D102
         return len(dataset.data.axes) > 2
 
     def _get_linewidths(self):
@@ -571,7 +575,8 @@ class PtpVsModAmp(aspecd.analysis.SingleAnalysisStep):
 class AreaUnderCurve(aspecd.analysis.SingleAnalysisStep):
     """Make definite integration, i.e. calculate the area under the curve.
 
-    Takes no other parameters."""
+    Takes no other parameters.
+    """
 
     def __init__(self):
         super().__init__()
@@ -880,7 +885,3 @@ class CommonDefinitionRanges(aspecd.analysis.SingleAnalysisStep):
                     del points[pair[1]]
                     points[pair[0]] = center
                 close_points = list()
-
-
-
-

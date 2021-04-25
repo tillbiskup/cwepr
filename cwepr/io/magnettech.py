@@ -1,21 +1,17 @@
-"""Import magnettech 1D and 2D datasets from its xml file(s).
-"""
+"""Import magnettech 1D and 2D datasets from its xml file(s)."""
 import base64
 import glob
 import os
 import struct
-import xml.etree.ElementTree as ET
-
-import cwepr.metadata
+import xml.etree.ElementTree as et
 import numpy as np
 
 import aspecd.annotation
 import aspecd.infofile
 import aspecd.io
 
-import cwepr.dataset
+import cwepr.metadata
 import cwepr.processing
-import cwepr.io.errors
 
 
 class MagnettechXmlImporter(aspecd.io.DatasetImporter):
@@ -92,7 +88,7 @@ class MagnettechXmlImporter(aspecd.io.DatasetImporter):
             raise cwepr.io.errors.MissingPathError('No path provided')
         if not os.path.exists(self.full_filename):
             raise FileNotFoundError('XML file not found.')
-        self.root = ET.parse(self.full_filename).getroot()
+        self.root = et.parse(self.full_filename).getroot()
 
     def _get_raw_data(self):
         self._xvalues = \
@@ -109,8 +105,8 @@ class MagnettechXmlImporter(aspecd.io.DatasetImporter):
         mw_x = mw_abs_x_offset + \
             np.linspace(0, len(self._yvalues) - 1, num=len(self._yvalues)) \
             * mw_abs_x_slope
-        b_field_x = b_field_x_offset + np.linspace(0, len(self._xvalues) - 1,
-                                                   num=len(self._xvalues)) * \
+        b_field_x = b_field_x_offset + \
+            np.linspace(0, len(self._xvalues) - 1, num=len(self._xvalues)) * \
             b_field_x_slope
         self._xvalues = np.interp(mw_x, b_field_x, self._xvalues)
 
@@ -237,9 +233,9 @@ class MagnettechXmlImporter(aspecd.io.DatasetImporter):
         if self._get_infofile_name() and os.path.exists(
                 self._get_infofile_name()[0]):
             return True
-        else:
-            print('No infofile found for dataset %s, import continued without '
-                  'infofile.' % os.path.split(self.source)[1])
+        print('No infofile found for dataset %s, import continued without '
+              'infofile.' % os.path.split(self.source)[1])
+        return False
 
 
 class GoniometerSweepImporter(aspecd.io.DatasetImporter):
@@ -278,40 +274,41 @@ class GoniometerSweepImporter(aspecd.io.DatasetImporter):
             num = string.split('gon_')[1]
             num = num.split('dg')[0]
             return int(num)
+
         self.filenames = sorted(self.filenames, key=sort_key)
 
     def _import_all_spectra_to_list(self):
         self._data = []
         # import all files without infofile
-        for nr, filename in enumerate(self.filenames):
+        for num, filename in enumerate(self.filenames):
             filename = filename[:-4]  # remove extension
             importer = cwepr.io.MagnettechXmlImporter(source=filename)
             importer.load_infofile = False
             self._data.append(cwepr.dataset.ExperimentalDataset())
-            self._data[nr].import_from(importer)
+            self._data[num].import_from(importer)
             self._angles.append(float(importer.xml_metadata['GonAngle']))
             for idx, angle in enumerate(self._angles):
                 if angle > 359:
                     self._angles[idx] = 0
             # bring all measurements to the frequency of the first
-            if nr > 0:
+            if num > 0:
                 freq_correction = cwepr.processing.FrequencyCorrection()
                 freq_correction.parameters['frequency'] = \
                     self._data[0].metadata.bridge.mw_frequency.value
-                self._data[nr].process(freq_correction)
+                self._data[num].process(freq_correction)
 
             interpolate = cwepr.processing.AxisInterpolation()
-            self._interpolation_to_same_number_of_points(interpolate, nr)
+            self._interpolation_to_same_number_of_points(interpolate, num)
 
     def _hand_data_to_dataset(self):
         my_array = np.ndarray((len(self._data[0].data.data), len(self._data)))
         self.dataset.data.data = my_array
-        for nr, set_ in enumerate(self._data):
-            self.dataset.data.data[:, nr] = set_.data.data
+        for num, set_ in enumerate(self._data):
+            self.dataset.data.data[:, num] = set_.data.data
 
-    def _interpolation_to_same_number_of_points(self, interpolate, nr):
+    def _interpolation_to_same_number_of_points(self, interpolate, num):
         interpolate.parameters['points'] = len(self._data[0].data.data)
-        self._data[nr].process(interpolate)
+        self._data[num].process(interpolate)
 
     def _fill_axes(self):
         self._fill_field_axis()

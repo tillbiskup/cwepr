@@ -2,9 +2,7 @@
 import numpy as np
 
 import aspecd.io
-import cwepr.dataset
 import cwepr.processing
-import cwepr.io.errors
 
 
 class TxtImporter(aspecd.io.DatasetImporter):
@@ -38,6 +36,7 @@ class TxtImporter(aspecd.io.DatasetImporter):
 
 class CsvImporter(aspecd.io.DatasetImporter):
     """Importer for simple csv imports with different delimiters."""
+
     def __init__(self, source=''):
         super().__init__(source=source)
         # public properties
@@ -58,5 +57,3 @@ class CsvImporter(aspecd.io.DatasetImporter):
     def _create_metadata(self):
         self.dataset.data.axes[0].unit = 'mT'
         self.dataset.data.axes[1].quantity = 'intensity'
-
-

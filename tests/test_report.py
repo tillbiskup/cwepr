@@ -77,8 +77,6 @@ class TestDokuwikiCaptionsReporter(unittest.TestCase):
         self.template_ = os.path.join(
             MODULE_ROOTPATH, 'templates', 'en', 'DokuwikiCaption.txt.jinja')
         self.reporter = cwepr.report.DokuwikiCaptionsReporter()
-        self.reporter.filename = self.filename
-        self.reporter.template = self.template_
         self.dataset = cwepr.dataset.ExperimentalDataset()
         source = os.path.join(TEST_ROOTPATH, "io/testdata/test-bes3t-1D-fieldsweep")
         factory = cwepr.dataset.DatasetFactory()
@@ -90,5 +88,12 @@ class TestDokuwikiCaptionsReporter(unittest.TestCase):
             os.remove(self.filename)
 
     def test_reporter(self):
+        self.reporter.filename = self.filename
+        self.reporter.template = self.template_
+        self.reporter.create()
+        self.assertTrue(os.path.exists(self.filename))
+
+    def test_reporter_without_template(self):
+        self.reporter.filename = self.filename
         self.reporter.create()
         self.assertTrue(os.path.exists(self.filename))

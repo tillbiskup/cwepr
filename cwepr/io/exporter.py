@@ -77,6 +77,7 @@ class ASCIIExporter(aspecd.io.DatasetExporter):
 
 
 class MetadataExporter(aspecd.io.DatasetExporter):
+    """Export metadata to yaml file with default name."""
 
     def __init__(self):
         super().__init__()
