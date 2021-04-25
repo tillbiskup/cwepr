@@ -39,7 +39,6 @@ class MagnettechXmlImporter(aspecd.io.DatasetImporter):
             source = source[:-4]
         super().__init__(source=source)
         # public properties
-        self.dataset = cwepr.dataset.ExperimentalDataset()
         self.load_infofile = True
         self.root = None
         self.xml_metadata = dict()

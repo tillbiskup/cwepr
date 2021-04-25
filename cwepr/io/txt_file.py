@@ -16,7 +16,6 @@ class TxtImporter(aspecd.io.DatasetImporter):
     def __init__(self, source=''):
         super().__init__(source=source)
         # public properties
-        self.dataset = cwepr.dataset.ExperimentalDataset()
         self.extension = '.txt'
 
     def _import(self):
