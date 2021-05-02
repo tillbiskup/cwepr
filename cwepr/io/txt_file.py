@@ -3,6 +3,7 @@ import numpy as np
 
 import aspecd.io
 import cwepr.processing
+import cwepr.dataset
 
 
 class TxtImporter(aspecd.io.DatasetImporter):

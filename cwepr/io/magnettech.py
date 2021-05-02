@@ -9,6 +9,7 @@ import numpy as np
 import aspecd.annotation
 import aspecd.infofile
 import aspecd.io
+import aspecd.metadata
 
 import cwepr.metadata
 import cwepr.processing
@@ -216,9 +217,13 @@ class MagnettechXmlImporter(aspecd.io.DatasetImporter):
 
     def _map_metadata(self, infofile_version):
         """Bring the metadata into a unified format."""
-        mapper = \
-            cwepr.metadata.MetadataMapper(version=infofile_version,
-                                          metadata=self._infofile.parameters)
+        mapper = aspecd.metadata.MetadataMapper()
+        mapper.version = infofile_version
+        mapper.metadata = self._infofile.parameters
+        root_path = os.path.split(os.path.split(os.path.abspath(__file__))[
+                                      0])[0]
+        mapper.recipe_filename = os.path.join(
+            root_path, 'metadata_mapper_cwepr.yaml')
         mapper.map()
         self.dataset.metadata.from_dict(mapper.metadata)
 
@@ -351,9 +356,13 @@ class GoniometerSweepImporter(aspecd.io.DatasetImporter):
 
     def _map_metadata(self, infofile_version):
         """Bring the metadata into a unified format."""
-        mapper = \
-            cwepr.metadata.MetadataMapper(version=infofile_version,
-                                          metadata=self._infofile.parameters)
+        mapper = aspecd.metadata.MetadataMapper()
+        mapper.version = infofile_version
+        mapper.metadata = self._infofile.parameters
+        root_path = os.path.split(os.path.split(os.path.abspath(__file__))[
+                                      0])[0]
+        mapper.recipe_filename = os.path.join(
+            root_path, 'metadata_mapper_cwepr.yaml')
         mapper.map()
         self.dataset.metadata.from_dict(mapper.metadata)
 
