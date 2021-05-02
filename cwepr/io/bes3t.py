@@ -145,6 +145,7 @@ class BES3TImporter(aspecd.io.DatasetImporter):
         self._get_magnetic_field_axis()
         self.dataset.data.axes[0].quantity = 'magnetic field'
         self.dataset.data.axes[0].unit = self._dsc_dict['XUNI']
+        self.dataset.data.axes[-1].quantity = 'intensity'
 
         if self._is_two_dimensional:
             self.dataset.data.axes[1].values = \
@@ -185,9 +186,13 @@ class BES3TImporter(aspecd.io.DatasetImporter):
 
     def _map_metadata(self, infofile_version):
         """Bring the metadata into a unified format."""
-        mapper = \
-            cwepr.metadata.MetadataMapper(version=infofile_version,
-                                          metadata=self._infofile.parameters)
+        mapper = aspecd.metadata.MetadataMapper()
+        mapper.version = infofile_version
+        mapper.metadata = self._infofile.parameters
+        root_path = os.path.split(os.path.split(os.path.abspath(__file__))[
+                                      0])[0]
+        mapper.recipe_filename = os.path.join(
+            root_path, 'metadata_mapper_cwepr.yaml')
         mapper.map()
         self.dataset.metadata.from_dict(mapper.metadata)
 

@@ -61,6 +61,11 @@ class TestBES3TImporter(unittest.TestCase):
         importer = cwepr.io.bes3t.BES3TImporter(source=source)
         self.dataset.import_from(importer)
         self.assertTrue(self.dataset.metadata.measurement.operator)
+        self.assertTrue(self.dataset.metadata.measurement.purpose)
+        self.assertTrue(self.dataset.metadata.experiment.type)
+        self.assertTrue(self.dataset.metadata.probehead.type)
+        self.assertTrue(self.dataset.metadata.temperature_control.temperature
+                        .value)
 
     def test_import_with_no_infofile_continues(self):
         source = os.path.join(ROOTPATH, 'testdata/BDPA-2DFieldDelay')
