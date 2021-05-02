@@ -124,19 +124,23 @@ class GoniometerSweepPlotter(aspecd.plotting.SinglePlotter):
 
 class NewGoniometerPlotter(aspecd.plotting.SingleCompositePlotter):
     """Goniometer plotter based on the composite plotter.
-
-    ..todo::
-        Suche: Möglichkeit, properties für alle Plotter gleich zu machen.
-        Scheitert bislang daran, dass die self.properties nicht zu belegen
-        sind sondern bereits im Rezept jede eigene Achse gesetzt werden
-        müsste.
-
     """
 
     def __init__(self):
         super().__init__()
         self.grid_dimensions = [2, 2]
-        self.subplot_locations = [[0, 0, 1, 1], [1, 0, 1, 1, ], [0, 1, 2, 1]]
+        self.subplot_locations = [[0, 0, 1, 1], [1, 0, 1, 1], [0, 1, 2, 1]]
         self.plotter = [aspecd.plotting.SinglePlotter2D(),
                         aspecd.plotting.SinglePlotter2D(),
                         aspecd.plotting.SinglePlotter2DStacked()]
+        self.axes_positions = [[0, 0.15, 1, 1], [0, 0, 1, 1],
+                               [0.25, 0, 0.9, 1.07]]
+
+    def set_properties(self):
+        upper_contour = self.plotter[0]
+        upper_contour.type = 'contourf'
+        upper_contour.parameters['show_contour_lines'] = True
+
+    def _create_plot(self):
+        self.set_properties()
+        super()._create_plot()

@@ -46,7 +46,7 @@ class TestNewGoniometerPlotter(unittest.TestCase):
     def test_plotter_does_not_fail(self):
         plotter = cwepr.plotting.NewGoniometerPlotter()
         #print((plotter.plotter[0].properties))
-        #plotter.properties.axes = [337.5, 339]
+        plotter.properties.axes = [337.5, 339]
         saver = cwepr.plotting.Saver()
         saver.filename = self.filename
         self.dataset.plot(plotter)
