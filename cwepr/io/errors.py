@@ -26,7 +26,7 @@ class NoMatchingFilePairError(Error):
     """
 
     def __init__(self, message=''):
-        super().__init__()
+        super().__init__(message)
         self.message = message
 
 
@@ -41,7 +41,7 @@ class MissingPathError(Error):
     """
 
     def __init__(self, message=''):
-        super().__init__()
+        super().__init__(message)
         self.message = message
 
 
@@ -56,7 +56,7 @@ class MissingInfoFileError(Error):
     """
 
     def __init__(self, message=''):
-        super().__init__()
+        super().__init__(message)
         self.message = message
 
 
@@ -75,5 +75,5 @@ class ExperimentTypeError(Error):
     """
 
     def __init__(self, message=''):
-        super().__init__()
+        super().__init__(message)
         self.message = message
