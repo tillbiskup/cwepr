@@ -52,6 +52,10 @@ class DatasetImporterFactory(aspecd.io.DatasetImporterFactory):
             formats
 
         """
+        for end_ in [extension for sublist in self.supported_formats.values()
+                     for extension in sublist]:
+            if source.endswith(end_):
+                source = source[:-len(end_)]
         if os.path.isdir(source):
             return GoniometerSweepImporter(source=source)
         self.data_format = self._find_format(source)
