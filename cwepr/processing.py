@@ -392,7 +392,7 @@ class DimensionError(Error):
         self.message = message
 
 
-class FieldCorrection(aspecd.processing.ProcessingStep):
+class FieldCorrection(aspecd.processing.SingleProcessingStep):
     """Processing step for field correction.
 
     Perform a linear field correction of the data with a correction value
@@ -422,7 +422,7 @@ class FieldCorrection(aspecd.processing.ProcessingStep):
                 self.parameters["correction_value"]
 
 
-class FrequencyCorrection(aspecd.processing.ProcessingStep):
+class FrequencyCorrection(aspecd.processing.SingleProcessingStep):
     """Convert data of a given frequency to another given frequency.
 
     This is used to make spectra comparable.
@@ -486,7 +486,7 @@ class FrequencyCorrection(aspecd.processing.ProcessingStep):
             self.parameters['frequency']
 
 
-class GAxisCreation(aspecd.processing.ProcessingStep):
+class GAxisCreation(aspecd.processing.SingleProcessingStep):
     """Change magnetic field axis to g axis.
 
     Attributes
@@ -516,7 +516,7 @@ class GAxisCreation(aspecd.processing.ProcessingStep):
         return g_
 
 
-class BaselineCorrectionWithPolynomial(aspecd.processing.ProcessingStep):
+class BaselineCorrectionWithPolynomial(aspecd.processing.SingleProcessingStep):
     """Perform a baseline correction assuming an underlying polynomial function.
 
     The coefficients to use will be calculated using the given order  and
@@ -607,7 +607,7 @@ class BaselineCorrectionWithPolynomial(aspecd.processing.ProcessingStep):
         return np.polyval(polynomial, self.dataset.data.axes[0].values)
 
 
-class BaselineCorrectionWithCalculatedDataset(aspecd.processing.ProcessingStep):
+class BaselineCorrectionWithCalculatedDataset(aspecd.processing.SingleProcessingStep):
     """Perform a baseline correction using a baseline previously determined.
 
     Uses a dataset with the respective baseline as data.
@@ -633,7 +633,7 @@ class BaselineCorrectionWithCalculatedDataset(aspecd.processing.ProcessingStep):
         self.dataset.data.data -= self.parameters["baseline_dataset"].data.data
 
 
-class PhaseCorrection(aspecd.processing.ProcessingStep):
+class PhaseCorrection(aspecd.processing.SingleProcessingStep):
     """Phase correction if phase angle is given directly or in metadata.
 
     Therefore the here used implementation of the processing step is also
@@ -691,7 +691,7 @@ class PhaseCorrection(aspecd.processing.ProcessingStep):
         self.parameters["phase_angle_unit"] = phase_angle_raw.unit
 
 
-class AutomaticPhaseCorrection(aspecd.processing.ProcessingStep):
+class AutomaticPhaseCorrection(aspecd.processing.SingleProcessingStep):
     """Automatic phase correction via Hilbert transform.
 
     .. todo::
@@ -786,7 +786,7 @@ class AutomaticPhaseCorrection(aspecd.processing.ProcessingStep):
         print('Phase correction was done with phi = %.3f degree' % phi_degree)
 
 
-class NormalisationToMaximum(aspecd.processing.ProcessingStep):
+class NormalisationToMaximum(aspecd.processing.SingleProcessingStep):
     """Normalise a spectrum to the intensity of the maximum.
 
     Should only be used upon an integrated spectrum.
@@ -802,7 +802,7 @@ class NormalisationToMaximum(aspecd.processing.ProcessingStep):
         self.dataset.data.data /= maximum
 
 
-class NormalisationToPeakToPeakAmplitude(aspecd.processing.ProcessingStep):
+class NormalisationToPeakToPeakAmplitude(aspecd.processing.SingleProcessingStep):
     """Normalise a spectrum to the amplitude between maximum and minimum."""
 
     def __init__(self):
@@ -817,7 +817,7 @@ class NormalisationToPeakToPeakAmplitude(aspecd.processing.ProcessingStep):
         self.dataset.data.data /= peak_to_peak_amplitude
 
 
-class NormalisationOfDerivativeToArea(aspecd.processing.ProcessingStep):
+class NormalisationOfDerivativeToArea(aspecd.processing.SingleProcessingStep):
     """Normalise a spectrum to the area under the curve.
 
     No other (processing) modules are used in order to keep original data.
@@ -843,7 +843,7 @@ class NormalisationOfDerivativeToArea(aspecd.processing.ProcessingStep):
         self._area = np.trapz(integrated_spectrum)
 
 
-class NormalisationToScanNumber(aspecd.processing.ProcessingStep):
+class NormalisationToScanNumber(aspecd.processing.SingleProcessingStep):
     """Normalise a spectrum concerning the number of scans used.
 
     This is necessary to make spectra in which the intensity of different scans
@@ -873,7 +873,7 @@ class NormalisationToScanNumber(aspecd.processing.ProcessingStep):
         self.dataset.data.data /= self.parameters["scan_number"]
 
 
-class NormalisationToReceiverGain(aspecd.processing.ProcessingStep):
+class NormalisationToReceiverGain(aspecd.processing.SingleProcessingStep):
     """Normalise a spectrum to to receiver gain.
 
     Due to the logarithmic scale of the receiver gain at least in BRUKER
@@ -905,7 +905,7 @@ class NormalisationToReceiverGain(aspecd.processing.ProcessingStep):
         self.dataset.data.data /= receiver_gain
 
 
-class Integration(aspecd.processing.ProcessingStep):
+class Integration(aspecd.processing.SingleProcessingStep):
     """Perform an indefinite integration.
 
     Indefinite integration means integration yielding an integral function.
@@ -932,7 +932,7 @@ class Integration(aspecd.processing.ProcessingStep):
         self.dataset.data.data = integral_values
 
 
-class AxisInterpolation(aspecd.processing.ProcessingStep):
+class AxisInterpolation(aspecd.processing.SingleProcessingStep):
     """Interpolating axes to given number of equidistant field points.
 
     Iterates over axes and takes the first axis that is not equidistant and
@@ -973,7 +973,7 @@ class AxisInterpolation(aspecd.processing.ProcessingStep):
         self.parameters['points'] = len(self.dataset.data.axes[ax_nr].values)
 
 
-class Averaging2DDataset(aspecd.processing.ProcessingStep):
+class Averaging2DDataset(aspecd.processing.SingleProcessingStep):
     """Average over 2D dataset to get one dimensional dataset.
 
     Attributes
@@ -1004,7 +1004,7 @@ class Averaging2DDataset(aspecd.processing.ProcessingStep):
         return len(dataset.data.axes) == 3
 
 
-class SubtractVector(aspecd.processing.ProcessingStep):
+class SubtractVector(aspecd.processing.SingleProcessingStep):
     """Subtract vector of same length from dataset.
 
     With a 2D dataset, the vector is subtracted from
