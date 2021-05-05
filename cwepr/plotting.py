@@ -3,18 +3,22 @@
 import matplotlib.pyplot as plt
 
 import aspecd.plotting
+import aspecd.processing
 
 
 class Saver(aspecd.plotting.Saver):
     """Saver used to save an image of a given plot."""
 
 
-class GoniometerSweepPlotter(aspecd.plotting.SinglePlotter):
+class OldGoniometerSweepPlotter(aspecd.plotting.SinglePlotter):
     """Plotter for overviewing angle dependent data.
 
     .. important::
         As aspecd developed further, there is the composite plotter to
         inherit from. This plotter should thus get reworked.
+
+    .. todo::
+        Eventually delete this plotter
     """
 
     def __init__(self):
@@ -122,7 +126,7 @@ class GoniometerSweepPlotter(aspecd.plotting.SinglePlotter):
         self.figure.suptitle(self.parameters["title"])
 
 
-class NewGoniometerPlotter(aspecd.plotting.SingleCompositePlotter):
+class GoniometerSweepPlotter(aspecd.plotting.SingleCompositePlotter):
     """Goniometer plotter based on the composite plotter.
     """
 
@@ -144,3 +148,47 @@ class NewGoniometerPlotter(aspecd.plotting.SingleCompositePlotter):
     def _create_plot(self):
         self.set_properties()
         super()._create_plot()
+
+
+class GoniometerSweepControlPlotter(aspecd.plotting.CompositePlotter):
+    """Goniometer plotter based on the composite plotter.
+
+        Besides the plots for the overview, it shows the overlay of the 90
+        and 180 degree traces to check for consistency during the measurement
+    """
+
+    def __init__(self):
+        super().__init__()
+        self.grid_dimensions = [2, 2]
+        self.subplot_locations = [[0, 0, 1, 1], [1, 0, 1, 1], [0, 1, 2, 1]]
+        self.plotter = [aspecd.plotting.SinglePlotter2D(),
+                        None,
+                        aspecd.plotting.SinglePlotter2DStacked()]
+        self.axes_positions = [[0, 0.15, 1, 1], [0, 0, 1, 1],
+                               [0.25, 0, 0.9, 1.07]]
+
+    def set_properties(self):
+        upper_contour = self.plotter[0]
+        upper_contour.type = 'contourf'
+        upper_contour.parameters['show_contour_lines'] = True
+
+    def _create_plot(self):
+        self.extract_traces()
+        self.set_datasets()
+        self.set_properties()
+        super()._create_plot()
+
+    def extract_traces(self):
+        slicing = aspecd.processing.SliceExtraction()
+        slicing.parameters['position'] = 0
+        slicing.parameters['unit'] = 'axis'
+        self.zero_deg_slice = self.dataset.process(slicing)
+        slicing.parameters['position'] = 180
+        self.hundredeighty_deg_slice = self.dataset.process(slicing)
+
+    def set_datasets(self):
+        comparison_plotter = aspecd.plotting.MultiPlotter1D()
+        comparison_plotter.datasets = [self.zero_deg_slice,
+                                      self.hundredeighty_deg_slice]
+        self.plotter[1] = comparison_plotter
+

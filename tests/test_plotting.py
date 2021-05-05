@@ -17,7 +17,7 @@ class TestPlotters(unittest.TestCase):
         self.dataset.import_from(self.importer)
 
 
-class TestGoniometerSweepPlotter(unittest.TestCase):
+class TestOldGoniometerSweepPlotter(unittest.TestCase):
     def setUp(self):
         source = os.path.join(ROOTPATH, 'io/testdata/magnettech-goniometer/')
         self.importer = cwepr.io.magnettech.GoniometerSweepImporter(
@@ -26,11 +26,11 @@ class TestGoniometerSweepPlotter(unittest.TestCase):
         self.dataset.import_from(self.importer)
 
     def test_plotter_does_not_fail(self):
-        plotter = cwepr.plotting.GoniometerSweepPlotter()
+        plotter = cwepr.plotting.OldGoniometerSweepPlotter()
         self.dataset.plot(plotter)
 
 
-class TestNewGoniometerPlotter(unittest.TestCase):
+class TestGoniometerSweepPlotter(unittest.TestCase):
     def setUp(self):
         self.filename = 'goniometertest.pdf'
         source = os.path.join(ROOTPATH, 'io/testdata/magnettech-goniometer/')
@@ -44,7 +44,7 @@ class TestNewGoniometerPlotter(unittest.TestCase):
             os.remove(self.filename)
 
     def test_plotter_does_not_fail(self):
-        plotter = cwepr.plotting.NewGoniometerPlotter()
+        plotter = cwepr.plotting.GoniometerSweepPlotter()
         #print((plotter.plotter[0].properties))
         plotter.properties.axes.xlim = [337.5, 339]
         saver = cwepr.plotting.Saver()
@@ -52,6 +52,29 @@ class TestNewGoniometerPlotter(unittest.TestCase):
         self.dataset.plot(plotter)
         plotter.save(saver)
 
+
+class TestGoniometerSweepControlPlotter(unittest.TestCase):
+    def setUp(self):
+        self.filename = 'goniometertest.pdf'
+        source = os.path.join(ROOTPATH, 'io/testdata/magnettech-goniometer/')
+        self.importer = cwepr.io.magnettech.GoniometerSweepImporter(
+            source=source)
+        self.dataset = cwepr.dataset.ExperimentalDataset()
+        self.dataset.import_from(self.importer)
+
+    def tearDown(self):
+        if os.path.exists(self.filename):
+            os.remove(self.filename)
+
+    def test_plotter_does_not_fail(self):
+        plotter = cwepr.plotting.GoniometerSweepControlPlotter()
+        #print((plotter.plotter[0].properties))
+        plotter.properties.axes.xlim = [337.5, 339]
+        saver = cwepr.plotting.Saver()
+        saver.filename = self.filename
+
+        plotter.plot()
+        plotter.save()
 
 class TestAspecdPlotters(unittest.TestCase):
     # Just some tests to test ASpecD with real data
