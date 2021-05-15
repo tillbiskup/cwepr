@@ -26,16 +26,11 @@
 \section*{Übersicht}
 \begin{tabbing}
 	\hspace{3.5cm} \= \kill
-%{for key, value in METADATA['measurement'].items()}%
-	%{if 'value' in value}%
-		{@key} \> {@value['value']}~{@value['unit']}
-		\\
-	%{elif not value}%
-	%{else}%
-		{@key} \> {@value}
-		\\
-	%{endif}%
-%{endfor}%
+Name der Probe \> {@METADATA['measurement']['label']} \\
+Start der Messung \> {@METADATA['measurement']['start']} \\
+Ende der Messung \> {@METADATA['measurement']['end']} \\
+Messziel \> {@METADATA['measurement']['purpose']} \\
+Messender \> {@METADATA['measurement']['operator']}
 \end{tabbing}
 
 \section*{Experimentelle Parameter}
@@ -83,28 +78,30 @@
 
 \begin{figure}[H]
 	\includegraphics[width=\textwidth]{{@FIGURENAMES[0]}}
-\caption{\textbf{Auswertung der PoweSweep-Analyse  von
-		{@METADATA['sample']['name']}	bei
+\caption{\textbf{Auswertung der PowerSweep-Analyse  der Probe
+		\textit{{@METADATA['sample']['name']}}	bei
 		{@METADATA['temperatureControl']['temperature']['value']}~{@METADATA
 		['temperatureControl']['temperature']['unit']}: }\label{fig:figure}}
 \end{figure}
 }
 {}
 
-
-
 \section*{Prozessierung}
 \begin{enumerate}
-%{for key, value in TASKS.items()}%
-	\item \textbf{{@key}:}
-	\\
-	%{for key2, value2 in value.items()}%
-	%{if value2}%
-	{@key2}: {@value2}
-	\\
-	%{endif}%
-	%{endfor}%
-%{endfor}%
+\item Ermittlung der Peak-zu-Peak-Amplituden bei unterschiedlichen
+Abschwächungen
+\item Rückgabe eines berechneten Datensets: Amplitude \emph{vs.} Wurzel der
+Mikrowellenleistung.
+ \item Linearer Fit durch
+ {@FITTING['metadata']['calculation']['parameters']['points']}
+ Punkte, was eine Steigung $m=
+  {@ "{:.2f}".format(FITTING['metadata']['calculation']['parameters']
+  ['coefficients'][0]) }$
+  und einem $y$-Schnittpunkt von $n={@ "{:.2f}".format
+  (FITTING['metadata']['calculation']['parameters']['coefficients'][1])}$
+  ergibt.
+  %{if FITTING['metadata']['calculation']['parameters']['add_origin']:}%
+  Der Koordinatenursprung wurde als weiterer Punkt hinzugenommen.
+  %{endif}%
 \end{enumerate}
-
 \end{document}

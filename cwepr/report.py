@@ -211,7 +211,7 @@ class PowerSweepAnalysisReporter(aspecd.report.LaTeXReporter):
 
 
 class DokuwikiCaptionsReporter(aspecd.report.Reporter):
-    """Write DokuWiki Captions."""
+    """Write DokuWiki Captions. """
 
     def __init__(self):
         self.filename = ''
@@ -249,5 +249,4 @@ class DokuwikiCaptionsReporter(aspecd.report.Reporter):
                     self._metadata[key]
 
     def _create_context(self):
-
         self.context['METADATA'] = self._metadata

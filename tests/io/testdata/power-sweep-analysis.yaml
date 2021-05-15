@@ -13,9 +13,10 @@ tasks:
     type: PolynomialFitOnData
     properties:
         parameters:
-            points: 13
-            order: 3
+            points: 10
+            order: 1
             return_type: dataset
+            #add_origin: True
     result: fittedCurve
     apply_to: 
         - calcAmplitudePower
@@ -24,13 +25,19 @@ tasks:
     type: MultiPlotter1D
     properties:
       filename: PowerSweepAnalysis.pdf
+      properties:
+        drawings:
+          - marker: +
+            color: darkred
+          - linestyle: '--'
+            color: gray
       parameters:
         draw_zero_lines: False
     label: PSAPlot
     apply_to:
-        - fittedCurve
         - calcAmplitudePower
-        
+        - fittedCurve
+
   - kind: report
     type: PowerSweepAnalysisReporter
     properties:

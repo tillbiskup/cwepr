@@ -1,3 +1,4 @@
+import glob
 import os
 import unittest
 import aspecd.tasks
@@ -62,10 +63,12 @@ class TestPowerSweepAnalysisReport(unittest.TestCase):
     def tearDown(self):
         if os.path.exists(self.filename):
             os.remove(self.filename)
+        for path in glob.glob(self.recipe_filename.replace('.yaml', '-*.yaml')):
+            os.remove(path)
         if os.path.exists(self.filename2):
             os.remove(self.filename2)
-        if os.path.exists(self.filename.replace('tex', 'pdf')):
-            os.remove(self.filename.replace('tex', 'pdf'))
+        #if os.path.exists(self.filename.replace('tex', 'pdf')):
+         #   os.remove(self.filename.replace('tex', 'pdf'))
 
     def test_reporter(self):
         self.chef.serve(recipe_filename=self.recipe_filename)
@@ -78,7 +81,8 @@ class TestDokuwikiCaptionsReporter(unittest.TestCase):
             MODULE_ROOTPATH, 'templates', 'en', 'DokuwikiCaption.txt.jinja')
         self.reporter = cwepr.report.DokuwikiCaptionsReporter()
         self.dataset = cwepr.dataset.ExperimentalDataset()
-        source = os.path.join(TEST_ROOTPATH, "io/testdata/test-bes3t-1D-fieldsweep")
+        source = \
+            os.path.join(TEST_ROOTPATH, "io/testdata/test-bes3t-1D-fieldsweep")
         factory = cwepr.dataset.DatasetFactory()
         self.dataset = factory.get_dataset(source=source)
         self.reporter.context['dataset'] = self.dataset.to_dict()

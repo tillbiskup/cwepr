@@ -499,9 +499,9 @@ class PolynomialFitOnData(aspecd.analysis.SingleAnalysisStep):
         self.parameters['order'] = 1
         self.parameters['return_type'] = 'coefficients'
         self.parameters['add_origin'] = False
+        self.parameters['coefficients'] = []
         # private properties
-        self._coefficients = []
-        self._curve = aspecd.dataset.CalculatedDataset()
+        self._curve = None
 
     def _perform_task(self):
         if self.parameters['add_origin']:
@@ -514,28 +514,27 @@ class PolynomialFitOnData(aspecd.analysis.SingleAnalysisStep):
         x_data_to_process = \
             self.dataset.data.axes[0].values[:self.parameters['points']]
         y_data_to_process = self.dataset.data.data[:self.parameters['points']]
-        self._coefficients = np.polyfit(x_data_to_process,
-                                        y_data_to_process,
-                                        self.parameters['order'])
+        self.parameters['coefficients'] = \
+            np.polyfit(x_data_to_process, y_data_to_process, self.parameters[
+                'order'])
 
     def _get_curve(self):
+        self._curve = self.create_dataset()
         self._curve.data.axes[0] = self.dataset.data.axes[0]
-        self._curve.data.data = np.polyval(self._coefficients,
+        self._curve.data.data = np.polyval(self.parameters['coefficients'],
                                            self.dataset.data.axes[0].values)
         self._curve.data.axes[0].values = self.dataset.data.axes[0].values
-        self._curve.metadata.calculation.parameters['coefficients'] = \
-            self._coefficients
 
     def _assign_result(self):
         if self.parameters['return_type'].lower() == 'dataset':
             self.result = self._curve
         else:
-            self.result = self._coefficients
+            self.result = self.parameters['coefficients']
 
     def _add_origin(self):
-        self.dataset.data.data = np.insert(self.dataset.data.data, 0, 0)
         self.dataset.data.axes[0].values = \
             np.insert(self.dataset.data.axes[0].values, 0, 0)
+        self.dataset.data.data = np.insert(self.dataset.data.data, 0, 0)
 
 
 class PtpVsModAmp(aspecd.analysis.SingleAnalysisStep):
