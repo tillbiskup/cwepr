@@ -493,7 +493,7 @@ class PolynomialFitOnData(aspecd.analysis.SingleAnalysisStep):
 
     def __init__(self):
         super().__init__()
-        self.description = "Perform linear fit and return parameters."
+        self.description = "Perform polynomial fit and return parameters."
         self.result = None
         self.parameters['points'] = 3
         self.parameters['order'] = 1
