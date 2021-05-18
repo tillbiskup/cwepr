@@ -45,7 +45,6 @@ class TestGoniometerSweepPlotter(unittest.TestCase):
 
     def test_plotter_does_not_fail(self):
         plotter = cwepr.plotting.GoniometerSweepPlotter()
-        #print((plotter.plotter[0].properties))
         plotter.properties.axes.xlim = [337.5, 339]
         saver = cwepr.plotting.Saver()
         saver.filename = self.filename
@@ -68,13 +67,13 @@ class TestGoniometerSweepControlPlotter(unittest.TestCase):
 
     def test_plotter_does_not_fail(self):
         plotter = cwepr.plotting.GoniometerSweepControlPlotter()
-        #print((plotter.plotter[0].properties))
+        plotter.dataset = self.dataset
         plotter.properties.axes.xlim = [337.5, 339]
         saver = cwepr.plotting.Saver()
         saver.filename = self.filename
+        self.dataset.plot(plotter)
+        plotter.save(saver)
 
-        plotter.plot()
-        plotter.save()
 
 class TestAspecdPlotters(unittest.TestCase):
     # Just some tests to test ASpecD with real data
