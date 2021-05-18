@@ -36,5 +36,9 @@ scratch_files/
 .tox
 .python-version
 
+# coverage outputs
+.coverage
+htmlcov/
+
 # Output from tests
 *pdf

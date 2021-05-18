@@ -1,0 +1,110 @@
+%! Author = mirjamschroder
+%! Date = 19.01.21
+
+% Preamble
+\documentclass[11pt]{article}
+
+% Packages
+\usepackage{amsmath}
+\usepackage[paper=a4paper,margin=2.5cm]{geometry}
+\usepackage[ngerman]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage[labelfont=bf]{caption}
+\usepackage{float}
+\usepackage{blindtext}
+\usepackage{multicol}
+
+% Document
+\begin{document}
+
+\title{{@METADATA['measurement']['label']}}
+\author{{@METADATA['measurement']['operator']}}
+%#\date{{@sysinfo}}
+\maketitle
+
+\section*{Übersicht}
+\begin{tabbing}
+	\hspace{3.5cm} \= \kill
+%{for key, value in METADATA['measurement'].items()}%
+	%{if 'value' in value}%
+		{@key} \> {@value['value']}~{@value['unit']}
+		\\
+	%{elif not value}%
+	%{else}%
+		{@key} \> {@value}
+		\\
+	%{endif}%
+%{endfor}%
+\end{tabbing}
+
+\section*{Experimentelle Parameter}
+
+\begin{minipage}{\textwidth}
+\begin{tabbing}
+\hspace{3.5cm} \= \kill
+\textbf{Sample}\\
+%{for key, value in METADATA['sample'].items()}%
+	%{if 'Value' in value}%
+		{@key} \> {@value['Value']}~{@value['Unit']}
+		\\
+	%{elif not value}%
+	%{else}%
+		{@key} \> {@value}
+		\\
+	%{endif}%
+%{endfor}%
+\end{tabbing}
+\end{minipage}
+
+\begin{multicols}{2}
+%{for KEY, VALUE in METADATA['parameter'].items() recursive}%
+	\noindent\begin{minipage}{.49\textwidth}
+	\textbf{{@KEY}}\\
+	%{if VALUE is mapping}%
+		%{for key2, value2 in VALUE.items()}%
+			%{if value2 is mapping}%
+			%{if 'unit' in value2}%
+			{@key2}: {@value2['value']}~{@value2['unit']}
+			\\
+			%{endif}%
+		%{elif not value2}%
+		%{else}%
+			{@key2}: {@value2}
+			\\
+			%{endif}%
+	%{endfor}%
+	%{endif}%
+	\end{minipage}
+%{endfor}%
+\end{multicols}
+
+\IfFileExists{{@FIGURENAMES[0]}}{
+
+\begin{figure}[H]
+	\includegraphics[width=\textwidth]{{@FIGURENAMES[0]}}
+\caption{\textbf{Auswertung der PowerSweep-Analyse  von
+		{@METADATA['sample']['name']}	bei
+		{@METADATA['temperatureControl']['temperature']['value']}~{@METADATA
+		['temperatureControl']['temperature']['unit']}: }\label{fig:figure}}
+\end{figure}
+}
+{}
+
+
+
+\section*{Prozessierung}
+\begin{enumerate}
+%{for key, value in TASKS.items()}%
+	\item \textbf{{@key}:}
+	\\
+	%{for key2, value2 in value.items()}%
+	%{if value2}%
+	{@key2}: {@value2}
+	\\
+	%{endif}%
+	%{endfor}%
+%{endfor}%
+\end{enumerate}
+
+\end{document}

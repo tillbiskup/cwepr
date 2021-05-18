@@ -67,8 +67,8 @@ class TestPowerSweepAnalysisReport(unittest.TestCase):
             os.remove(path)
         if os.path.exists(self.filename2):
             os.remove(self.filename2)
-        #if os.path.exists(self.filename.replace('tex', 'pdf')):
-         #   os.remove(self.filename.replace('tex', 'pdf'))
+        if os.path.exists(self.filename.replace('tex', 'pdf')):
+            os.remove(self.filename.replace('tex', 'pdf'))
 
     def test_reporter(self):
         self.chef.serve(recipe_filename=self.recipe_filename)
