@@ -236,6 +236,8 @@ class BES3TImporter(aspecd.io.DatasetImporter):
                 /= 1e3
             self.dataset.metadata.signal_channel.modulation_frequency.unit = \
                 'kHz'
+        self.dataset.metadata.signal_channel.modulation_amplitude.value *= 1e3
+        self.dataset.metadata.signal_channel.modulation_amplitude.unit = 'mT'
 
     def _check_experiment(self):
         if self._dsc_dict['EXPT'] != 'CW':

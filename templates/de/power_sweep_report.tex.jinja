@@ -26,7 +26,7 @@
 \section*{Übersicht}
 \begin{tabbing}
 	\hspace{3.5cm} \= \kill
-Name der Probe \> {@METADATA['measurement']['label']} \\
+Name der Messung \> {@METADATA['measurement']['label']} \\
 Start der Messung \> {@METADATA['measurement']['start']} \\
 Ende der Messung \> {@METADATA['measurement']['end']} \\
 Messziel \> {@METADATA['measurement']['purpose']} \\
@@ -38,40 +38,57 @@ Messender \> {@METADATA['measurement']['operator']}
 \begin{minipage}{\textwidth}
 \begin{tabbing}
 \hspace{3.5cm} \= \kill
-\textbf{Sample}\\
-%{for key, value in METADATA['sample'].items()}%
-	%{if 'Value' in value}%
-		{@key} \> {@value['Value']}~{@value['Unit']}
-		\\
-	%{elif not value}%
-	%{else}%
-		{@key} \> {@value}
-		\\
-	%{endif}%
-%{endfor}%
+\textbf{Probe:}\\
+Bezeichnung: \> {@METADATA['sample']['name']} \\
+ID: \> {@METADATA['sample']['id']} \\
+Lösemittel: \> {@METADATA['sample']['solvent']} \\
 \end{tabbing}
 \end{minipage}
 
 \begin{multicols}{2}
-%{for KEY, VALUE in METADATA['parameter'].items() recursive}%
-	\noindent\begin{minipage}{.49\textwidth}
-	\textbf{{@KEY}}\\
-	%{if VALUE is mapping}%
-		%{for key2, value2 in VALUE.items()}%
-			%{if value2 is mapping}%
-			%{if 'unit' in value2}%
-			{@key2}: {@value2['value']}~{@value2['unit']}
-			\\
-			%{endif}%
-		%{elif not value2}%
-		%{else}%
-			{@key2}: {@value2}
-			\\
-			%{endif}%
-	%{endfor}%
-	%{endif}%
-	\end{minipage}
-%{endfor}%
+\noindent\begin{minipage}{.49\textwidth}
+\textbf{Spektrometer:}\\
+Modell: {@METADATA['parameter']['spectrometer']['model']}\\
+Software: {@METADATA['parameter']['spectrometer']['software']}\\
+\end{minipage}
+
+\noindent\begin{minipage}{.49\textwidth}
+\textbf{Brücke:}\\
+Modell: {@METADATA['parameter']['bridge']['model']}\\
+Frequenz: {@METADATA['parameter']['bridge']['mwFrequency']['value']}~{@METADATA['parameter']['bridge']['mwFrequency']['unit']}\\
+Q-Wert: {@METADATA['parameter']['bridge']['qValue']}\\
+\end{minipage}
+
+\noindent\begin{minipage}{.49\textwidth}
+\textbf{Magnetfeld:}\\
+Start: {@METADATA['parameter']['magneticField']['start']['value']}~{@METADATA['parameter']['magneticField']['start']['unit']}\\
+Stop: {@METADATA['parameter']['magneticField']['stop']['value']}~{@METADATA['parameter']['magneticField']['stop']['unit']}\\
+Schrittweite: {@"{:.4f}".format(METADATA['parameter']['magneticField']['stepWidth']['value'])}~{@METADATA['parameter']['magneticField']['stepWidth']['unit']}\\
+\end{minipage}
+
+\noindent\begin{minipage}{.49\textwidth}
+\textbf{Temperatur:}\\
+Temperatur: {@METADATA['parameter']['temperatureControl']['temperature']['value']}~{@METADATA['parameter']['temperatureControl']['temperature']['unit']}\\
+Kryostat: {@METADATA['parameter']['temperatureControl']['cryostat']}\\
+Kühlmittel: {@METADATA['parameter']['temperatureControl']['cryogen']}\\
+\end{minipage}
+
+\noindent\begin{minipage}{.49\textwidth}
+\textbf{Signalkanal:}\\
+Modell: {@METADATA['parameter']['signalChannel']['model']}\\
+Akkumulationen: {@METADATA['parameter']['signalChannel']['accumulations']}\\
+Modulationsfrequenz: {@METADATA['parameter']['signalChannel']['modulationFrequency']['value']}~{@METADATA['parameter']['signalChannel']['modulationFrequency']['unit']}\\
+Modulationsamplitude: {@METADATA['parameter']['signalChannel']['modulationAmplitude']['value']}~{@METADATA['parameter']['signalChannel']['modulationAmplitude']['unit']}\\
+Verstärkung: {@METADATA['parameter']['signalChannel']['receiverGain']['value']}~{@METADATA['parameter']['signalChannel']['receiverGain']['unit']}\\
+Konversionszeit: {@METADATA['parameter']['signalChannel']['conversionTime']['value']}~{@METADATA['parameter']['signalChannel']['conversionTime']['unit']}\\
+Zeitkonstante: {@METADATA['parameter']['signalChannel']['timeConstant']['value']}~{@METADATA['parameter']['signalChannel']['timeConstant']['unit']}\\
+\end{minipage}
+
+\noindent\begin{minipage}{.49\textwidth}
+\textbf{Resonator:}\\
+Typ: {@METADATA['parameter']['probehead']['type']}\\
+Modell: {@METADATA['parameter']['probehead']['model']}\\
+\end{minipage}
 \end{multicols}
 
 \IfFileExists{{@FIGURENAMES[0]}}{
@@ -84,22 +101,13 @@ Messender \> {@METADATA['measurement']['operator']}
 		['temperatureControl']['temperature']['unit']}: }\label{fig:figure}}
 \end{figure}
 }
-{}
+%{}
 
 \section*{Prozessierung}
 \begin{enumerate}
-\item Ermittlung der Peak-zu-Peak-Amplituden bei unterschiedlichen
-Abschwächungen
-\item Rückgabe eines berechneten Datensets: Amplitude \emph{vs.} Wurzel der
-Mikrowellenleistung.
- \item Linearer Fit durch
- {@FITTING['metadata']['calculation']['parameters']['points']}
- Punkte, was eine Steigung $m=
-  {@ "{:.2f}".format(FITTING['metadata']['calculation']['parameters']
-  ['coefficients'][0]) }$
-  und einem $y$-Schnittpunkt von $n={@ "{:.2f}".format
-  (FITTING['metadata']['calculation']['parameters']['coefficients'][1])}$
-  ergibt.
+\item Ermittlung der Signal-Amplituden bei unterschiedlichen Abschwächungen.
+\item Rückgabe eines berechneten Datensatzes: Amplitude gegen die Wurzel der Mikrowellenleistung.
+\item Linearer Fit durch {@FITTING['metadata']['calculation']['parameters']['points']} Punkte, was eine Steigung $m= {@ "{:.2f}".format(FITTING['metadata']['calculation']['parameters'] ['coefficients'][0]) }$ und einen $y$-Schnittpunkt von $n={@ "{:.2f}".format(FITTING['metadata']['calculation']['parameters']['coefficients'][1])}$ ergibt.
   %{if FITTING['metadata']['calculation']['parameters']['add_origin']:}%
   Der Koordinatenursprung wurde als weiterer Punkt hinzugenommen.
   %{endif}%

@@ -10,7 +10,7 @@ import cwepr.report
 
 TEST_ROOTPATH = os.path.split(os.path.abspath(__file__))[0]
 MODULE_ROOTPATH = os.path.split(os.path.split(os.path.abspath(__file__))[0])[0]
-print(MODULE_ROOTPATH)
+
 
 class TestExperimentalDatasetLaTeXReporter(unittest.TestCase):
     def setUp(self):

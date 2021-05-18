@@ -16,7 +16,7 @@ tasks:
             points: 10
             order: 1
             return_type: dataset
-            #add_origin: True
+            add_origin: True
     result: fittedCurve
     apply_to: 
         - calcAmplitudePower
