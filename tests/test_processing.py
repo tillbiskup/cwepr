@@ -5,6 +5,7 @@ import unittest
 import aspecd.exceptions
 import numpy as np
 
+import cwepr.exceptions
 import cwepr.processing
 import cwepr.dataset
 import cwepr.io.magnettech
@@ -119,7 +120,7 @@ class TestAxisInterpolation(unittest.TestCase):
         self.assertTrue(np.not_equal(new_axis, old_axis).all())
 
 
-class TestNormalisation(unittest.TestCase):
+class TestNormalisationOfDerivativeToArea(unittest.TestCase):
     def setUp(self):
         source = os.path.join(ROOTPATH, 'io/testdata/not_noisy_data')
         importer = cwepr.io.txt_file.TxtImporter(source=source)
@@ -133,32 +134,35 @@ class TestNormalisation(unittest.TestCase):
         self.assertTrue(max(self.dataset.data.data) < 1)
 
 
-class TestNormalisationToPeakToPeakAmplitude(unittest.TestCase):
-    def setUp(self):
-        source = os.path.join(ROOTPATH, 'io/testdata/not_noisy_data')
-        importer = cwepr.io.txt_file.TxtImporter(source=source)
-        self.dataset = cwepr.dataset.ExperimentalDataset()
-        self.dataset.import_from(importer)
-
-    def test_normalisation_to_peak_to_peak_amplitude(self):
-        ptp = cwepr.processing.NormalisationToPeakToPeakAmplitude()
-        self.dataset.process(ptp)
-        self.assertTrue(max(self.dataset.data.data) <= 1)
-
-
-class TestNormalisationToReceiverGain(unittest.TestCase):
+class TestNormalisation(unittest.TestCase):
     def setUp(self):
         source = os.path.join(ROOTPATH, 'io/testdata/test-bes3t-1D-fieldsweep')
         importer = cwepr.dataset.DatasetFactory()
         self.dataset = importer.get_dataset(source=source)
 
     def test_normalisation_to_receiver_gain(self):
-        correction = cwepr.processing.NormalisationToReceiverGain()
+        correction = cwepr.processing.NewNormalisation()
+        correction.parameters['kind'] = 'receiver_gain'
         before = max(self.dataset.data.data)
         rg = 10**(self.dataset.metadata.signal_channel.receiver_gain.value /20)
         self.dataset.process(correction)
         after = max(self.dataset.data.data)
         self.assertEqual(before/rg, after)
+
+    def test_normalisation_to_scan_number(self):
+        correction = cwepr.processing.NewNormalisation()
+        correction.parameters['kind'] = 'scan_number'
+        before = max(self.dataset.data.data)
+        scans = self.dataset.metadata.signal_channel.accumulations
+        self.dataset.process(correction)
+        after = max(self.dataset.data.data)
+        self.assertEqual(before/scans, after)
+
+    def test_normalisation_with_wrong_kind_raises(self):
+        correction = cwepr.processing.NewNormalisation()
+        correction.parameters['kind'] = 'bla'
+        with self.assertRaises(ValueError):
+            self.dataset.process(correction)
 
 
 class TestBaselineCorrectionWithPolynomial(unittest.TestCase):
@@ -203,7 +207,7 @@ class TestBaselineCorrectionWithPolynomial(unittest.TestCase):
             20)+5]
         self.dataset.data.axes[0].values = np.linspace(1, 100, num=100)
         baseline_corr.parameters['percentage'] = [20,]
-        blc = self.dataset.process(baseline_corr)  # Only works upon a copy!
+        self.dataset.process(baseline_corr)
         self.assertAlmostEqual(self.dataset.data.data[19], 0)
 
 
@@ -256,7 +260,7 @@ class TestSubtractVector(unittest.TestCase):
     def test_subtract_vector_with_wrong_dim_raises(self):
         subtract = cwepr.processing.SubtractVector()
         subtract.parameters['vector'] = self.vector2
-        with self.assertRaises(cwepr.processing.DimensionError):
+        with self.assertRaises(cwepr.exceptions.DimensionError):
             self.dataset1.process(subtract)
 
 

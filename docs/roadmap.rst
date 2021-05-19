@@ -9,8 +9,6 @@ A few ideas how to develop the project further, currently a list as a reminder f
 For version 0.1
 ===============
 
-* Summarise normalisation steps in one class (partly derived from aspecd?)
-
 * Creating/correcting Info files afterwards
 
   * Read *all* necessary parameters from vendor file format (done)
@@ -21,8 +19,6 @@ For version 0.1
   * All attributes
   * Much more explanations
   * Metadata in Dataset (link)
-
-* all exceptions in newly created exceptions module
 
 
 For later versions

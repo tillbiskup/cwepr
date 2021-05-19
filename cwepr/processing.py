@@ -768,37 +768,6 @@ class AutomaticPhaseCorrection(aspecd.processing.SingleProcessingStep):
         print('Phase correction was done with phi = %.3f degree' % phi_degree)
 
 
-class NormalisationToMaximum(aspecd.processing.SingleProcessingStep):
-    """Normalise a spectrum to the intensity of the maximum.
-
-    Should only be used upon an integrated spectrum.
-    """
-
-    def __init__(self):
-        super().__init__()
-        self.description = "Normalisation to maximum"
-        self.undoable = True
-
-    def _perform_task(self):
-        maximum = max(self.dataset.data.data)
-        self.dataset.data.data /= maximum
-
-
-class NormalisationToPeakToPeakAmplitude(aspecd.processing.SingleProcessingStep):
-    """Normalise a spectrum to the amplitude between maximum and minimum."""
-
-    def __init__(self):
-        super().__init__()
-        self.description = "Normalisation to peak to peak amplitude"
-        self.undoable = True
-
-    def _perform_task(self):
-        maximum = max(self.dataset.data.data)
-        minimum = abs(min(self.dataset.data.data))
-        peak_to_peak_amplitude = maximum + minimum
-        self.dataset.data.data /= peak_to_peak_amplitude
-
-
 class NormalisationOfDerivativeToArea(aspecd.processing.SingleProcessingStep):
     """Normalise a spectrum to the area under the curve.
 
@@ -825,40 +794,27 @@ class NormalisationOfDerivativeToArea(aspecd.processing.SingleProcessingStep):
         self._area = np.trapz(integrated_spectrum)
 
 
-class NormalisationToScanNumber(aspecd.processing.SingleProcessingStep):
-    """Normalise a spectrum concerning the number of scans used.
+class NewNormalisation(aspecd.processing.Normalisation):
+    """Normalise data.
 
-    This is necessary to make spectra in which the intensity of different scans
-    is the sum of the single scans, comparable to those where it is averaged.
+    For an extended documentation of the kinds implemented directly in
+    ASpecD, see the corresponding documentation:
+    :class:`aspecd.processing.Normalisation`.
 
-    .. important::
-        Know what you are doing, sometimes spectrometer software does this
-        step for you silently...
+    The basic usage is as follows:
 
-    Attributes
-    ----------
-    parameters["scan_number"]
-        Number of accumulations.
+    .. code-block:: yaml
 
-    """
-
-    def __init__(self):
-        super().__init__()
-        self.description = "Normalisation to scan number"
-        self.parameters["scan_number"] = None
-
-    def _perform_task(self):
-        if not self.parameters['scan_number']:
-            self.parameters['scan_number'] = \
-                self.dataset.metadata.signal_channel.accumulations
-
-        self.dataset.data.data /= self.parameters["scan_number"]
+       - kind: processing
+         type: Normalisation
+         properties:
+           parameters:
+             kind: receiver_gain
 
 
-class NormalisationToReceiverGain(aspecd.processing.SingleProcessingStep):
-    """Normalise a spectrum to to receiver gain.
+    The two additional kinds are explained below.
 
-    Due to the logarithmic scale of the receiver gain at least in BRUKER
+    Due to the logarithmic scale of the receiver gain (in dB) at least in BRUKER
     spectrometers, it has to be transferred into the "normal" scale. It
     calculates as following:
 
@@ -866,25 +822,35 @@ class NormalisationToReceiverGain(aspecd.processing.SingleProcessingStep):
 
     Source: Stefan Stoll, EasySpin source code, according to Xenon Manual 2011
 
+    The normalisation according to the *number of scans* is necessary to make
+    spectra in which the intensity of different scans is the sum of the
+    single scans, comparable to those where it is averaged.
 
-    Attributes
-    ----------
-    parameters['receiver_gain']
-        Receiver gain in dB. Is taken from metadata if not given.
-
+    .. important::
+        Know what you are doing, sometimes the spectrometer's software does this
+        step silently...
     """
 
     def __init__(self):
         super().__init__()
-        self.description = "Normalisation to receiver gain"
-        self.parameters['receiver_gain'] = None
 
     def _perform_task(self):
-        if not self.parameters['receiver_gain']:
-            self.parameters['receiver_gain'] = \
-                self.dataset.metadata.signal_channel.receiver_gain.value
-        receiver_gain = 10 ** (self.parameters['receiver_gain'] / 20)
-        self.dataset.data.data /= receiver_gain
+        super()._perform_task()
+        if 'receiver' in self.parameters["kind"].lower():
+            self._normalise_for_receiver_gain()
+        elif 'scan_number' in self.parameters["kind"].lower():
+            self.dataset.data.data /= \
+                self.dataset.metadata.signal_channel.accumulations
+        else:
+            # todo: If only python >=3.6: Use first version
+            #raise ValueError(f'Kind {self.parameters["kind"]} not recognised.')
+            raise ValueError('Kind %s not recognised.' % self.parameters[
+                "kind"])
+
+    def _normalise_for_receiver_gain(self):
+        receiver_gain = self.dataset.metadata.signal_channel.receiver_gain.value
+        receiver_gain_value = 10 ** (receiver_gain / 20)
+        self.dataset.data.data /= receiver_gain_value
 
 
 class Integration(aspecd.processing.SingleProcessingStep):
