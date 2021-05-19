@@ -241,6 +241,6 @@ class BES3TImporter(aspecd.io.DatasetImporter):
 
     def _check_experiment(self):
         if self._dsc_dict['EXPT'] != 'CW':
-            raise cwepr.io.errors.ExperimentTypeError(
+            raise cwepr.exceptions.ExperimentTypeError(
                 message='Experiment seems not to be a cw-Experiment.'
             )

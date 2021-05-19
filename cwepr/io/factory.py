@@ -17,7 +17,7 @@ import aspecd.io
 from cwepr.io.bes3t import BES3TImporter
 from cwepr.io.magnettech import MagnettechXmlImporter, GoniometerSweepImporter
 from cwepr.io.txt_file import TxtImporter, CsvImporter
-from cwepr.io.errors import NoMatchingFilePairError
+from cwepr.exceptions import NoMatchingFilePairError
 
 
 class DatasetImporterFactory(aspecd.io.DatasetImporterFactory):

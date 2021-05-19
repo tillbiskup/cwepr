@@ -77,3 +77,76 @@ class ExperimentTypeError(Error):
     def __init__(self, message=''):
         super().__init__(message)
         self.message = message
+
+
+class DimensionError(Error):
+    """Exception indicating error in the dimension of an object.
+
+    Attributes
+    ----------
+    message : `str`
+        explanation of the error
+
+    """
+
+    def __init__(self, message=''):
+        super().__init__()
+        self.message = message
+
+
+class MissingInformationError(Error):
+    """Exception raised when not enough information is provided."""
+
+    def __init__(self, message=''):
+        super().__init__()
+        self.message = message
+
+
+class SpectrumNotIntegratedError(Error):
+    """Exception raised when definite integration is used accidentally.
+
+    Definite integration should only be performed on a derivative spectrum.
+
+    Attributes
+    ----------
+    message : :class:`str`
+        explanation of the error
+
+    """
+
+    def __init__(self, message=''):
+        super().__init__()
+        self.message = message
+
+
+class UnequalUnitsError(Error):
+    """Exception raised when addends have unequal units.
+
+    This is relevant when two physical quantities that shall be added or
+    subtracted do not have the same unit.
+
+    Attributes
+    ----------
+    message : `str`
+        explanation of the error
+
+    """
+
+    def __init__(self, message=''):
+        super().__init__()
+        self.message = message
+
+
+class RecipeNotFoundError(Error):
+    """Exception raised when a recipe could not be found.
+
+    Attributes
+    ----------
+    message : `str`
+        explanation of the error
+
+    """
+
+    def __init__(self, message=''):
+        super().__init__()
+        self.message = message

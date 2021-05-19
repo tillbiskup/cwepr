@@ -13,6 +13,7 @@ import aspecd.metadata
 
 import cwepr.metadata
 import cwepr.processing
+import cwepr.exceptions
 
 
 class MagnettechXmlImporter(aspecd.io.DatasetImporter):
@@ -27,11 +28,11 @@ class MagnettechXmlImporter(aspecd.io.DatasetImporter):
 
     Attributes
     ----------
-    dataset: :obj:`trepr.dataset.Dataset`
-        Dataset to work with.
-
     root: :class:`str`
         path of the root directory
+
+    .. todo::
+        Dokumentation der Attribute, Sortieren der Funktionen.
 
     """
 
@@ -85,7 +86,7 @@ class MagnettechXmlImporter(aspecd.io.DatasetImporter):
     def _get_xml_root_element(self):
         """Get the root object/name of the xml document."""
         if not self.source:
-            raise cwepr.io.errors.MissingPathError('No path provided')
+            raise cwepr.exceptions.MissingPathError('No path provided')
         if not os.path.exists(self.full_filename):
             raise FileNotFoundError('XML file not found.')
         self.root = et.parse(self.full_filename).getroot()
@@ -135,8 +136,7 @@ class MagnettechXmlImporter(aspecd.io.DatasetImporter):
             {'model': self.xml_metadata['Device'],
              'software': self.xml_metadata['SWV']}
         self.dataset.metadata.magnetic_field.start.from_string(
-            self.xml_metadata['Bfrom']['value'] + ' ' + self.xml_metadata[
-                'Bfrom']['unit'])
+            self._dict_to_string(self.xml_metadata['Bfrom']))
         self.dataset.metadata.magnetic_field.stop.from_string(
             self._dict_to_string(self.xml_metadata['Bto']))
         self.dataset.metadata.magnetic_field.sweep_width.value = \

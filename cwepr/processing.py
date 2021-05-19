@@ -371,25 +371,7 @@ import scipy.interpolate
 import scipy.signal
 
 import aspecd.processing
-
-
-class Error(Exception):
-    """Base class for exceptions in this module."""
-
-
-class DimensionError(Error):
-    """Exception indicating error in the dimension of an object.
-
-    Attributes
-    ----------
-    message : `str`
-        explanation of the error
-
-    """
-
-    def __init__(self, message=''):
-        super().__init__()
-        self.message = message
+import cwepr.exceptions
 
 
 class FieldCorrection(aspecd.processing.SingleProcessingStep):
@@ -1024,8 +1006,9 @@ class SubtractVector(aspecd.processing.SingleProcessingStep):
     def _perform_task(self):
         if len(self.parameters['vector']) != \
                 self.dataset.data.data.shape[0]:
-            raise DimensionError(message='Vector to subtract is not of the '
-                                         'same length as dataset.')
+            raise cwepr.exceptions.DimensionError(
+                message='Vector to subtract is not of the same length as '
+                        'dataset.')
         if self.dataset.data.data.ndim == 1:
             self.dataset.data.data -= self.parameters['vector']
         elif self.dataset.data.data.ndim == 2:
@@ -1033,4 +1016,5 @@ class SubtractVector(aspecd.processing.SingleProcessingStep):
                 self.dataset.data.data[:, second_dim] -= \
                     self.parameters['vector']
         else:
-            raise DimensionError(message='Dataset has weird shape.')
+            raise cwepr.exceptions.DimensionError(message='Dataset has weird '
+                                                          'shape.')

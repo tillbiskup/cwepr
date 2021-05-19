@@ -3,65 +3,11 @@
 Supplementary data for a dataset, i.e. everything that is not part of the
 literal experimental results, such as identifier, date of the experiment...
 """
-import os
 
 import aspecd.metadata
 import aspecd.utils
 
-
-class Error(Exception):
-    """Base class for exceptions in this module."""
-
-
-class NotEnoughValuesError(Error):
-    """Exception raised when not enough data is given for a mathematical task.
-
-    This happens when not enough different values are provided to calculate all
-    other values.
-
-    Attributes
-    ----------
-    message : `str`
-        explanation of the error
-
-    """
-
-    def __init__(self, message=''):
-        super().__init__()
-        self.message = message
-
-
-class UnequalUnitsError(Error):
-    """Exception raised when addends have unequal units.
-
-    This is relevant when two physical quantities that shall be added or
-    subtracted do not have the same unit.
-
-    Attributes
-    ----------
-    message : `str`
-        explanation of the error
-
-    """
-
-    def __init__(self, message=''):
-        super().__init__()
-        self.message = message
-
-
-class RecipeNotFoundError(Error):
-    """Exception raised when a recipe could not be found.
-
-    Attributes
-    ----------
-    message : `str`
-        explanation of the error
-
-    """
-
-    def __init__(self, message=''):
-        super().__init__()
-        self.message = message
+from cwepr.exceptions import UnequalUnitsError
 
 
 class DatasetMetadata(aspecd.metadata.ExperimentalDatasetMetadata):
@@ -192,9 +138,9 @@ class MagneticField(aspecd.metadata.Metadata):
             step_def = True
             step_par += 1
         if (not sector_def) or sector_par < 2:
-            raise NotEnoughValuesError("Sector not determined.")
+            raise ValueError("Sector not determined.")
         if (not step_def) or step_par < 2:
-            raise NotEnoughValuesError("Steps not determined.")
+            raise ValueError("Steps not determined.")
         return True
 
     def calculate_values(self):

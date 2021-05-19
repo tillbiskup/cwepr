@@ -6,7 +6,7 @@ import unittest
 import numpy as np
 
 import cwepr.dataset
-import cwepr.io.errors
+import cwepr.exceptions
 import cwepr.io.magnettech
 import cwepr.processing
 
@@ -47,7 +47,7 @@ class TestMagnettechXmlImporter(unittest.TestCase):
     def test_import_with_no_file_raises(self):
         importer = cwepr.io.magnettech.MagnettechXmlImporter()
         dataset = cwepr.dataset.ExperimentalDataset()
-        with self.assertRaises(cwepr.io.errors.MissingPathError):
+        with self.assertRaises(cwepr.exceptions.MissingPathError):
             dataset.import_from(importer)
 
     def test_import_with_not_existing_file_raises(self):
