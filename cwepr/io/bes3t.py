@@ -26,6 +26,7 @@ import aspecd.io
 import aspecd.utils
 
 import cwepr.metadata
+import cwepr.exceptions
 
 
 class BES3TImporter(aspecd.io.DatasetImporter):
