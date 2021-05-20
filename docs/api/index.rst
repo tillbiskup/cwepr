@@ -26,6 +26,7 @@ An alphabetic list of the submodules available within the cwEPR package. The act
 
    cwepr.analysis
    cwepr.dataset
+   cwepr.exceptions
    cwepr.metadata
    cwepr.plotting
    cwepr.processing

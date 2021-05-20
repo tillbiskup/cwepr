@@ -9,6 +9,8 @@ A few ideas how to develop the project further, currently a list as a reminder f
 For version 0.1
 ===============
 
+* Make tests work independent on specific local paths (test_report)
+
 * Creating/correcting Info files afterwards
 
   * Read *all* necessary parameters from vendor file format (done)

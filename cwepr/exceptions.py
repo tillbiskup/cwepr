@@ -1,10 +1,10 @@
 """
-Error classes for the io subpackage.
+Exceptions for the cwepr package.
 
-Currently, all error classes for the io subpackage are located in this
-module. Whether this is a good idea remains to be seen. As the importers for
-each vendor file format reside in their own module, but will share certain
-error classes, it might, though.
+For preventing cyclic imports and for a better overview, all exception
+classes of the cwepr package are collected in this module. It is save for
+every other module to import this module, as this module does *not* depend
+on any other modules.
 
 """
 

@@ -13,10 +13,6 @@ import cwepr.io.factory
 import cwepr.metadata
 
 
-class Error(Exception):
-    """Base class for exceptions in this module."""
-
-
 class ExperimentalDataset(aspecd.dataset.ExperimentalDataset):
     """Set of data uniting all relevant information.
 
