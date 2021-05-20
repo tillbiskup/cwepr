@@ -26,8 +26,30 @@ class ExperimentalDataset(aspecd.dataset.ExperimentalDataset):
         self.metadata = cwepr.metadata.DatasetMetadata()
 
 
+class CalculatedDataset(aspecd.dataset.CalculatedDataset):
+    """Entity consisting of calculated data and metadata.
+
+    As the class is fully inherited from ASpecD for simple usage, see the
+    ASpecD documentation of the :class:`aspecd.dataset.CalculatedDataset`
+    class for details.
+
+    """
+
+
 class DatasetFactory(aspecd.dataset.DatasetFactory):
-    """Implementation of the dataset factory for recipe driven evaluation."""
+    """
+    Factory for creating dataset objects based on the source provided.
+
+    Particularly in case of recipe-driven data analysis (c.f. :mod:`tasks`),
+    there is a need to automatically retrieve datasets using nothing more
+    than a source string that can be, e.g., a path or LOI.
+
+    Attributes
+    ----------
+    importer_factory : :class:`cwepr.io.factory.DatasetImporterFactory`
+        ImporterFactory instance used for importing datasets
+
+    """
 
     def __init__(self):
         super().__init__()

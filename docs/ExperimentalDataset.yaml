@@ -1,0 +1,174 @@
+data:
+  calculated: false
+  data:
+    type: numpy.ndarray
+    dtype: float64
+    array: []
+  axes:
+  - quantity: ''
+    symbol: ''
+    unit: ''
+    label: ''
+    values:
+      type: numpy.ndarray
+      dtype: float64
+      array: []
+  - quantity: ''
+    symbol: ''
+    unit: ''
+    label: ''
+    values:
+      type: numpy.ndarray
+      dtype: float64
+      array: []
+metadata:
+  measurement:
+    label: ''
+    start: null
+    end: null
+    purpose: ''
+    operator: ''
+    labbook_entry: ''
+  sample:
+    name: ''
+    id: null
+    loi: ''
+    solvent: ''
+  temperature_control:
+    cryostat: ''
+    cryogen: ''
+    temperature:
+      unit: ''
+      dimension: ''
+      name: ''
+      value: 0.0
+    controller: ''
+  experiment:
+    type: ''
+    runs: null
+    variable_parameter: ''
+    increment: null
+    harmonic: null
+  spectrometer:
+    model: ''
+    software: ''
+  magnetic_field:
+    start:
+      unit: ''
+      dimension: ''
+      name: ''
+      value: 0.0
+    stop:
+      unit: ''
+      dimension: ''
+      name: ''
+      value: 0.0
+    sweep_width:
+      unit: ''
+      dimension: ''
+      name: ''
+      value: 0.0
+    step_width:
+      unit: ''
+      dimension: ''
+      name: ''
+      value: 0.0
+    step_count: 0
+    field_probe_type: ''
+    field_probe_model: ''
+    sequence: ''
+    controller: ''
+    power_supply: ''
+  bridge:
+    model: ''
+    controller: ''
+    attenuation:
+      unit: ''
+      dimension: ''
+      name: ''
+      value: 0.0
+    power:
+      unit: ''
+      dimension: ''
+      name: ''
+      value: 0.0
+    detection: ''
+    frequency_counter: ''
+    mw_frequency:
+      unit: ''
+      dimension: ''
+      name: ''
+      value: 0.0
+    q_value: null
+  signal_channel:
+    model: ''
+    modulation_amplifier: ''
+    accumulations: ''
+    modulation_frequency:
+      unit: ''
+      dimension: ''
+      name: ''
+      value: 0.0
+    modulation_amplitude:
+      unit: ''
+      dimension: ''
+      name: ''
+      value: 0.0
+    receiver_gain:
+      unit: ''
+      dimension: ''
+      name: ''
+      value: 0.0
+    conversion_time:
+      unit: ''
+      dimension: ''
+      name: ''
+      value: 0.0
+    time_constant:
+      unit: ''
+      dimension: ''
+      name: ''
+      value: 0.0
+    phase:
+      unit: ''
+      dimension: ''
+      name: ''
+      value: 0.0
+  probehead:
+    type: ''
+    model: ''
+    coupling: ''
+  metadata_modifications: []
+history: []
+analyses: []
+annotations: []
+representations: []
+id: ''
+label: ''
+references: []
+tasks: []
+_origdata:
+  calculated: false
+  data:
+    type: numpy.ndarray
+    dtype: float64
+    array: []
+  axes:
+  - quantity: ''
+    symbol: ''
+    unit: ''
+    label: ''
+    values:
+      type: numpy.ndarray
+      dtype: float64
+      array: []
+  - quantity: ''
+    symbol: ''
+    unit: ''
+    label: ''
+    values:
+      type: numpy.ndarray
+      dtype: float64
+      array: []
+_package_name: cwepr
+_history_pointer: -1
