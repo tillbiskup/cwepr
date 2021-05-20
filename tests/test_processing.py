@@ -141,7 +141,7 @@ class TestNormalisation(unittest.TestCase):
         self.dataset = importer.get_dataset(source=source)
 
     def test_normalisation_to_receiver_gain(self):
-        correction = cwepr.processing.NewNormalisation()
+        correction = cwepr.processing.Normalisation()
         correction.parameters['kind'] = 'receiver_gain'
         before = max(self.dataset.data.data)
         rg = 10**(self.dataset.metadata.signal_channel.receiver_gain.value /20)
@@ -150,7 +150,7 @@ class TestNormalisation(unittest.TestCase):
         self.assertEqual(before/rg, after)
 
     def test_normalisation_to_scan_number(self):
-        correction = cwepr.processing.NewNormalisation()
+        correction = cwepr.processing.Normalisation()
         correction.parameters['kind'] = 'scan_number'
         before = max(self.dataset.data.data)
         scans = self.dataset.metadata.signal_channel.accumulations
@@ -159,7 +159,7 @@ class TestNormalisation(unittest.TestCase):
         self.assertEqual(before/scans, after)
 
     def test_normalisation_with_wrong_kind_raises(self):
-        correction = cwepr.processing.NewNormalisation()
+        correction = cwepr.processing.Normalisation()
         correction.parameters['kind'] = 'bla'
         with self.assertRaises(ValueError):
             self.dataset.process(correction)

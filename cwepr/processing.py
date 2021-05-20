@@ -19,15 +19,12 @@ Currently, the following processing steps are implemented:
 
   * :class:`FieldCorrection`
   * :class:`FrequencyCorrection`
+  * :class:`GAxisCreation`
 
   * :class:`BaselineCorrectionWithPolynomial`
-  * :class:`BaselineCorrectionWithCalculatedDataset`
 
-  * :class:`NormalisationToMaximum`
-  * :class:`NormalisationToPeakToPeakAmplitude`
   * :class:`NormalisationOfDerivativeToArea`
-  * :class:`NormalisationToScanNumber`
-  * :class:`NormalisationToReceiverGain`
+  * :class:`Normalisation`
 
   * :class:`Integration`
 
@@ -115,7 +112,8 @@ Algebra
     Availability
 
     Algebra is available directly via the ASpecD Module:
-    :class:`aspecd.processing.ScalarAlgebra`
+    :class:`aspecd.processing.ScalarAlgebra` and
+    :class:`aspecd.processing.DatasetAlgebra`
 
 Comparing datasets often involves adding, subtracting, multiplying or
 dividing the intensity values by a given fixed number. This is very simple
@@ -137,7 +135,8 @@ and this is handled by a different set of processing steps (see below).
     involves ensuring commensurable axis dimensions and ranges, to say the
     least.
 
-
+.. todo::
+    Add note to Dataset Algebra
 
 
 Normalisation
@@ -589,32 +588,6 @@ class BaselineCorrectionWithPolynomial(aspecd.processing.SingleProcessingStep):
         return np.polyval(polynomial, self.dataset.data.axes[0].values)
 
 
-class BaselineCorrectionWithCalculatedDataset(aspecd.processing.SingleProcessingStep):
-    """Perform a baseline correction using a baseline previously determined.
-
-    Uses a dataset with the respective baseline as data.
-    See also: :class:`cwepr.analysis.BaselineCorrectionWithPolynomial`.
-
-    Attributes
-    ----------
-    parameters['baseline_dataset']: :class:`cwepr.dataset.ExperimentalDataset`
-        Dataset containing the baseline to subtract.
-
-    """
-
-    def __init__(self, baseline_dataset=None):
-        super().__init__()
-        self.parameters["baseline_dataset"] = baseline_dataset
-        self.description = "Subtraction of baseline dataset"
-
-    def _perform_task(self):
-        """Perform the actual correction.
-
-        Baseline correction is performed by subtraction of  a baseline dataset.
-        """
-        self.dataset.data.data -= self.parameters["baseline_dataset"].data.data
-
-
 class PhaseCorrection(aspecd.processing.SingleProcessingStep):
     """Phase correction if phase angle is given directly or in metadata.
 
@@ -675,6 +648,10 @@ class PhaseCorrection(aspecd.processing.SingleProcessingStep):
 
 class AutomaticPhaseCorrection(aspecd.processing.SingleProcessingStep):
     """Automatic phase correction via Hilbert transform.
+
+    ..important::
+        Experimental state: Other methods have been proven to provide a
+        better and reliable phase correction.
 
     .. todo::
         Does not work properly. Already gives wrong values with simulated
@@ -771,7 +748,9 @@ class AutomaticPhaseCorrection(aspecd.processing.SingleProcessingStep):
 class NormalisationOfDerivativeToArea(aspecd.processing.SingleProcessingStep):
     """Normalise a spectrum to the area under the curve.
 
-    No other (processing) modules are used in order to keep original data.
+    As typical cw-EPR spectra are derivative spectra, calculating the area
+    under the curve involves an integration step beforehand. This is done
+    here
 
     .. note::
         If the integrated spectra has a baseline shift, it is not currently
@@ -794,7 +773,7 @@ class NormalisationOfDerivativeToArea(aspecd.processing.SingleProcessingStep):
         self._area = np.trapz(integrated_spectrum)
 
 
-class NewNormalisation(aspecd.processing.Normalisation):
+class Normalisation(aspecd.processing.Normalisation):
     """Normalise data.
 
     For an extended documentation of the kinds implemented directly in
