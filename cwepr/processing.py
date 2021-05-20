@@ -750,7 +750,7 @@ class NormalisationOfDerivativeToArea(aspecd.processing.SingleProcessingStep):
 
     As typical cw-EPR spectra are derivative spectra, calculating the area
     under the curve involves an integration step beforehand. This is done
-    here
+    here as well.
 
     .. note::
         If the integrated spectra has a baseline shift, it is not currently
@@ -793,8 +793,8 @@ class Normalisation(aspecd.processing.Normalisation):
 
     The two additional kinds are explained below.
 
-    Due to the logarithmic scale of the receiver gain (in dB) at least in BRUKER
-    spectrometers, it has to be transferred into the "normal" scale. It
+    Due to the logarithmic scale of the *receiver gain* (in dB) at least in
+    BRUKER spectrometers, it has to be transferred into the "normal" scale. It
     calculates as following:
 
         receiver gain = 10^(receiver gain in dB/20)

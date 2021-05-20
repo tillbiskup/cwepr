@@ -11,6 +11,7 @@ import aspecd.infofile
 import aspecd.io
 import aspecd.metadata
 
+import cwepr.dataset
 import cwepr.metadata
 import cwepr.processing
 import cwepr.exceptions
@@ -60,8 +61,8 @@ class MagnettechXmlImporter(aspecd.io.DatasetImporter):
         self._get_raw_data()
         self._create_x_axis()
         self._extract_metadata_from_xml()  # Is needed for cutting data
-        self._cut_data()
 
+        self._cut_data()
         self._hand_data_to_dataset()
 
         # First import metadata from infofile, then override hand-written
@@ -70,14 +71,6 @@ class MagnettechXmlImporter(aspecd.io.DatasetImporter):
             self._load_infofile()
             self._map_infofile()
         self._map_metadata_from_xml()
-
-    def _hand_data_to_dataset(self):
-        self.dataset.data.data = self._yvalues
-        self.dataset.data.axes[0].values = self._xvalues
-        self.dataset.data.axes[0].unit = 'mT'
-        self.dataset.data.axes[0].quantity = 'magnetic field'
-        self.dataset.data.axes[1].unit = 'mV'
-        self.dataset.data.axes[1].quantity = 'intensity'
 
     def _get_full_filename(self):
         if self.source:
@@ -97,6 +90,15 @@ class MagnettechXmlImporter(aspecd.io.DatasetImporter):
         self._yvalues = \
             self._convert_base64string_to_np_array(self.root[0][0][1][-1].text)
 
+    @staticmethod
+    def _convert_base64string_to_np_array(string):
+        # Split string at "=" and add the delimiter afterwards again
+        tmpdata = [x + "=" for x in string.split("=") if x]
+        # Decode and unpack list of strings
+        data = [struct.unpack('d', base64.b64decode(x)) for x in tmpdata]
+        data = [i[0] for i in data]
+        return np.asarray(data)
+
     def _create_x_axis(self):
         b_field_x_offset = float(self.root[0][0][1][0].attrib['XOffset'])
         b_field_x_slope = float(self.root[0][0][1][0].attrib['XSlope'])
@@ -111,6 +113,18 @@ class MagnettechXmlImporter(aspecd.io.DatasetImporter):
             b_field_x_slope
         self._xvalues = np.interp(mw_x, b_field_x, self._xvalues)
 
+    def _extract_metadata_from_xml(self):
+        # NOTE: Order of these statements is crucial not to overwrite values!
+        xml_metadata = self.root[0][0][0].attrib
+        xml_metadata.update(self.root[0][0].attrib)
+        for childnode in self.root[0][0][0][0]:
+            if 'Unit' in childnode.attrib:
+                xml_metadata[childnode.attrib['Name']] = \
+                    {'value': childnode.text, 'unit': childnode.attrib['Unit']}
+            else:
+                xml_metadata[childnode.attrib['Name']] = childnode.text
+        self.xml_metadata = xml_metadata
+
     def _cut_data(self):
         self._get_magnetic_field_range()
         mask = (self._xvalues > self._bfrom) & (self._xvalues < self._bto)
@@ -121,6 +135,54 @@ class MagnettechXmlImporter(aspecd.io.DatasetImporter):
         """Get magnetic field range from preprocessed XML data."""
         self._bfrom = float(self.xml_metadata['Bfrom']['value'])
         self._bto = float(self.xml_metadata['Bto']['value'])
+
+    def _hand_data_to_dataset(self):
+        self.dataset.data.data = self._yvalues
+        self.dataset.data.axes[0].values = self._xvalues
+        self.dataset.data.axes[0].unit = 'mT'
+        self.dataset.data.axes[0].quantity = 'magnetic field'
+        self.dataset.data.axes[1].unit = 'mV'
+        self.dataset.data.axes[1].quantity = 'intensity'
+
+    def _infofile_exists(self):
+        if self._get_infofile_name() and os.path.exists(
+                self._get_infofile_name()[0]):
+            return True
+        print('No infofile found for dataset %s, import continued without '
+              'infofile.' % os.path.split(self.source)[1])
+        return False
+
+    def _load_infofile(self):
+        """Import infofile and parse it."""
+        infofile_name = self._get_infofile_name()
+        self._infofile.filename = infofile_name[0]
+        self._infofile.parse()
+
+    def _get_infofile_name(self):
+        return glob.glob(self.source + '.info')
+
+    def _assign_comment_as_annotation(self):
+        comment = aspecd.annotation.Comment()
+        comment.comment = self._infofile.parameters['COMMENT']
+        self.dataset.annotate(comment)
+
+    def _map_metadata(self, infofile_version):
+        """Bring the metadata into a unified format."""
+        mapper = aspecd.metadata.MetadataMapper()
+        mapper.version = infofile_version
+        mapper.metadata = self._infofile.parameters
+        root_path = os.path.split(os.path.split(os.path.abspath(__file__))[
+                                      0])[0]
+        mapper.recipe_filename = os.path.join(
+            root_path, 'metadata_mapper_cwepr.yaml')
+        mapper.map()
+        self.dataset.metadata.from_dict(mapper.metadata)
+
+    def _map_infofile(self):
+        """Bring the metadata to a given format."""
+        infofile_version = self._infofile.infofile_info['version']
+        self._map_metadata(infofile_version)
+        self._assign_comment_as_annotation()
 
     def _map_metadata_from_xml(self):
         self.dataset.metadata.temperature_control.temperature.value = \
@@ -176,78 +238,17 @@ class MagnettechXmlImporter(aspecd.io.DatasetImporter):
         self.dataset.metadata.probehead.model = 'builtin'
         self.dataset.metadata.probehead.coupling = 'critical'
 
-    def _extract_metadata_from_xml(self):
-        # NOTE: Order of these statements is crucial not to overwrite values!
-        xml_metadata = self.root[0][0][0].attrib
-        xml_metadata.update(self.root[0][0].attrib)
-        for childnode in self.root[0][0][0][0]:
-            if 'Unit' in childnode.attrib:
-                xml_metadata[childnode.attrib['Name']] = \
-                    {'value': childnode.text, 'unit': childnode.attrib['Unit']}
-            else:
-                xml_metadata[childnode.attrib['Name']] = childnode.text
-        self.xml_metadata = xml_metadata
-
-    @staticmethod
-    def _convert_base64string_to_np_array(string):
-        # Split string at "=" and add the delimiter afterwards again
-        tmpdata = [x + "=" for x in string.split("=") if x]
-        # Decode and unpack list of strings
-        data = [struct.unpack('d', base64.b64decode(x)) for x in tmpdata]
-        data = [i[0] for i in data]
-        return np.asarray(data)
-
     @staticmethod
     def _dict_to_string(dict_):
         return dict_['value'] + ' ' + dict_['unit']
 
-    def _load_infofile(self):
-        """Import infofile and parse it."""
-        infofile_name = self._get_infofile_name()
-        self._infofile.filename = infofile_name[0]
-        self._infofile.parse()
-
-    def _get_infofile_name(self):
-        return glob.glob(self.source + '.info')
-
-    def _assign_comment_as_annotation(self):
-        comment = aspecd.annotation.Comment()
-        comment.comment = self._infofile.parameters['COMMENT']
-        self.dataset.annotate(comment)
-
-    def _map_metadata(self, infofile_version):
-        """Bring the metadata into a unified format."""
-        mapper = aspecd.metadata.MetadataMapper()
-        mapper.version = infofile_version
-        mapper.metadata = self._infofile.parameters
-        root_path = os.path.split(os.path.split(os.path.abspath(__file__))[
-                                      0])[0]
-        mapper.recipe_filename = os.path.join(
-            root_path, 'metadata_mapper_cwepr.yaml')
-        mapper.map()
-        self.dataset.metadata.from_dict(mapper.metadata)
-
-    def _map_infofile(self):
-        """Bring the metadata to a given format."""
-        infofile_version = self._infofile.infofile_info['version']
-        self._map_metadata(infofile_version)
-        self._assign_comment_as_annotation()
-
-    def _infofile_exists(self):
-        if self._get_infofile_name() and os.path.exists(
-                self._get_infofile_name()[0]):
-            return True
-        print('No infofile found for dataset %s, import continued without '
-              'infofile.' % os.path.split(self.source)[1])
-        return False
-
 
 class GoniometerSweepImporter(aspecd.io.DatasetImporter):
-    """Importer for goniometric data from magnettech benchtop spectrometer.
+    """Import angular dependent data from Magnettech benchtop spectrometer.
 
     ..note::
-        Metadata are only taken from the infofile, ignoring the (much
-        likely more accurate) xml-file metadata.
+        Metadata are only taken from the infofile, ignoring the (much likely
+        more accurate) xml-file metadata.
     """
 
     def __init__(self, source=''):
@@ -304,15 +305,15 @@ class GoniometerSweepImporter(aspecd.io.DatasetImporter):
             interpolate = cwepr.processing.AxisInterpolation()
             self._interpolation_to_same_number_of_points(interpolate, num)
 
+    def _interpolation_to_same_number_of_points(self, interpolate, num):
+        interpolate.parameters['points'] = len(self._data[0].data.data)
+        self._data[num].process(interpolate)
+
     def _hand_data_to_dataset(self):
         my_array = np.ndarray((len(self._data[0].data.data), len(self._data)))
         self.dataset.data.data = my_array
         for num, set_ in enumerate(self._data):
             self.dataset.data.data[:, num] = set_.data.data
-
-    def _interpolation_to_same_number_of_points(self, interpolate, num):
-        interpolate.parameters['points'] = len(self._data[0].data.data)
-        self._data[num].process(interpolate)
 
     def _fill_axes(self):
         self._fill_field_axis()
