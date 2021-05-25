@@ -22,6 +22,8 @@ For version 0.1
   * Much more explanations
   * Metadata in Dataset (link)
 
+* Use cases: Recipes
+
 
 For later versions
 ==================

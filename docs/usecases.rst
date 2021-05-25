@@ -20,7 +20,7 @@ These are the ingredients necessary to get a graphical representation of your da
   * plotter
   * plot saver
 
-Of course, you can do all that from a Python command line::
+Of course, you can do all that from a Python command line (or, if you like so, from within a Python script file)::
 
   import cwepr.dataset
   import cwepr.plotting
@@ -47,8 +47,7 @@ However, you could as well write a recipe (actually, a YAML file) doing the same
       - path/to/saved/data
 
     tasks:
-      -
-        kind: plotting
+      - kind: plotting
         type: SimpleSpectrumPlotter
         properties:
           filename: path/to/file/to/save/plot/to
@@ -70,7 +69,8 @@ And from a terminal, you could simply type:
 
 Both will automatically ensure the correct DatasetFactory to be loaded, provided you didn't forget to set the ``default_package`` directive, as shown in the recipe above.
 
-After all, using recipes is highly recommended for most users, and as you will normally need to get your result in some representation anyway, having a plot or other representation as (final) output is a very sensible idea.
+After all, **using recipes is highly recommended for most users**, and as you will normally need to get your result in some representation anyway, having a plot or other representation as (final) output is a very sensible idea. Furthermore, recipe-driven data analysis relieves the user from knowing how to actually program. The scientist can focus entirely on the individual tasks that need to be performed on the datasets, not bothering about the underlying programming details. Even more, the recipe provides a full history of every individual task, allowing for true **reproducible research**.
+
 
 Frequency and field correction
 ==============================
