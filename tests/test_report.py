@@ -53,11 +53,11 @@ class TestPowerSweepAnalysisReport(unittest.TestCase):
             os.path.join(TEST_ROOTPATH, 'io/testdata/power-sweep-analysis.yaml')
         self.filename = 'PowerSweepReport.tex'
         self.filename2 = 'PowerSweepAnalysis.pdf'
-        template_ = os.path.join(
-            MODULE_ROOTPATH, 'templates', 'de', 'power_sweep_report.tex.jinja')
-        self.reporter = \
-            cwepr.report.PowerSweepAnalysisReporter(template=template_,
-                                                    filename=self.filename)
+        #template_ = os.path.join(
+        #    MODULE_ROOTPATH, 'templates', 'de', 'power_sweep_report.tex.jinja')
+        #self.reporter = \
+         #   cwepr.report.PowerSweepAnalysisReporter(template=template_,
+          #                                          filename=self.filename)
         self.chef = aspecd.tasks.ChefDeService()
 
     def tearDown(self):

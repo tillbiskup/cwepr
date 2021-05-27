@@ -94,22 +94,22 @@ class MetadataExporter(aspecd.io.DatasetExporter):
 
     def _write_metadata(self):
         self.metadata_dict = self.dataset.metadata.to_dict()
-        self._remove_empty_items_recursively(dict_=self.metadata_dict)
+        self.metadata_dict = \
+            self._remove_empty_items_recursively(dict_=self.metadata_dict)
         yaml_file = aspecd.utils.Yaml()
         yaml_file.dict = self.metadata_dict
         yaml_file.write_to(self.filename)
 
-    @staticmethod
-    def _remove_empty_items_recursively(dict_=None):
+    def _remove_empty_items_recursively(self, dict_=None):
         tmp_dict = collections.OrderedDict()
         for key, value in dict_.items():
-            if not value:
-                continue
             if isinstance(value, dict):
                 dict_[key] = \
-                    MetadataExporter._remove_empty_items_recursively(value)
+                    self._remove_empty_items_recursively(value)
+            # if magnettech has not measured the q-value it is -1
             if key == 'q_value' and value == -1:
                 continue
-            tmp_dict[key] = dict_[key]
+            if dict_[key]:
+                tmp_dict[key] = dict_[key]
         return tmp_dict
 
