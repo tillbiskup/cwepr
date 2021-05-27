@@ -22,7 +22,12 @@ For version 0.1
   * Much more explanations
   * Metadata in Dataset (link)
 
-* Use cases: Recipes
+* Use cases
+
+  * Recipes for the different tasks
+  * Perhaps (re)move conventional programmatic approach
+
+* Sphinx multiversion
 
 
 For later versions
