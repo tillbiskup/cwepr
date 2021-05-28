@@ -147,7 +147,3 @@ class TestGoniometerSweepImporter(unittest.TestCase):
         importer = cwepr.io.magnettech.GoniometerSweepImporter(
             source=source)
         dataset.import_from(importer)
-
-
-if __name__ == '__main__':
-    unittest.main()

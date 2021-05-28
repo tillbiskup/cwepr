@@ -15,8 +15,3 @@ class TestDatasetImporterFactory(unittest.TestCase):
         with self.assertRaises(cwepr.exceptions.NoMatchingFilePairError) as error:
             dataset = importer.get_dataset(source=source)
         self.assertIn('No file format was found', error.exception.message)
-
-
-
-if __name__ == '__main__':
-    unittest.main()

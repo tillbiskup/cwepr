@@ -262,7 +262,3 @@ class TestSubtractVector(unittest.TestCase):
         subtract.parameters['vector'] = self.vector2
         with self.assertRaises(cwepr.exceptions.DimensionError):
             self.dataset1.process(subtract)
-
-
-if __name__ == '__main__':
-    unittest.main()

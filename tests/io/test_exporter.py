@@ -21,18 +21,17 @@ class TestMetadataExporter(unittest.TestCase):
     def test_file_exists_with_default_filename_after_export(self):
         self.export.dataset = self.dataset
         self.dataset.export_to(self.export)
-        self.filename = self.export.filename
         self.assertTrue(os.path.exists(self.export.filename))
 
     def test_file_exists_with_custom_filename_after_export(self):
         self.export.dataset = self.dataset
-        self.export.filename = self.filename = 'my_filename.yaml'
+        self.export.filename = 'my_filename.yaml'
         self.dataset.export_to(self.export)
         self.assertTrue(os.path.exists(self.export.filename))
 
     def test_file_exists_with_custom_filename_wo_extension_after_export(self):
         self.export.dataset = self.dataset
-        self.export.filename = self.filename = 'my_filename'
+        self.export.filename = 'my_filename'
         self.dataset.export_to(self.export)
         self.assertTrue(os.path.exists('my_filename.yaml'))
 
@@ -40,7 +39,7 @@ class TestMetadataExporter(unittest.TestCase):
         self.dataset.metadata.bridge.mw_frequency.value = 9.5
         self.dataset.metadata.bridge.mw_frequency.unit = 'GHz'
         self.export.dataset = self.dataset
-        self.export.filename = self.filename = 'my_filename'
+        self.export.filename = 'my_filename'
         self.dataset.export_to(self.export)
         goal_dict = {
             'bridge': {

@@ -13,7 +13,3 @@ class TestTxtImporter(unittest.TestCase):
         importer = cwepr.io.TxtImporter(source=source)
         dataset = cwepr.dataset.ExperimentalDataset()
         dataset.import_from(importer)
-
-
-if __name__ == '__main__':
-    unittest.main()
