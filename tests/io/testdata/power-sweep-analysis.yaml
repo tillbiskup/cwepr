@@ -41,7 +41,7 @@ tasks:
   - kind: report
     type: PowerSweepAnalysisReporter
     properties:
-        template: ../templates/de/power_sweep_report.tex.jinja
+        template: ../cwepr/templates/de/power_sweep_report.tex.jinja
         filename: PowerSweepReport.tex
         #dataset:  BDPA-2DFieldPower
         context:

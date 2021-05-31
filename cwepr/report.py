@@ -231,8 +231,8 @@ class DokuwikiCaptionsReporter(aspecd.report.Reporter):
 
     def _get_template(self):
         language = self.language
-        module_rootpath = os.path.split(os.path.split(os.path.abspath(
-            __file__))[0])[0]
+        module_rootpath = os.path.split(os.path.abspath(
+            __file__))[0]
         return os.path.join(module_rootpath, 'templates', language,
                             'DokuwikiCaption.txt.jinja')
 

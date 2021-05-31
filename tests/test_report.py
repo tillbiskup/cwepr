@@ -26,7 +26,7 @@ class TestExperimentalDatasetLaTeXReporter(unittest.TestCase):
         self.dataset.process(algebra)
         self.filename = 'test.tex'
         template_ = os.path.join(
-            MODULE_ROOTPATH, 'templates', 'de', 'report.tex.jinja')
+            MODULE_ROOTPATH, 'cwepr', 'templates', 'de', 'report.tex.jinja')
         self.reporter = \
             cwepr.report.ExperimentalDatasetLaTeXReporter(template=template_,
                                                           filename=self.filename)
@@ -78,7 +78,8 @@ class TestDokuwikiCaptionsReporter(unittest.TestCase):
     def setUp(self):
         self.filename = 'Dokuwiki-caption.txt'
         self.template_ = os.path.join(
-            MODULE_ROOTPATH, 'templates', 'en', 'DokuwikiCaption.txt.jinja')
+            MODULE_ROOTPATH, 'cwepr', 'templates', 'en',
+            'DokuwikiCaption.txt.jinja')
         self.reporter = cwepr.report.DokuwikiCaptionsReporter()
         self.dataset = cwepr.dataset.ExperimentalDataset()
         source = \
