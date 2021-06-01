@@ -13,28 +13,44 @@ from cwepr.exceptions import UnequalUnitsError
 class DatasetMetadata(aspecd.metadata.ExperimentalDatasetMetadata):
     """Set of all metadata for a dataset object.
 
+    Metadata as a unified structure of information coupled to the dataset are
+    necessary for the understanding, analysis and processing of data,
+    especially in cwepr. Too many parameters have an direct influence to the
+    spectral shape of the spectrum that anything other than saving them in an
+    appropriate place and accessing them automatised in the respective tasks
+    is no option. Some parameters are written automatically by the
+    spectrometer's software, others, depending also on the actual setup (that
+    may change over time!) are omitted and it is highly recommended those
+    should be noted by hand, for example in an *.info-file.*
+
     Attributes
     ----------
+    measurement: :obj:`cwepr.metadata.Measurement`
+        Metadata corresponding to the measurement.
+
+    sample : :obj:`cwepr.dataset.Sample`
+        Metadata corresponding to the sample.
+
+    temperature_control : :obj:`cwepr.dataset.TemperatureControl`
+        Metadata corresponding to the temperature.
+
     experiment: :obj:`cwepr.metadata.Experiment`
-        Metadata object containing information such as the type of the
-        experiment performed.
+        Metadata corresponding to the experiment.
 
     spectrometer: :obj:`cwepr.metadata.Spectrometer`
-        Metadata object containing information on the spectrometer used.
+        Metadata corresponding to the spectrometer.
 
     magnetic_field: :obj:`cwepr.metadata.MagneticField`
-        Metadata object containing information on the magnetic field applied in
-        the experiment.
+        Metadata corresponding to the magnetic field.
 
     bridge: :obj:`cwepr.metadata.Bridge`
-        Metadata object containing information on the microwave bridge used.
+        Metadata corresponding to the microwave bridge.
 
     signal_channel: :obj:`cwepr.metadata.SignalChannel`
-        Metadata object containing information on the signal channel applied.
+        Metadata corresponding to signal channel.
 
     probehead: :obj:`cwepr.metadata.Probehead`
-        Metadata object containing information on the probehead used in the
-        experiment.
+        Metadata corresponding to the probehead used for the experiment.
 
     metadata_modifications : :class:`list`
         List of all modifications performed on the metadata, e.g, overrides.
@@ -60,12 +76,12 @@ class Measurement(aspecd.metadata.Measurement):
 
     Parameters
     ----------
-    dict_ : dict
+    dict_: :class:`dict`
         Dictionary containing properties to set.
 
     Attributes
     ----------
-    label : str
+    label: str
         Label of the sample, including the sample-number.
 
     """
@@ -77,15 +93,87 @@ class Measurement(aspecd.metadata.Measurement):
 
 
 class Sample(aspecd.metadata.Sample):
-    """Metadata information on the sample measured."""
+    """Metadata corresponding to the sample .
 
-    def __init__(self):
-        super().__init__()
-        self.solvent = ""
+    As this class inherits from :class:`aspecd.metadata.Sample`,
+    see the documentation of the parent class for details and the full list
+    of inherited attributes.
+
+    Parameters
+    ----------
+    dict_ : dict
+        Dictionary containing fields corresponding to attributes of the class
+
+    Attributes
+    ----------
+    description : str
+        Description of the measured sample.
+
+    solvent : str
+        Name of the solvent used.
+
+    preparation : str
+        Short details of the sample preparation.
+
+    tube : str
+        Type and dimension of the sample tube used.
+
+    """
+
+    def __init__(self, dict_=None):
+        # public properties
+        self.description = ''
+        self.solvent = ''
+        self.preparation = ''
+        self.tube = ''
+        super().__init__(dict_=dict_)
 
 
 class MagneticField(aspecd.metadata.Metadata):
-    """Metadata class including all variables concerning the magnetic field."""
+    """Metadata corresponding to the magnetic field.
+
+    Parameters
+    ----------
+    dict_ : dict
+        Dictionary containing fields corresponding to attributes of the class
+
+    Attributes
+    ----------
+    start : :class:`aspecd.metadata.PhysicalQuantity`
+        Lowest point of the magnetic field.
+
+    stop : :class:`aspecd.metadata.PhysicalQuantity`
+        Highest point of the magnetic field.
+
+    sweep_width : :class:`aspecd.metadata.PhysicalQuantity`
+        Width of the magnetic field sweep.
+
+    step_width : :class:`aspecd.metadata.PhyPhysicalQuantity`
+        Distance between two points (only if equidistant!).
+
+    step_count : :class:`int`
+        Number of points.
+
+    field_probe_type : :class:`str`
+        Type of the field probe (e.g. Hall or Teslameter)
+
+    field_probe_model : :class:`str`
+        Exact model of the field probe.
+
+    sequence : :class:`str`
+        Sequence of the experiment (e.g. up or down).
+
+    controller : :class:`str`
+        Model of the field controller.
+
+    power_supply : :class:`str`
+        Model of the power supply.
+
+
+    .. todo::
+        Carefully revise paramters step count, step with and sweep width,
+        eventually remove step width(?)
+    """
 
     def __init__(self, dict_=None):
         super().__init__(dict_=dict_)
@@ -219,6 +307,12 @@ class Experiment(aspecd.metadata.Metadata):
 
     runs : :class:`int`
         Number of recorded runs.
+
+    variable_parameter : :class:`str`
+
+    increment : :class:`str`
+
+    harmonic : :class:`str`
 
     """
 

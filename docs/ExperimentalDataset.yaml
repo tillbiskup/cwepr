@@ -30,10 +30,13 @@ metadata:
     operator: ''
     labbook_entry: ''
   sample:
+    description: ''
+    solvent: ''
+    preparation: ''
+    tube: ''
     name: ''
     id: null
     loi: ''
-    solvent: ''
   temperature_control:
     cryostat: ''
     cryogen: ''

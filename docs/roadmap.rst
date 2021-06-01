@@ -18,7 +18,9 @@ For version 0.1
 
   * All attributes
   * Much more explanations
-  * Metadata in Dataset (link)
+  * Metadata in Dataset (links)
+
+* Metadata: Revise paramters step count, step with and sweep width!
 
 * Use cases
 

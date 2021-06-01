@@ -40,9 +40,15 @@ class DatasetFactory(aspecd.dataset.DatasetFactory):
     """
     Factory for creating dataset objects based on the source provided.
 
-    Particularly in case of recipe-driven data analysis (c.f. :mod:`tasks`),
+    Particularly in case of recipe-driven data analysis (c.f.
+    :mod:`aspecd.tasks`),
     there is a need to automatically retrieve datasets using nothing more
     than a source string that can be, e.g., a path or LOI.
+
+    The DatasetFactory operates in conjunction with a
+    :class:`cwepr.io.factory.DatasetImporterFactory` to import the actual
+    dataset. See the respective class documentation for more details.
+
 
     Attributes
     ----------
