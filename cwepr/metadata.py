@@ -112,7 +112,6 @@ class CalculatedDatasetMetadata(aspecd.metadata.CalculatedDatasetMetadata):
     """
 
 
-
 class Measurement(aspecd.metadata.Measurement):
     """Metadata corresponding to the measurement.
 
@@ -211,10 +210,10 @@ class MagneticField(aspecd.metadata.Metadata):
     power_supply : :class:`str`
         Model of the power supply.
 
-
     .. todo::
         Carefully revise paramters step count, step with and sweep width,
         eventually remove step width(?)
+
     """
 
     def __init__(self, dict_=None):
@@ -385,6 +384,7 @@ class Spectrometer(aspecd.metadata.Metadata):
 
     software : :class:`str`
         Name and version of the software used.
+
     """
 
     def __init__(self, dict_=None):
@@ -516,6 +516,7 @@ class SignalChannel(aspecd.metadata.Metadata):
 
     phase : :class:`aspecd.metadata.PhysicalQuantity`
         Phase of the modulation amplifier.
+
     """
 
     def __init__(self, dict_=None):
@@ -570,6 +571,7 @@ class Probehead(aspecd.metadata.Metadata):
 
     coupling : :class:`str`
         Type of coupling. In cwepr it is sually critically coupled.
+
     """
 
     def __init__(self, dict_=None):

@@ -112,4 +112,3 @@ class MetadataExporter(aspecd.io.DatasetExporter):
             if dict_[key]:
                 tmp_dict[key] = dict_[key]
         return tmp_dict
-

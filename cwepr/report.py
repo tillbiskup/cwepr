@@ -211,7 +211,12 @@ class PowerSweepAnalysisReporter(aspecd.report.LaTeXReporter):
 
 
 class DokuwikiCaptionsReporter(aspecd.report.Reporter):
-    """Write DokuWiki Captions. """
+    """Write DokuWiki Captions.
+
+    ..todo::
+        Write Documentation
+
+    """
 
     def __init__(self):
         self.filename = ''

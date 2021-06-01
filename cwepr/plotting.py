@@ -12,8 +12,8 @@ class Saver(aspecd.plotting.Saver):
 class GoniometerSweepPlotter(aspecd.plotting.SingleCompositePlotter):
     """Goniometer plotter based on the single composite plotter.
 
-        Besides the plots for the overview, it shows the overlay of the 0
-        and 180 degree traces to check for consistency during the measurement.
+    Besides the plots for the overview, it shows the overlay of the 0
+    and 180 degree traces to check for consistency during the measurement.
     """
 
     def __init__(self):
@@ -36,7 +36,7 @@ class GoniometerSweepPlotter(aspecd.plotting.SingleCompositePlotter):
         upper_contour.parameters['show_contour_lines'] = True
 
     def _create_plot(self):
-        self.configure_contour_plotter()
+        self._configure_contour_plotter()
         self._extract_traces()
         self._configure_comparison_plotter()
         self._set_properties()
@@ -66,13 +66,13 @@ class GoniometerSweepPlotter(aspecd.plotting.SingleCompositePlotter):
             ],
             'axes': {
                 'yticks': [],
-                'ylabel': '$EPR\ intensity$'
+                'ylabel': r'$EPR\ intensity$'
             }
         })
         comparison_plotter.parameters['show_legend'] = True
         self.plotter[1] = comparison_plotter
 
-    def configure_contour_plotter(self):
+    def _configure_contour_plotter(self):
         self.plotter[0].properties.from_dict({
             'axes': {
                 'yticks': [0, 30, 60, 90, 120, 150, 180]

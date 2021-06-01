@@ -138,3 +138,12 @@ Afterwards, simply run Prospector from a terminal from within your project root:
 
 It will display the results of the static code analysis within the terminal. Settings can be changed in the ``.prospector.yaml`` file in the project root, but please be very careful changing settings here. Often, it is better to (temporarily) silence warnings in the code itself.
 
+For better readability, the prospector output can get printed into a file. The text output is the most human-readable in my opinion.
+
+
+.. code-block:: bash
+
+    prospector-o text:prospector-out.txt
+
+
+

@@ -576,16 +576,17 @@ class BaselineCorrectionWithPolynomial(aspecd.processing.SingleProcessingStep):
         self._cut_x_data = np.r_[x_axis[:points_left], x_axis[-points_right:]]
 
     def _get_values_to_subtract(self):
+        # pylint: disable=using-constant-test
         if np.polynomial.Polynomial:
-            polynomial = np.polynomial.Polynomial.fit(self._cut_x_data,
-                                                      self._cut_y_data,
-                                                      self.parameters['order'])
-            self.parameters['coefficients'] = polynomial.coef
-            return polynomial(self.dataset.data.axes[0].values)
-        polynomial = np.polyfit(self._cut_x_data, self._cut_y_data,
-                                self.parameters['order'])
-        self.parameters['coefficients'] = polynomial
-        return np.polyval(polynomial, self.dataset.data.axes[0].values)
+            polynomial_ = np.polynomial.Polynomial.fit(self._cut_x_data,
+                                                       self._cut_y_data,
+                                                       self.parameters['order'])
+            self.parameters['coefficients'] = polynomial_.coef
+            return polynomial_(self.dataset.data.axes[0].values)
+        polynomial_ = np.polyfit(self._cut_x_data, self._cut_y_data,
+                                 self.parameters['order'])
+        self.parameters['coefficients'] = polynomial_
+        return np.polyval(polynomial_, self.dataset.data.axes[0].values)
 
 
 class PhaseCorrection(aspecd.processing.SingleProcessingStep):
@@ -683,6 +684,7 @@ class AutomaticPhaseCorrection(aspecd.processing.SingleProcessingStep):
         """Get area/values below zero as indicator of the phase deviation."""
         ft_sig_tmp = self._analytic_signal
         if self.parameters['order'] > 0:
+            # pylint: disable=unused-variable
             for j in range(self.parameters['order']):  # integrate j times
                 ft_sig_tmp = scipy.integrate.cumtrapz(self._analytic_signal,
                                                       initial=0)
@@ -724,6 +726,7 @@ class AutomaticPhaseCorrection(aspecd.processing.SingleProcessingStep):
         for angle in angles:
             rotated_signal = (np.exp(1j * angle) * self._analytic_signal)
             if self.parameters['order'] > 0:
+                # pylint: disable=unused-variable
                 for j in range(self.parameters['order']):
                     rotated_signal = scipy.integrate.cumtrapz(rotated_signal,
                                                               initial=0)
@@ -809,9 +812,6 @@ class Normalisation(aspecd.processing.Normalisation):
         Know what you are doing, sometimes the spectrometer's software does this
         step silently...
     """
-
-    def __init__(self):
-        super().__init__()
 
     def _perform_task(self):
         super()._perform_task()
