@@ -309,10 +309,13 @@ class Experiment(aspecd.metadata.Metadata):
         Number of recorded runs.
 
     variable_parameter : :class:`str`
+        Parameter that is varied during the measurement, e.g. *magnetic field*
 
     increment : :class:`str`
+        Increment the variable parameter is changed.
 
     harmonic : :class:`str`
+        Recorded harmonic of the signal.
 
     """
 
@@ -326,7 +329,21 @@ class Experiment(aspecd.metadata.Metadata):
 
 
 class Spectrometer(aspecd.metadata.Metadata):
-    """Metadata information on what type of spectrometer was used."""
+    """Metadata information on what type of spectrometer was used.
+
+    Parameters
+    ----------
+    dict_ : :class:`dict`
+        Dictionary containing properties to set.
+
+    Attributes
+    ----------
+    model : str
+        Model of the spectrometer used.
+
+    software : str
+        Name and version of the software used.
+    """
 
     def __init__(self, dict_=None):
         self.model = ""
@@ -335,12 +352,19 @@ class Spectrometer(aspecd.metadata.Metadata):
 
 
 class Bridge(aspecd.metadata.Metadata):
-    """Metadata corresponding to the bridge.
+    """Metadata corresponding to the microwave bridge.
+
+    The microwave bridge contains the microwave source and parts of the
+    detection system. Therefore, the crucial experimental parameters such as
+    attenuation and power, microwave frequency and detection system used are
+    contained as well as the description of the devices, *i.e.* the bridge
+    itself, its controller, and the frequency counter, as these can be
+    different interchangeable components.
 
     Parameters
     ----------
     dict_ : dict
-        Dictionary containing properties to set.
+        Dictionary containing fields corresponding to attributes of the class
 
     Attributes
     ----------
@@ -351,22 +375,54 @@ class Bridge(aspecd.metadata.Metadata):
         Model of the bridge controller used.
 
     attenuation : :obj:`aspecd.metadata.PhysicalQuantity`
-        Attenuation of the microwave in dB.
+        Attenuation of the microwave power in dB.
+
+        Without knowing the unattenuated source power, the attenuation is a
+        rather useless value, although it gets often used, particularly in
+        lab jargon. Typical microwave bridges have source powers of 200 mW
+        in X-Band, but newer devices sometimes deliver only 150 mW.
 
     power : :obj:`aspecd.metadata.PhysicalQuantity`
         Output power of the microwave.
 
+        The actual output power of the microwave used for the experiment,
+        *i.e.* the source power reduced by the attenuation. Typical values
+        are in the range of 20 mW to 20 µW.
+
     detection : str
         Type of the detection used.
+
+        There are two types of detection: diode and mixer. The latter
+        usually allows for quadrature detection, *i.e.* detecting both, the
+        absorptive and dispersive signal components.
 
     frequency_counter : str
         Model of the frequency counter used.
 
+        Depending on the setup used, this can be included in the bridge.
+        Otherwise, it will often be a HP device.
+
     mw_frequency : :obj:`aspecd.metadata.PhysicalQuantity`
         Microwave frequency.
 
+        The actual microwave frequency used for the experiment. Usually,
+        this is a scalar number. Depending on the experiment control
+        software used, the microwave frequency for each transient will be
+        recorded, thus allowing for analysing frequency drifts. This is
+        particularly helpful in case of long-running experiments (12+ h).
+        By comparing the amplitude of the frequency drift with the field
+        step width, the potential impact in the signal shape can be directly
+        calculated.
+
+
     q_value : int
-        Quality factor of the cavity
+        Quality factor of the cavity.
+
+        In most spectrometers, acquiring the Q-factor is not done by hand
+        i.e. in Bruker spectrometers the measurement ist most commonly
+        performed in tune mode with an attenuation of 33 dB, whereas at the
+        Magnettech benchtop spectrometer, one has to select the box to
+        measure the Q-factor.
 
     """
 
@@ -383,12 +439,47 @@ class Bridge(aspecd.metadata.Metadata):
 
 
 class SignalChannel(aspecd.metadata.Metadata):
-    """Metadata information information on the signal channel employed."""
+    """Metadata information information on the signal channel employed.
+
+    Parameters
+    ----------
+    dict_ : dict
+        Dictionary containing fields corresponding to attributes of the class
+
+    Attributes
+    ----------
+    model : :class:`str`
+        Model of the signal channel.
+
+    modulation_amplifier : :class:`str`
+        Type of the modulation amplifier.
+
+    accumulations : :class:`int`
+        Number of accumulated scans.
+
+    modulation_frequency : :class:`aspecd.metadata.PhysicalQuantity`
+        Modulation frequency used.
+
+    modulation_amplitude : :class:`aspecd.metadata.PhysicalQuantity`
+        Amplitude of the modulation
+
+    receiver_gain : :class:`aspecd.metadata.PhysicalQuantity`
+        Gain of the receiver, existence depends on the spectrometer.
+
+    conversion_time : :class:`aspecd.metadata.PhysicalQuantity`
+        Conversion time (usually in ms).
+
+    time_constant : :class:`aspecd.metadata.PhysicalQuantity`
+        Time constant (usually in ms).
+
+    phase : :class:`aspecd.metadata.PhysicalQuantity`
+        Phase of the modulation amplifier.
+    """
 
     def __init__(self, dict_=None):
         self.model = ""
         self.modulation_amplifier = ""
-        self.accumulations = ""
+        self.accumulations = int()
         self.modulation_frequency = aspecd.metadata.PhysicalQuantity()
         self.modulation_amplitude = aspecd.metadata.PhysicalQuantity()
         self.receiver_gain = aspecd.metadata.PhysicalQuantity()
@@ -401,6 +492,16 @@ class SignalChannel(aspecd.metadata.Metadata):
 class Probehead(aspecd.metadata.Metadata):
     """Metadata corresponding to the probehead.
 
+    Often, resonating structures get used in EPR spectroscopy, but as this
+    is not always the case, the term "probehead" is more generic.
+
+    In all except of fully integrated benchtop spectrometers, the probehead
+    can readily be exchanged. As each probehead has its own characteristics,
+    it is crucially important to note at least type and model. The coupling
+    (critically or overcoupled) determines the bandwidth of the resonator,
+    and in all but pulsed experiments, usually, critical coupling is used.
+
+
     Parameters
     ----------
     dict_ : dict
@@ -411,12 +512,22 @@ class Probehead(aspecd.metadata.Metadata):
     type : str
         Type of the probehead used.
 
+        There are several different types of probeheads regularly used. For
+        resonators, there are, *e.g.*, dielectic and split-ring resonators,
+        cylindrical and rectangular cavities. More special would be
+        Fabry-Perot and stripline resonators. Sometimes, even resonator-free
+        designs are used as probeheads.
+
+
     model : str
         Model of the probehead used.
 
-    coupling : str
-        Type of coupling.
+        Commercial probeheads come with a distinct model that goes in here.
+        In all other cases, use a short, memorisable, and unique name.
 
+
+    coupling : str
+        Type of coupling. In cwepr it is sually critically coupled.
     """
 
     def __init__(self, dict_=None):
@@ -428,6 +539,11 @@ class Probehead(aspecd.metadata.Metadata):
 
 class TemperatureControl(aspecd.metadata.TemperatureControl):
     """Metadata corresponding to the temperature control.
+
+    As this class inherits from :class:`aspecd.metadata.TemperatureControl`,
+    see the documentation of the parent class for details and the full list
+    of inherited attributes.
+
 
     Parameters
     ----------
@@ -441,6 +557,9 @@ class TemperatureControl(aspecd.metadata.TemperatureControl):
 
     cryogen : str
         Cryogen used.
+
+        Typically, this is either N2 (for temperatures down to 80K) or He
+        (for temperatures down to 4 K)
 
     """
 

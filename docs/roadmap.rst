@@ -20,7 +20,7 @@ For version 0.1
   * Much more explanations
   * Metadata in Dataset (links)
 
-* Metadata: Revise paramters step count, step with and sweep width!
+* Metadata: Revise parameters step count, step with and sweep width!
 
 * Use cases
 
