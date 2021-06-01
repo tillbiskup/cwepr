@@ -1,7 +1,32 @@
 """Metadata.
 
-Supplementary data for a dataset, i.e. everything that is not part of the
-literal experimental results, such as identifier, date of the experiment...
+Metadata
+========
+
+In this module, the individual metadata classes are defined which contain the
+individual information about the experiment:
+
+  * :class:`cwepr.metadata.ExperimentalDatasetMetadata`
+  * :class:`cwepr.metadata.CalculatedDatasetMetadata`
+
+What may sound like a minor detail is one key aspect of the cwepr package:
+The metadata and their structure provide a unified interface for all
+functionality operating on datasets. Furthermore, the metadata contained
+particularly in the :class:`cwepr.metadata.ExperimentalDatasetMetadata` class
+are the result of several years of practical experience. Reproducible research
+is only possible if all information necessary is always recorded, and this
+starts with all the metadata accompanying a measurement. Defining what kind
+of metadata is important and needs to be recorded, together with metadata
+formats easily writable by the experimenters *during* recording the data
+requires a thorough understanding of both, the method and the setup(s) used.
+For an overview of the structures of the dataset classes and their
+corresponding metadata, see the :doc:`dataset structure </dataset-structure>`
+section.
+
+
+Module documentation
+====================
+
 """
 
 import aspecd.metadata
@@ -25,31 +50,31 @@ class DatasetMetadata(aspecd.metadata.ExperimentalDatasetMetadata):
 
     Attributes
     ----------
-    measurement: :obj:`cwepr.metadata.Measurement`
+    measurement: :class:`cwepr.metadata.Measurement`
         Metadata corresponding to the measurement.
 
-    sample : :obj:`cwepr.dataset.Sample`
+    sample : :class:`cwepr.metadata.Sample`
         Metadata corresponding to the sample.
 
-    temperature_control : :obj:`cwepr.dataset.TemperatureControl`
+    temperature_control : :class:`cwepr.metadata.TemperatureControl`
         Metadata corresponding to the temperature.
 
-    experiment: :obj:`cwepr.metadata.Experiment`
+    experiment: :class:`cwepr.metadata.Experiment`
         Metadata corresponding to the experiment.
 
-    spectrometer: :obj:`cwepr.metadata.Spectrometer`
+    spectrometer: :class:`cwepr.metadata.Spectrometer`
         Metadata corresponding to the spectrometer.
 
-    magnetic_field: :obj:`cwepr.metadata.MagneticField`
+    magnetic_field: :class:`cwepr.metadata.MagneticField`
         Metadata corresponding to the magnetic field.
 
-    bridge: :obj:`cwepr.metadata.Bridge`
+    bridge: :class:`cwepr.metadata.Bridge`
         Metadata corresponding to the microwave bridge.
 
-    signal_channel: :obj:`cwepr.metadata.SignalChannel`
+    signal_channel: :class:`cwepr.metadata.SignalChannel`
         Metadata corresponding to signal channel.
 
-    probehead: :obj:`cwepr.metadata.Probehead`
+    probehead: :class:`cwepr.metadata.Probehead`
         Metadata corresponding to the probehead used for the experiment.
 
     metadata_modifications : :class:`list`
@@ -71,17 +96,34 @@ class DatasetMetadata(aspecd.metadata.ExperimentalDatasetMetadata):
         self.metadata_modifications = []
 
 
+class CalculatedDatasetMetadata(aspecd.metadata.CalculatedDatasetMetadata):
+    """Metadata for a calculated dataset.
+
+    This class contains the minimal set of metadata for a dataset consisting
+    of calculated data, i.e., :class:`cwepr.dataset.CalculatedDataset`.
+
+    Metadata of actual datasets should extend this class by adding
+    properties that are themselves classes inheriting from
+    :class:`aspecd.metadata.Metadata`.
+
+    Metadata can be converted to dict via
+    :meth:`aspecd.utils.ToDictMixin.to_dict()`, e.g., for generating
+    reports using templates and template engines.
+    """
+
+
+
 class Measurement(aspecd.metadata.Measurement):
     """Metadata corresponding to the measurement.
 
     Parameters
     ----------
-    dict_: :class:`dict`
+    dict_ : :class:`dict`
         Dictionary containing properties to set.
 
     Attributes
     ----------
-    label: str
+    label: :class:`str`
         Label of the sample, including the sample-number.
 
     """
@@ -101,21 +143,21 @@ class Sample(aspecd.metadata.Sample):
 
     Parameters
     ----------
-    dict_ : dict
+    dict_ : :class:`dict`
         Dictionary containing fields corresponding to attributes of the class
 
     Attributes
     ----------
-    description : str
+    description : :class:`str`
         Description of the measured sample.
 
-    solvent : str
+    solvent : :class:`str`
         Name of the solvent used.
 
-    preparation : str
+    preparation : :class:`str`
         Short details of the sample preparation.
 
-    tube : str
+    tube : :class:`str`
         Type and dimension of the sample tube used.
 
     """
@@ -134,7 +176,7 @@ class MagneticField(aspecd.metadata.Metadata):
 
     Parameters
     ----------
-    dict_ : dict
+    dict_ : :class:`dict`
         Dictionary containing fields corresponding to attributes of the class
 
     Attributes
@@ -338,10 +380,10 @@ class Spectrometer(aspecd.metadata.Metadata):
 
     Attributes
     ----------
-    model : str
+    model : :class:`str`
         Model of the spectrometer used.
 
-    software : str
+    software : :class:`str`
         Name and version of the software used.
     """
 
@@ -363,18 +405,18 @@ class Bridge(aspecd.metadata.Metadata):
 
     Parameters
     ----------
-    dict_ : dict
+    dict_ : :class:`dict`
         Dictionary containing fields corresponding to attributes of the class
 
     Attributes
     ----------
-    model : str
+    model : :class:`str`
         Model of the microwave bridge used.
 
-    controller : str
+    controller : :class:`str`
         Model of the bridge controller used.
 
-    attenuation : :obj:`aspecd.metadata.PhysicalQuantity`
+    attenuation : :class:`aspecd.metadata.PhysicalQuantity`
         Attenuation of the microwave power in dB.
 
         Without knowing the unattenuated source power, the attenuation is a
@@ -382,27 +424,27 @@ class Bridge(aspecd.metadata.Metadata):
         lab jargon. Typical microwave bridges have source powers of 200 mW
         in X-Band, but newer devices sometimes deliver only 150 mW.
 
-    power : :obj:`aspecd.metadata.PhysicalQuantity`
+    power : :class:`aspecd.metadata.PhysicalQuantity`
         Output power of the microwave.
 
         The actual output power of the microwave used for the experiment,
         *i.e.* the source power reduced by the attenuation. Typical values
         are in the range of 20 mW to 20 µW.
 
-    detection : str
+    detection : :class:`str`
         Type of the detection used.
 
         There are two types of detection: diode and mixer. The latter
         usually allows for quadrature detection, *i.e.* detecting both, the
         absorptive and dispersive signal components.
 
-    frequency_counter : str
+    frequency_counter : :class:`str`
         Model of the frequency counter used.
 
         Depending on the setup used, this can be included in the bridge.
         Otherwise, it will often be a HP device.
 
-    mw_frequency : :obj:`aspecd.metadata.PhysicalQuantity`
+    mw_frequency : :class:`aspecd.metadata.PhysicalQuantity`
         Microwave frequency.
 
         The actual microwave frequency used for the experiment. Usually,
@@ -415,7 +457,7 @@ class Bridge(aspecd.metadata.Metadata):
         calculated.
 
 
-    q_value : int
+    q_value : :class:`int`
         Quality factor of the cavity.
 
         In most spectrometers, acquiring the Q-factor is not done by hand
@@ -504,12 +546,12 @@ class Probehead(aspecd.metadata.Metadata):
 
     Parameters
     ----------
-    dict_ : dict
+    dict_ : :class:`dict`
         Dictionary containing properties to set.
 
     Attributes
     ----------
-    type : str
+    type : :class:`str`
         Type of the probehead used.
 
         There are several different types of probeheads regularly used. For
@@ -519,14 +561,14 @@ class Probehead(aspecd.metadata.Metadata):
         designs are used as probeheads.
 
 
-    model : str
+    model : :class:`str`
         Model of the probehead used.
 
         Commercial probeheads come with a distinct model that goes in here.
         In all other cases, use a short, memorisable, and unique name.
 
 
-    coupling : str
+    coupling : :class:`str`
         Type of coupling. In cwepr it is sually critically coupled.
     """
 
@@ -547,15 +589,15 @@ class TemperatureControl(aspecd.metadata.TemperatureControl):
 
     Parameters
     ----------
-    dict_ : dict
+    dict_ : :class:`dict`
         Dictionary containing properties to set.
 
     Attributes
     ----------
-    cryostat : str
+    cryostat : :class:`str`
         Model of the cryostat used.
 
-    cryogen : str
+    cryogen : :class:`str`
         Cryogen used.
 
         Typically, this is either N2 (for temperatures down to 80K) or He

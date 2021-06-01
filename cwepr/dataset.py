@@ -1,9 +1,43 @@
-"""
-Dataset structure for cwEPR data.
+"""Datasets: units containing data and metadata.
 
-This is a container for experimental data and the respective metadata. The
-general structure is inherited from :class:`aspecd.dataset.Dataset` and
-adapted for cwEPR data.
+The dataset is one key concept of the ASpecD framework and hence the cwepr
+package derived from it, consisting of the data as well as the corresponding
+metadata. Storing metadata in a structured way is a prerequisite for a
+semantic understanding within the routines. Furthermore, a history of every
+processing, analysis and annotation step is recorded as well, aiming at a
+maximum of reproducibility. This is part of how the ASpecD framework and
+therefore the cwepr package tries to support good scientific practice.
+
+Therefore, each processing and analysis step of data should always be
+performed using the respective methods of a dataset, at least as long as it
+can be performed on a single dataset.
+
+Datasets
+========
+
+Generally, there are two types of datasets: Those containing experimental
+data and those containing calculated data. Therefore, two corresponding
+subclasses exist:
+
+  * :class:`cwepr.dataset.ExperimentalDataset`
+  * :class:`cwepr.dataset.CalculatedDataset`
+
+
+Dataset factory
+===============
+
+Particularly in case of recipe-driven data analysis (c.f. :mod:`aspecd.tasks`),
+there is a need to automatically retrieve datasets using nothing more than a
+source string that can be, e.g., a path or LOI. This is where the
+DatasetFactory comes in. This is a factory in the sense of the factory
+pattern described by the "Gang of Four" in their seminal work, "Design
+Patterns" (Gamma et al., 1995):
+
+  * :class:`cwepr.dataset.DatasetFactory`
+
+
+Module documentation
+====================
 """
 
 import aspecd.dataset
