@@ -27,8 +27,6 @@ For version 0.1
   * Recipes for the different tasks
   * Perhaps (re)move conventional programmatic approach
 
-* Sphinx multiversion
-
 
 For later versions
 ==================
