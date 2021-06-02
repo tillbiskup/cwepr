@@ -102,23 +102,6 @@ class MissingInformationError(Error):
         self.message = message
 
 
-class SpectrumNotIntegratedError(Error):
-    """Exception raised when definite integration is used accidentally.
-
-    Definite integration should only be performed on a derivative spectrum.
-
-    Attributes
-    ----------
-    message : :class:`str`
-        explanation of the error
-
-    """
-
-    def __init__(self, message=''):
-        super().__init__()
-        self.message = message
-
-
 class UnequalUnitsError(Error):
     """Exception raised when addends have unequal units.
 

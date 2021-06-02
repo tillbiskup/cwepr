@@ -961,5 +961,4 @@ class SubtractVector(aspecd.processing.SingleProcessingStep):
                 self.dataset.data.data[:, second_dim] -= \
                     self.parameters['vector']
         else:
-            raise cwepr.exceptions.DimensionError(message='Dataset has weird '
-                                                          'shape.')
+            raise cwepr.exceptions.DimensionError(message='Dataset has weird shape.')
