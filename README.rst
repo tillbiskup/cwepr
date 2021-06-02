@@ -62,15 +62,15 @@ The cwepr package addresses scientists working with cwEPR data (both, measured a
 Related projects
 ----------------
 
-There is a number of related packages users of the trepr package may well be interested in, as they have a similar scope, focussing on spectroscopy and reproducible research.
+There is a number of related packages users of the cwepr package may well be interested in, as they have a similar scope, focussing on spectroscopy and reproducible research.
 
 * `ASpecD <https://docs.aspecd.de/>`_
 
-  A Python framework for the analysis of spectroscopic data focussing on reproducibility and good scientific practice. The framework the trepr package is based on, developed by T. Biskup.
+  A Python framework for the analysis of spectroscopic data focussing on reproducibility and good scientific practice. The framework the cwepr package is based on, developed by T. Biskup.
 
 * `trepr <https://docs.trepr.de/>`_
 
-  Package for processing and analysing time-resolved electron paramagnetic resonance (TREPR) data, developed by J. Popp and maintained by T. Biskup.
+  Package for processing and analysing time-resolved electron paramagnetic resonance (TREPR) data, originally developed by J. Popp, currently developed and maintained by M. Schröder and T. Biskup.
 
 You may as well be interested in the `LabInform project <https://www.labinform.de/>`_ focussing on the necessary more global infrastructure in a laboratory/scientific workgroup interested in more `reproducible research <https://www.reproducible-research.de/>`_. In short, LabInform is "The Open-Source Laboratory Information System".
 
