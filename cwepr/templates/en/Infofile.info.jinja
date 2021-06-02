@@ -1,7 +1,7 @@
 cwEPR Info file - v. 0.1.4 (2020-01-21)
 
 GENERAL
-Filename:               BDPA-1DFieldSweep
+Filename:               {{DATASET_ID}}
 Date start:             {{METADATA['measurement']['start'][:10]}}
 Date end:               {{METADATA['measurement']['end'][:10]}}
 Time start:             {{METADATA['measurement']['start'][-8:]}}
@@ -33,7 +33,7 @@ Field probe type:       {{METADATA['magnetic_field']['field_probe_type']}}
 Field probe model:      {{METADATA['magnetic_field']['field_probe_model']}}
 Start:                  {{'%3.2f' %METADATA['magnetic_field']['start']['value']}} {{METADATA['magnetic_field']['start']['unit']}}
 Stop:                   {{'%3.2f' %METADATA['magnetic_field']['stop']['value']}} {{METADATA['magnetic_field']['stop']['unit']}}
-Step:                   { {METADATA['magnetic_field']['step']['value']}} { {METADATA['magnetic_field']['step']['unit']}}
+Step:                   {{METADATA['magnetic_field']['sweep_width']['value']/METADATA['magnetic_field']['points']}} {{METADATA['magnetic_field']['start']['unit']}}
 Sequence:               {{METADATA['magnetic_field']['sequence']}}
 Controller:             {{METADATA['magnetic_field']['controller']}}
 Power supply:           {{METADATA['magnetic_field']['power_supply']}}
@@ -55,7 +55,7 @@ Accumulations:          {{'%i' %METADATA['signal_channel']['accumulations']}}
 Modulation frequency:   {{'%i' %METADATA['signal_channel']['modulation_frequency']['value']}} {{METADATA['signal_channel']['modulation_frequency']['unit']}}
 Modulation amplitude:   {{'%2.2f' %METADATA['signal_channel']['modulation_amplitude']['value']}} {{METADATA['signal_channel']['modulation_amplitude']['unit']}}
 Receiver gain:          {{'%i' %METADATA['signal_channel']['receiver_gain']['value']}} {{METADATA['signal_channel']['receiver_gain']['unit']}}
-Offset:                 { {'%2.2f' %METADATA['signal_channel']['offset']['value']}} { {METADATA['signal_channel']['offset']['unit']}}
+Offset:                 {{METADATA['signal_channel']['offset']}}
 Conversion time:        {{'%4.2f' %METADATA['signal_channel']['conversion_time']['value']}} {{METADATA['signal_channel']['conversion_time']['unit']}}
 Time constant:          {{'%4.2f' %METADATA['signal_channel']['time_constant']['value']}} {{METADATA['signal_channel']['time_constant']['unit']}}
 Phase:                  {{'%2.2f' %METADATA['signal_channel']['phase']['value']}} {{METADATA['signal_channel']['phase']['unit']}}

@@ -128,9 +128,7 @@ class BES3TImporter(aspecd.io.DatasetImporter):
         rootpath = os.path.split(os.path.abspath(__file__))[0]
         yaml_file.read_from(os.path.join(rootpath, self._mapper_filename))
         metadata_dict = {}
-        metadata_dict = self._traverse(yaml_file.dict,
-                                       metadata_dict)
-        self._points = int(metadata_dict['magnetic_field'].pop('step_count'))
+        metadata_dict = self._traverse(yaml_file.dict, metadata_dict)
         self.dataset.metadata.from_dict(metadata_dict)
 
     def _traverse(self, dict_, metadata_dict):
@@ -157,19 +155,19 @@ class BES3TImporter(aspecd.io.DatasetImporter):
     def _get_magnetic_field_axis(self):
         # Abbreviations:
         start = self.dataset.metadata.magnetic_field.start.value
-        points = self._points
+        points = int(self.dataset.metadata.magnetic_field.points)
         sweep_width = self.dataset.metadata.magnetic_field.sweep_width.value
         # because Bruker confounds number of steps and points
         stop = start + sweep_width - (sweep_width / (points + 1))
         # Set axis
         magnetic_field_axis = np.linspace(start, stop, points)
         assert len(magnetic_field_axis) == points, \
-            'Length of magnetic field and step count differ'
+            'Length of magnetic field and number of points differ'
+        assert len(magnetic_field_axis) == self.dataset.data.data.shape[0], \
+            'Length of magnetic field and size of data differ'
         # set more values in dataset
         self.dataset.metadata.magnetic_field.stop.value = stop
         self.dataset.data.axes[0].values = magnetic_field_axis
-        self.dataset.metadata.magnetic_field.step_width.value = \
-            sweep_width / points
 
     def _load_infofile(self):
         """Import infofile and parse it."""
@@ -218,7 +216,7 @@ class BES3TImporter(aspecd.io.DatasetImporter):
             self.dataset.metadata.bridge.power.value *= 1e3
             self.dataset.metadata.bridge.power.unit = 'mW'
         # magnetic field objects
-        objects_ = ('start', 'stop', 'sweep_width', 'step_width')
+        objects_ = ('start', 'stop', 'sweep_width')
         for object_ in objects_:
             magnetic_field_object = getattr(
                 self.dataset.metadata.magnetic_field, object_)

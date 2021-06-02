@@ -270,3 +270,7 @@ class InfofileReporter(DokuwikiCaptionsReporter):
         return os.path.join(module_rootpath, 'templates', language,
                             'Infofile.info.jinja')
 
+    def _create_context(self):
+        super()._create_context()
+        self.context['DATASET_ID'] = \
+            os.path.split(self.context['dataset']['id'])[-1]

@@ -11,7 +11,7 @@ magnetic_field:
     value: XWID
   step_width:
     unit: XUNI
-  step_count: XPTS
+  points: XPTS
   sequence: SweepDirection
 bridge:
   attenuation: PowerAtten

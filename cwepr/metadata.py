@@ -192,7 +192,7 @@ class MagneticField(aspecd.metadata.Metadata):
     step_width : :class:`aspecd.metadata.PhyPhysicalQuantity`
         Distance between two points (only if equidistant!).
 
-    step_count : :class:`int`
+    points : :class:`int`
         Number of points.
 
     field_probe_type : :class:`str`
@@ -210,10 +210,6 @@ class MagneticField(aspecd.metadata.Metadata):
     power_supply : :class:`str`
         Model of the power supply.
 
-    .. todo::
-        Carefully revise paramters step count, step with and sweep width,
-        eventually remove step width(?)
-
     """
 
     def __init__(self, dict_=None):
@@ -221,8 +217,7 @@ class MagneticField(aspecd.metadata.Metadata):
         self.start = aspecd.metadata.PhysicalQuantity()
         self.stop = aspecd.metadata.PhysicalQuantity()
         self.sweep_width = aspecd.metadata.PhysicalQuantity()
-        self.step_width = aspecd.metadata.PhysicalQuantity()
-        self.step_count = int()
+        self.points = int()
         self.field_probe_type = ""
         self.field_probe_model = ""
         self.sequence = ""
@@ -260,10 +255,7 @@ class MagneticField(aspecd.metadata.Metadata):
         if self.sweep_width.value != 0.:
             sector_par += 1
             step_par += 1
-        if self.step_width.value != 0.:
-            step_def = True
-            step_par += 1
-        if self.step_count != 0:
+        if self.points != 0:
             step_def = True
             step_par += 1
         if (not sector_def) or sector_par < 2:
@@ -291,7 +283,7 @@ class MagneticField(aspecd.metadata.Metadata):
         """
         units_error_message = "Quantities with different units provided."
         if self.can_calculate():
-            self.step_count = int(self.step_count)
+            self.points = int(self.points)
             self._calc_field_width(units_error_message)
             self._calc_field_limits(units_error_message)
             self._calc_step_data(units_error_message)
@@ -316,14 +308,14 @@ class MagneticField(aspecd.metadata.Metadata):
             self.start.unit = self.stop.unit
 
     def _calc_step_data(self, units_error_message):
-        if self.step_count == 0:
+        if self.points == 0:
             if self.sweep_width.unit != self.step_width.unit:
                 raise UnequalUnitsError(units_error_message)
-            self.step_count = int(round((self.sweep_width.value /
-                                         self.step_width.value), 0)) + 1
+            self.points = int(round((self.sweep_width.value /
+                                     self.step_width.value), 0)) + 1
         if self.step_width.value == 0.:
             self.step_width.value = \
-                self.sweep_width.value / (self.step_count - 1)
+                self.sweep_width.value / (self.points - 1)
             self.step_width.unit = self.stop.unit
 
     def gauss_to_millitesla(self):
@@ -517,6 +509,9 @@ class SignalChannel(aspecd.metadata.Metadata):
     phase : :class:`aspecd.metadata.PhysicalQuantity`
         Phase of the modulation amplifier.
 
+    offset : :class:`float`
+        Baseline offset
+
     """
 
     def __init__(self, dict_=None):
@@ -529,6 +524,7 @@ class SignalChannel(aspecd.metadata.Metadata):
         self.conversion_time = aspecd.metadata.PhysicalQuantity()
         self.time_constant = aspecd.metadata.PhysicalQuantity()
         self.phase = aspecd.metadata.PhysicalQuantity()
+        self.offset = float()
         super().__init__(dict_=dict_)
 
 
