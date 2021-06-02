@@ -218,10 +218,10 @@ class DokuwikiCaptionsReporter(aspecd.report.Reporter):
 
     """
 
-    def __init__(self):
-        self.filename = ''
+    def __init__(self, template='', filename=''):
+        self.filename = filename
         self.language = 'de'
-        self.template = self._get_template()
+        self.template = template if template else self._get_template()
         super().__init__(template=self.template, filename=self.filename)
         self.dataset = cwepr.dataset.ExperimentalDataset()
         # private properties
@@ -236,8 +236,7 @@ class DokuwikiCaptionsReporter(aspecd.report.Reporter):
 
     def _get_template(self):
         language = self.language
-        module_rootpath = os.path.split(os.path.abspath(
-            __file__))[0]
+        module_rootpath = os.path.split(os.path.abspath(__file__))[0]
         return os.path.join(module_rootpath, 'templates', language,
                             'DokuwikiCaption.txt.jinja')
 
@@ -255,3 +254,19 @@ class DokuwikiCaptionsReporter(aspecd.report.Reporter):
 
     def _create_context(self):
         self.context['METADATA'] = self._metadata
+
+
+class InfofileReporter(DokuwikiCaptionsReporter):
+
+    def __init__(self):
+        self.filename = ''
+        self.language = 'en'
+        self.template = self._get_template()
+        super().__init__(template=self.template, filename=self.filename)
+
+    def _get_template(self):
+        language = self.language
+        module_rootpath = os.path.split(os.path.abspath(__file__))[0]
+        return os.path.join(module_rootpath, 'templates', language,
+                            'Infofile.info.jinja')
+

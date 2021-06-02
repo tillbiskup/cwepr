@@ -53,11 +53,6 @@ class TestPowerSweepAnalysisReport(unittest.TestCase):
             os.path.join(TEST_ROOTPATH, 'io/testdata/power-sweep-analysis.yaml')
         self.filename = 'PowerSweepReport.tex'
         self.filename2 = 'PowerSweepAnalysis.pdf'
-        #template_ = os.path.join(
-        #    MODULE_ROOTPATH, 'templates', 'de', 'power_sweep_report.tex.jinja')
-        #self.reporter = \
-         #   cwepr.report.PowerSweepAnalysisReporter(template=template_,
-          #                                          filename=self.filename)
         self.chef = aspecd.tasks.ChefDeService()
 
     def tearDown(self):
@@ -98,7 +93,34 @@ class TestDokuwikiCaptionsReporter(unittest.TestCase):
         self.reporter.create()
         self.assertTrue(os.path.exists(self.filename))
 
-    def test_reporter_without_template(self):
+    def test_reporter_without_template_filename(self):
         self.reporter.filename = self.filename
         self.reporter.create()
         self.assertTrue(os.path.exists(self.filename))
+
+
+class InfofileReporter(unittest.TestCase):
+    def setUp(self):
+        self.filename = 'MyInfofile.info'
+        self.template_ = os.path.join(
+            MODULE_ROOTPATH, 'cwepr', 'templates', 'en', 'Infofile.info.jinja')
+        self.reporter = cwepr.report.InfofileReporter()
+        self.dataset = cwepr.dataset.ExperimentalDataset()
+        source = \
+            os.path.join(TEST_ROOTPATH, "io/testdata/test-bes3t-1D-fieldsweep")
+        factory = cwepr.dataset.DatasetFactory()
+        self.dataset = factory.get_dataset(source=source)
+        self.reporter.context['dataset'] = self.dataset.to_dict()
+
+    @unittest.skip(reason='I want to see the file!')
+    def tearDown(self):
+        if os.path.exists(self.filename):
+            os.remove(self.filename)
+
+    def test_reporter(self):
+        self.reporter.filename = self.filename
+        self.reporter.template = self.template_
+        self.reporter.create()
+        self.assertTrue(os.path.exists(self.filename))
+
+

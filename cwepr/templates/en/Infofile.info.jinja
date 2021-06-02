@@ -1,0 +1,80 @@
+cwEPR Info file - v. 0.1.4 (2020-01-21)
+
+GENERAL
+Filename:               BDPA-1DFieldSweep
+Date start:             {{METADATA['measurement']['start'][:10]}}
+Date end:               {{METADATA['measurement']['end'][:10]}}
+Time start:             {{METADATA['measurement']['start'][-8:]}}
+Time end:               {{METADATA['measurement']['end'][-8:]}}
+Operator:               {{METADATA['measurement']['operator']}}
+Label:                  {{METADATA['measurement']['label']}}
+Purpose:                {{METADATA['measurement']['purpose']}}
+
+SAMPLE
+Name:                   {{METADATA['sample']['name']}}
+ID:                     {{METADATA['sample']['id']}}
+Description:            {{METADATA['sample']['description']}}
+Solvent:                {{METADATA['sample']['solvent']}}
+Preparation:            {{METADATA['sample']['preparation']}}
+Tube:                   {{METADATA['sample']['tube']}}
+
+EXPERIMENT
+Type:                   {{METADATA['experiment']['type']}}
+Runs:                   {{METADATA['experiment']['runs']}}
+Variable parameter:     {{METADATA['experiment']['variable_parameter']}}
+Increment:              {{METADATA['experiment']['increment']}}
+
+SPECTROMETER
+Model:                  {{METADATA['spectrometer']['model']}}
+Software:               {{METADATA['spectrometer']['software']}}
+
+MAGNETIC FIELD
+Field probe type:       {{METADATA['magnetic_field']['field_probe_type']}}
+Field probe model:      {{METADATA['magnetic_field']['field_probe_model']}}
+Start:                  {{'%3.2f' %METADATA['magnetic_field']['start']['value']}} {{METADATA['magnetic_field']['start']['unit']}}
+Stop:                   {{'%3.2f' %METADATA['magnetic_field']['stop']['value']}} {{METADATA['magnetic_field']['stop']['unit']}}
+Step:                   { {METADATA['magnetic_field']['step']['value']}} { {METADATA['magnetic_field']['step']['unit']}}
+Sequence:               {{METADATA['magnetic_field']['sequence']}}
+Controller:             {{METADATA['magnetic_field']['controller']}}
+Power supply:           {{METADATA['magnetic_field']['power_supply']}}
+
+BRIDGE
+Model:                  {{METADATA['bridge']['model']}}
+Controller:             {{METADATA['bridge']['controller']}}
+Attenuation:            {{'%i' %METADATA['bridge']['attenuation']['value']}} {{METADATA['bridge']['attenuation']['unit']}}
+Power:                  {{'%2.4f' %METADATA['bridge']['power']['value']}} {{METADATA['bridge']['power']['unit']}}
+Detection:              {{METADATA['bridge']['detection']}}
+Frequency counter:      {{METADATA['bridge']['frequency_counter']}}
+MW frequency:           {{'%2.6f' %METADATA['bridge']['mw_frequency']['value']}} {{METADATA['bridge']['mw_frequency']['unit']}}
+Q value:                {{'%i' %METADATA['bridge']['q_value']}}
+
+SIGNAL CHANNEL
+Model:                  {{METADATA['signal_channel']['model']}}
+Modulation amplifier:   {{METADATA['signal_channel']['modulation_amplifier']}}
+Accumulations:          {{'%i' %METADATA['signal_channel']['accumulations']}}
+Modulation frequency:   {{'%i' %METADATA['signal_channel']['modulation_frequency']['value']}} {{METADATA['signal_channel']['modulation_frequency']['unit']}}
+Modulation amplitude:   {{'%2.2f' %METADATA['signal_channel']['modulation_amplitude']['value']}} {{METADATA['signal_channel']['modulation_amplitude']['unit']}}
+Receiver gain:          {{'%i' %METADATA['signal_channel']['receiver_gain']['value']}} {{METADATA['signal_channel']['receiver_gain']['unit']}}
+Offset:                 { {'%2.2f' %METADATA['signal_channel']['offset']['value']}} { {METADATA['signal_channel']['offset']['unit']}}
+Conversion time:        {{'%4.2f' %METADATA['signal_channel']['conversion_time']['value']}} {{METADATA['signal_channel']['conversion_time']['unit']}}
+Time constant:          {{'%4.2f' %METADATA['signal_channel']['time_constant']['value']}} {{METADATA['signal_channel']['time_constant']['unit']}}
+Phase:                  {{'%2.2f' %METADATA['signal_channel']['phase']['value']}} {{METADATA['signal_channel']['phase']['unit']}}
+
+DIGITAL FILTER
+Mode:                   Manual
+Number of Points:       0
+
+
+PROBEHEAD
+Type:                   {{METADATA['probehead']['type']}}
+Model:                  {{METADATA['probehead']['model']}}
+Coupling:               {{METADATA['probehead']['coupling']}}
+
+TEMPERATURE
+Temperature:            {{METADATA['temperature_control']['temperature']['value']}} {{METADATA['temperature_control']['temperature']['unit']}}
+Controller:             {{METADATA['temperature_control']['controller']}}
+Cryostat:               {{METADATA['temperature_control']['cryostat']}}
+Cryogen:                {{METADATA['temperature_control']['cryogen']}}
+
+COMMENT
+{{','.join(dataset['annotations'][0]['annotation']['content']['comment'])}}
