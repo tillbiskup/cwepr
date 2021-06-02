@@ -124,10 +124,41 @@ import aspecd.processing
 
 
 class GoniometerSweepPlotter(aspecd.plotting.SingleCompositePlotter):
-    """Goniometer plotter based on the single composite plotter.
+    """Overview of the results of a goniometer sweep.
 
-    Besides the plots for the overview, it shows the overlay of the 0
-    and 180 degree traces to check for consistency during the measurement.
+    A goniometer sweep, *i.e.* a series of cw-EPR spectra as a function of
+    the angle of the sample with respect to the external magnetic field,
+    is usually performed over at least 180°, regardless of the step size.
+    The reason is simply that the spectra for 0° and 180° should be
+    identical due to the underlying physics of magnetic resonance.
+
+    The plotter will create three subpanels:
+
+    * A 2D plot (scaled image plot) as a general overview.
+
+    * A 1D multiplot comparing the signals for 0° and 180° to check for
+      consistency during the measurement.
+
+    * A stacked plot showing all angular positions, providing an alternative
+      view of the angular-dependent signal changes compared to the 2D plot.
+
+
+    Examples
+    --------
+    For convenience, a series of examples in recipe style (for details of
+    the recipe-driven data analysis, see :mod:`aspecd.tasks`) is given below
+    for how to make use of this class.
+
+    To get an overview of your goniometer sweep, just invoke the plotter with
+    default values:
+
+    .. code-block:: yaml
+
+       - kind: singleplot
+         type: GoniometerSweepPlotter
+         properties:
+           filename: output.pdf
+
     """
 
     def __init__(self):

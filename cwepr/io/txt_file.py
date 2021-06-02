@@ -48,9 +48,8 @@ class CsvImporter(aspecd.io.DatasetImporter):
 
     def _read_data(self):
         with open(self.source + self.extension) as csv_file:
-            raw_data = np.loadtxt(csv_file, delimiter=';',
-                                  skiprows=3)
-
+            # noinspection PyTypeChecker
+            raw_data = np.loadtxt(csv_file, delimiter=';', skiprows=3)
             self.dataset.data.data = raw_data[:, 1]
             self.dataset.data.axes[0].values = raw_data[:, 0]
 
