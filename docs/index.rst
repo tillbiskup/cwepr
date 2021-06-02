@@ -2,7 +2,7 @@
 cwEPR documentation
 ===================
 
-Welcome! This is the documentation for cwEPR, a Python package for **processing and analysis of continuous-wave electron paramagnetic resonance (cw-EPR) spectra** based on the `ASpecD framework <https://www.aspecd.de/>`_. For general information see its `Homepage <https://www.cwepr.de/>`_.Due to the inheritance from the ASpecD framework, all data generated with the trepr package are completely reproducible and have a complete history.
+Welcome! This is the documentation for cwEPR, a Python package for **processing and analysis of continuous-wave electron paramagnetic resonance (cw-EPR) spectra** based on the `ASpecD framework <https://www.aspecd.de/>`_. For general information see its `Homepage <https://www.cwepr.de/>`_. Due to the inheritance from the ASpecD framework, all data generated with the cwepr package are completely reproducible and have a complete history.
 
 What is even better: Actual data processing and analysis **no longer requires programming skills**, but is as simple as writing a text file summarising all the steps you want to have been performed on your dataset(s) in an organised way. Curious? Have a look at the following example:
 
@@ -42,7 +42,7 @@ Interested in more real-live examples? Check out the :doc:`use cases section <us
 Features
 ========
 
-A list of features, not all implemented yet but aimed at for the first public release (cwEPR 0.1):
+A list of features:
 
 * Fully reproducible processing of cw-EPR data
 
@@ -63,7 +63,7 @@ And to make it even more convenient for users and future-proof:
 
 
 .. warning::
-  The cwEPR package is currently under active development and still considered in Alpha development state. Therefore, expect frequent changes in features and public APIs that may break your own code. Nevertheless, feedback as well as feature requests are highly welcome.
+  The cwEPR package is currently under active development and still considered in Beta development state. Therefore, expect frequent changes in features and public APIs that may break your own code. Nevertheless, feedback as well as feature requests are highly welcome.
 
 
 Where to start

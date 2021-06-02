@@ -26,8 +26,8 @@ with open(os.path.join(os.path.dirname(__file__), '..', 'VERSION')) as \
     release_ = version_file.read().strip()
 
 project = 'cwEPR'
-copyright = '2018– Till Biskup, 2020- Mirjam Schröder, 2018/19, Pascal Kirchner'
-author = 'Till Biskup, Mirjam Schröder, Pascal Kirchner'
+copyright = '2020- Mirjam Schröder, 2018/19 Pascal Kirchner, 2018– Till Biskup'
+author = 'Mirjam Schröder, Pascal Kirchner, Till Biskup'
 
 # The short X.Y version
 version = ".".join(release_.split('.')[0:2])
@@ -171,7 +171,7 @@ latex_elements = {
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
     (master_doc, 'cwepr.tex', 'cwEPR Documentation',
-     'Till Biskup, Mirjam Schröder, Pascal Kirchner', 'manual'),
+     author, 'manual'),
 ]
 
 
@@ -223,7 +223,8 @@ epub_exclude_files = ['search.html']
 intersphinx_mapping = {
     'python': ('https://docs.python.org/3', None),
     'numpy': ('https://numpy.org/doc/stable/', None),
-    'matplotlib': ('https://matplotlib.org/', None),
+    'scipy': ('https://docs.scipy.org/doc/scipy/reference/', None),
+    'matplotlib': ('https://matplotlib.org/stable/', None),
     'aspecd': ('https://docs.aspecd.de/', None),
 }
 
