@@ -15,6 +15,9 @@ area, amplitude, maximum, minimum), and for EPR spectroscopy such things as
 field and frequency correction.
 
 
+Processing steps specific for cw-EPR data
+-----------------------------------------
+
 Currently, the following processing steps are implemented:
 
   * :class:`FieldCorrection`
@@ -35,6 +38,62 @@ Implemented but not working as they should:
 
   * :class:`PhaseCorrection`
   * :class:`AutomaticPhaseCorrection`
+
+
+General processing steps inherited from the ASpecD framework
+------------------------------------------------------------
+
+Besides the processing steps specific for TREPR data, a number of further
+processing steps that are generally applicable to spectroscopic data have
+been inherited from the underlying ASpecD framework:
+
+* :class:`ScalarAlgebra`
+
+  Perform scalar algebraic operation on one dataset.
+
+  Operations available: add, subtract, multiply, divide (by given scalar)
+
+* :class:`ScalarAxisAlgebra`
+
+  Perform scalar algebraic operation on axis values of a dataset.
+
+  Operations available: add, subtract, multiply, divide, power (by given scalar)
+
+* :class:`DatasetAlgebra`
+
+  Perform scalar algebraic operation on two datasets.
+
+  Operations available: add, subtract
+
+* :class:`Projection`
+
+  Project data, *i.e.* reduce dimensions along one axis.
+
+* :class:`SliceExtraction`
+
+  Extract slice along one ore more dimensions from dataset.
+
+* :class:`BaselineCorrection`
+
+  Correct baseline of dataset.
+
+* :class:`Averaging`
+
+  Average data over given range along given axis.
+
+* :class:`Filtering`
+
+  Filter data
+
+
+Further processing steps implemented in the ASpecD framework can be used as
+well, by importing the respective modules. In case of recipe-driven data
+analysis, simply prefix the kind with ``aspecd``:
+
+.. code-block:: yaml
+
+    - kind: aspecd.processing
+      type: <ClassNameOfProcessingStep>
 
 
 Categories of processing steps
@@ -353,6 +412,9 @@ Note to developers
 Processing steps can be based on analysis steps, but not inverse! Otherwise,
 we get cyclic dependencies what should obviously be avoided in order to keep
 code working.
+
+Implementing own processing steps is rather straight-forward. For details,
+see the documentation of the :mod:`aspecd.processing` module.
 
 
 Module documentation
@@ -961,4 +1023,365 @@ class SubtractVector(aspecd.processing.SingleProcessingStep):
                 self.dataset.data.data[:, second_dim] -= \
                     self.parameters['vector']
         else:
-            raise cwepr.exceptions.DimensionError(message='Dataset has weird shape.')
+            raise cwepr.exceptions.DimensionError(
+                message='Dataset has weird shape.')
+
+
+class ScalarAlgebra(aspecd.processing.ScalarAlgebra):
+    """Perform scalar algebraic operation on one dataset.
+
+    As the class is fully inherited from ASpecD for simple usage, see the
+    ASpecD documentation of the :class:`aspecd.processing.ScalarAlgebra`
+    class for details.
+
+    Examples
+    --------
+    For convenience, a series of examples in recipe style (for details of
+    the recipe-driven data analysis, see :mod:`aspecd.tasks`) is given below
+    for how to make use of this class. The examples focus each on a single
+    aspect.
+
+    In case you would like to add a fixed value of 42 to your dataset:
+
+    .. code-block:: yaml
+
+       - kind: processing
+         type: ScalarAlgebra
+         properties:
+           parameters:
+             kind: add
+             value: 42
+
+    Similarly, you could use "minus", "times", "by", "add", "subtract",
+    "multiply", or "divide" as kind - resulting in the given algebraic
+    operation.
+
+    """
+
+
+class ScalarAxisAlgebra(aspecd.processing.ScalarAxisAlgebra):
+    """Perform scalar algebraic operation on the axis of a dataset.
+
+    As the class is fully inherited from ASpecD for simple usage, see the
+    ASpecD documentation of the :class:`aspecd.processing.ScalarAxisAlgebra`
+    class for details.
+
+    Examples
+    --------
+    For convenience, a series of examples in recipe style (for details of
+    the recipe-driven data analysis, see :mod:`aspecd.tasks`) is given below
+    for how to make use of this class. The examples focus each on a single
+    aspect.
+
+    In case you would like to add a fixed value of 42 to the first axis
+    (index 0) your dataset:
+
+    .. code-block:: yaml
+
+       - kind: processing
+         type: ScalarAxisAlgebra
+         properties:
+           parameters:
+             kind: plus
+             axis: 0
+             value: 42
+
+    Similarly, you could use "minus", "times", "by", "add", "subtract",
+    "multiply", "divide", and "power" as kind - resulting in the given
+    algebraic operation.
+
+    """
+
+
+class DatasetAlgebra(aspecd.processing.DatasetAlgebra):
+    """Perform scalar algebraic operation on two datasets.
+
+    As the class is fully inherited from ASpecD for simple usage, see the
+    ASpecD documentation of the :class:`aspecd.processing.DatasetAlgebra`
+    class for details.
+
+    Examples
+    --------
+    For convenience, a series of examples in recipe style (for details of
+    the recipe-driven data analysis, see :mod:`aspecd.tasks`) is given below
+    for how to make use of this class. The examples focus each on a single
+    aspect.
+
+    In case you would like to add the data of the dataset referred to by its
+    label ``label_to_other_dataset`` to your dataset:
+
+    .. code-block:: yaml
+
+       - kind: processing
+         type: DatasetAlgebra
+         properties:
+           parameters:
+             kind: plus
+             dataset: label_to_other_dataset
+
+    Similarly, you could use "minus", "add", "subtract" as kind - resulting
+    in the given algebraic operation.
+
+    As mentioned already, the data of both datasets need to have identical
+    shape, and comparison is only meaningful if the axes are compatible as
+    well. Hence, you will usually want to perform a CommonRangeExtraction
+    processing step before doing algebra with two datasets:
+
+    .. code-block:: yaml
+
+       - kind: multiprocessing
+         type: CommonRangeExtraction
+         results:
+           - label_to_dataset
+           - label_to_other_dataset
+
+       - kind: processing
+         type: DatasetAlgebra
+         properties:
+           parameters:
+             kind: plus
+             dataset: label_to_other_dataset
+         apply_to:
+           - label_to_dataset
+
+    """
+
+
+class Projection(aspecd.processing.Projection):
+    """Project data, *i.e.* reduce dimensions along one axis.
+
+    As the class is fully inherited from ASpecD for simple usage, see the
+    ASpecD documentation of the :class:`aspecd.processing.Projection`
+    class for details.
+
+    Examples
+    --------
+    For convenience, a series of examples in recipe style (for details of
+    the recipe-driven data analysis, see :mod:`aspecd.tasks`) is given below
+    for how to make use of this class. The examples focus each on a single
+    aspect.
+
+    In the simplest case, just invoke the projection with default values:
+
+    .. code-block:: yaml
+
+       - kind: processing
+         type: Projection
+
+    This will project the data along the first axis (index 0), yielding a 1D
+    dataset.
+
+    If you would like to project along the second axis (index 1), simply set
+    the appropriate parameter:
+
+    .. code-block:: yaml
+
+       - kind: processing
+         type: Projection
+         properties:
+           parameters:
+             axis: 1
+
+    This will project the data along the second axis (index 1), yielding a 1D
+    dataset.
+
+    """
+
+
+class SliceExtraction(aspecd.processing.SliceExtraction):
+    """Extract slice along one ore more dimensions from dataset.
+
+    As the class is fully inherited from ASpecD for simple usage, see the
+    ASpecD documentation of the :class:`aspecd.processing.SliceExtraction`
+    class for details.
+
+    Examples
+    --------
+    For convenience, a series of examples in recipe style (for details of
+    the recipe-driven data analysis, see :mod:`aspecd.tasks`) is given below
+    for how to make use of this class. The examples focus each on a single
+    aspect.
+
+    In the simplest case, just invoke the slice extraction with an index only:
+
+    .. code-block:: yaml
+
+       - kind: processing
+         type: SliceExtraction
+         properties:
+           parameters:
+             position: 5
+
+    This will extract the sixth slice (index five) along the first axis (index
+    zero).
+
+    If you would like to extract a slice along the second axis (with index
+    one), simply provide both parameters, index and axis:
+
+    .. code-block:: yaml
+
+       - kind: processing
+         type: SliceExtraction
+         properties:
+           parameters:
+             position: 5
+             axis: 1
+
+    This will extract the sixth slice along the second axis.
+
+    And as it is sometimes more convenient to give ranges in axis values
+    rather than indices, even this is possible. Suppose the axis you would
+    like to extract a slice from runs from 340 to 350 and you would like to
+    extract the slice corresponding to 343:
+
+    .. code-block:: yaml
+
+       - kind: processing
+         type: SliceExtraction
+         properties:
+           parameters:
+             position: 343
+             unit: axis
+
+    In case of you providing the range in axis units rather than indices,
+    the value closest to the actual axis value will be chosen automatically.
+
+    For ND datasets with N>2, you can either extract a 1D or ND slice,
+    with N always at least one dimension less than the original data. To
+    extract a 2D slice from a 3D dataset, simply proceed as above, providing
+    one value each for position and axis. If, however, you want to extract a
+    1D slice from a 3D dataset, you need to provide two values each for
+    position and axis:
+
+    .. code-block:: yaml
+
+       - kind: processing
+         type: SliceExtraction
+         properties:
+           parameters:
+             position: [21, 42]
+             axis: [0, 2]
+
+    This particular case would be equivalent to ``data[21, :, 42]`` assuming
+    ``data`` to contain the numeric data, besides, of course, that the
+    processing step takes care of removing the axes as well.
+
+    """
+
+
+class BaselineCorrection(aspecd.processing.BaselineCorrection):
+    """Subtract baseline from dataset.
+
+    As the class is fully inherited from ASpecD for simple usage, see the
+    ASpecD documentation of the :class:`aspecd.processing.BaselineCorrection`
+    class for details.
+
+    Examples
+    --------
+    For convenience, a series of examples in recipe style (for details of
+    the recipe-driven data analysis, see :mod:`aspecd.tasks`) is given below
+    for how to make use of this class. The examples focus each on a single
+    aspect.
+
+    In the simplest case, just invoke the baseline correction with default
+    values:
+
+    .. code-block:: yaml
+
+       - kind: processing
+         type: BaselineCorrection
+
+    In this case, a zeroth-order polynomial baseline will be subtracted from
+    your dataset using ten percent to the left and right, and in case of a
+    2D dataset, the baseline correction will be performed along the first
+    axis (index zero) for all indices of the second axis (index 1).
+
+    Of course, often you want to control a little bit more how the baseline
+    will be corrected. This can be done by explicitly setting some parameters.
+
+    Suppose you want to perform a baseline correction with a polynomial of
+    first order:
+
+    .. code-block:: yaml
+
+       - kind: processing
+         type: BaselineCorrection
+         properties:
+           parameters:
+             order: 1
+
+    If you want to change the (percental) area used for fitting the
+    baseline, and even specify different ranges left and right:
+
+    .. code-block:: yaml
+
+       - kind: processing
+         type: BaselineCorrection
+         properties:
+           parameters:
+             fit_area: [5, 20]
+
+    Here, five percent from the left and 20 percent from the right are used.
+
+    Finally, suppose you have a 2D dataset and want to average along the
+    second axis (index one):
+
+    .. code-block:: yaml
+
+       - kind: processing
+         type: BaselineCorrection
+         properties:
+           parameters:
+             axis: 1
+
+    Of course, you can combine the different options.
+
+    """
+
+
+class Filtering(aspecd.processing.Filtering):
+    """Filter data.
+
+    As the class is fully inherited from ASpecD for simple usage, see the
+    ASpecD documentation of the :class:`aspecd.processing.Filtering`
+    class for details.
+
+    Examples
+    --------
+    For convenience, a series of examples in recipe style (for details of
+    the recipe-driven data analysis, see :mod:`aspecd.tasks`) is given below
+    for how to make use of this class. The examples focus each on a single
+    aspect.
+
+    Generally, filtering requires to provide both, a type of filter and a
+    window length. Therefore, for uniform and Gaussian filters, this would be:
+
+    .. code-block:: yaml
+
+       - kind: processing
+         type: Filtering
+         properties:
+           parameters:
+             type: uniform
+             window_length: 10
+
+    Of course, at least uniform filtering (also known as boxcar or moving
+    average) is strongly discouraged due to the artifacts introduced.
+    Probably the best bet for applying a filter to smooth your data is the
+    Savitzky-Golay filter:
+
+    .. code-block:: yaml
+
+       - kind: processing
+         type: Filtering
+         properties:
+           parameters:
+             type: savitzky-golay
+             window_length: 10
+             order: 3
+
+    Note that for this filter, you need to provide the polynomial order as
+    well. To get best results, you will need to experiment with the
+    parameters a bit.
+
+    """

@@ -22,12 +22,12 @@ What is even better: Actual data processing and analysis **no longer requires pr
         properties:
           parameters:
             frequency: 9.8
-      - kind: aspecd.processing
+      - kind: processing
         type: BaselineCorrection
         properties:
           parameters:
             order: 0
-      - kind: aspecd.singleplot
+      - kind: singleplot
         type: SinglePlotter1D
         properties:
           filename:
