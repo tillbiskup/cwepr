@@ -22,11 +22,6 @@ For version 0.1
 
 * Metadata: Revise parameters step count, step with and sweep width!
 
-* Use cases
-
-  * Recipes for the different tasks
-  * Perhaps (re)move conventional programmatic approach
-
 
 For later versions
 ==================
