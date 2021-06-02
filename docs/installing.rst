@@ -13,11 +13,11 @@ Hence, a more thorough sequence of events would be:
 
 #. Install Python (if it is not already installed on your system).
 
-#. Create a Python virtual environment for ASpecD.
+#. Create a Python virtual environment for cwEPR.
 
 #. Activate the newly created virtual environment.
 
-#. Install ASpecD therein, using the above command.
+#. Install cwEPR therein, using the above command.
 
 A few details for all these steps are given below.
 

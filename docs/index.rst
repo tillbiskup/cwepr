@@ -77,7 +77,7 @@ The :doc:`API documentation <api/index>` is the definite source of information f
 
 
 Installation
-------------
+============
 
 To install the cwepr package on your computer (sensibly within a Python virtual environment), open a terminal (activate your virtual environment), and type in the following:
 
@@ -89,7 +89,7 @@ Have a look at the more detailed :doc:`installation instructions <installing>` a
 
 
 Related projects
-----------------
+================
 
 There is a number of related packages users of the trepr package may well be interested in, as they have a similar scope, focussing on spectroscopy and reproducible research.
 
