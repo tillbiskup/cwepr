@@ -41,7 +41,7 @@ setuptools.setup(
         "Topic :: Scientific/Engineering",
     ],
     install_requires=[
-        'aspecd>=0.2.0',
+        'aspecd>=0.2.1',
         'numpy',
         'scipy',
         'matplotlib',

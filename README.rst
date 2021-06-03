@@ -17,19 +17,19 @@ What is even better: Actual data processing and analysis **no longer requires pr
         properties:
           parameters:
             frequency: 9.8
-      - kind: aspecd.processing
+      - kind: processing
         type: BaselineCorrection
         properties:
           parameters:
             order: 0
-      - kind: aspecd.singleplot
+      - kind: singleplot
         type: SinglePlotter1D
         properties:
           filename:
             - first-dataset.pdf
             - second-dataset.pdf
 
-For more general information on the trepr package and for how to use it, see its `documentation <https://doc.cwepr.de/>`_.
+For more general information on the cwepr package and for how to use it, see its `documentation <https://doc.cwepr.de/>`_.
 
 
 Features

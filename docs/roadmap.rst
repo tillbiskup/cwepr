@@ -6,13 +6,9 @@ Roadmap
 
 A few ideas how to develop the project further, currently a list as a reminder for the main developers themselves, in no particular order, though with a tendency to list more important aspects first:
 
+
 For version 0.2
 ===============
-
-* More documentation!
-
-  * All attributes
-  * Much more explanations
 
 * Implement derived importers for Magnettech files
 
@@ -30,7 +26,7 @@ For later versions
 
   * Renaming to sensible conventions (recursively through directories)
 
-* Batch processing
+* Batch processing (via recipes?)
 
   * Basic preprocessing, plot, export as PNG/PDF, figure caption for dokuwiki
 
