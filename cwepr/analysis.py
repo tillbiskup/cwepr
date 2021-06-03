@@ -21,13 +21,6 @@ impact data analysis.
     a subpackage at some point in the future, depending on the number of
     classes for analysis steps to come (but rather likely to happen).
 
-
-.. todo::
-    Reduce number of error classes, as many seem to be pretty generic,
-    and make use of the messages if exceptions are thrown. Carefully revise
-    methods.
-
-
 .. todo::
     Make methods dealing with both, 1D and 2D datasets or raising the
     respective errors.
@@ -57,6 +50,9 @@ class FieldCorrectionValue(aspecd.analysis.SingleAnalysisStep):
 
     As g standard reference, it can be chosen from two substances, LiLiF and
     DPPH using the parameter "standard".
+
+    .. todo::
+        Check for units and make them consistent for both points.
 
     References for the constants:
 
@@ -95,7 +91,6 @@ class FieldCorrectionValue(aspecd.analysis.SingleAnalysisStep):
 
     Examples
     --------
-
     .. code-block:: yaml
 
         - kind: singleanalysis
@@ -395,7 +390,7 @@ class AmplitudeVsPower(aspecd.analysis.SingleAnalysisStep):
           type: AmplitudeVsPower
           result: calc_dataset
 
-     """
+    """
 
     def __init__(self):
         super().__init__()

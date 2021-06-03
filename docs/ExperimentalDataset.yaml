@@ -71,12 +71,7 @@ metadata:
       dimension: ''
       name: ''
       value: 0.0
-    step_width:
-      unit: ''
-      dimension: ''
-      name: ''
-      value: 0.0
-    step_count: 0
+    points: 0
     field_probe_type: ''
     field_probe_model: ''
     sequence: ''
@@ -106,7 +101,7 @@ metadata:
   signal_channel:
     model: ''
     modulation_amplifier: ''
-    accumulations: ''
+    accumulations: 0
     modulation_frequency:
       unit: ''
       dimension: ''
@@ -137,6 +132,7 @@ metadata:
       dimension: ''
       name: ''
       value: 0.0
+    offset: 0.0
   probehead:
     type: ''
     model: ''

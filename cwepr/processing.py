@@ -170,32 +170,26 @@ Algebra
 .. sidebar::
     Availability
 
-    Algebra is available directly via the ASpecD Module:
-    :class:`aspecd.processing.ScalarAlgebra` and
-    :class:`aspecd.processing.DatasetAlgebra`
+    Algebra is available with:
+    :class:`ScalarAlgebra` and
+    :class:`DatasetAlgebra`
 
 Comparing datasets often involves adding, subtracting, multiplying or
-dividing the intensity values by a given fixed number. This is very simple
-algebra and should probably be implemented in the ASpecD framework eventually.
-
-Possible scenarios where one wants to multiply the intensity values of a
-cwEPR spectrum may be comparing spectra resulting from a single species from
-those of known two species, different (known) concentrations and alike.
+dividing the intensity values by a given fixed number. Possible scenarios
+where one wants to multiply the intensity values of a cwEPR spectrum may be
+comparing spectra resulting from a single species from those of known two
+species, different (known) concentrations and alike.
 
 Of course, dividing the intensity of the spectrum by the maximum intensity
 is another option, however, this would be normalisation to maximum (not
 always a good idea, usually normalising to area or amplitude is better),
 and this is handled by a different set of processing steps (see below).
 
-.. note::
-    This type of simple algebra is quite *different* from adding or
-    subtracting datasets together. Whereas simple algebra really is a
-    one-liner in terms of implementation, handling different datasets
-    involves ensuring commensurable axis dimensions and ranges, to say the
-    least.
-
-.. todo::
-    Add note to Dataset Algebra
+This type of simple algebra is quite *different* from adding or subtracting
+datasets together. Whereas simple algebra really is a one-liner in terms of
+implementation, handling different datasets involves ensuring commensurable
+axis dimensions and ranges, to say the least. Dataset algebra is available as
+well in this module.
 
 
 Normalisation
@@ -442,9 +436,7 @@ class FieldCorrection(aspecd.processing.SingleProcessingStep):
     previously determined.
 
     .. todo::
-        Check that the correct axis gets corrected, meaning that it should
-        be a magnetic field axis having the correct unit for the correction
-        value.
+        Doublecheck for units.
 
     Attributes
     ----------
@@ -460,9 +452,13 @@ class FieldCorrection(aspecd.processing.SingleProcessingStep):
 
     def _perform_task(self):
         """Shift all field axis data points by the correction value."""
-        for data_index, _ in enumerate(self.dataset.data.data):
-            self.dataset.data.axes[0].values[data_index] += \
-                self.parameters["correction_value"]
+        for axis in self.dataset.data.axes:
+            # TODO: Question: Better check for quantity rather than unit? (
+            #   Difficult if not filled)
+            # if axis.quantity == 'magnetic field'
+            if axis.unit in ('mT', 'G'):
+                self.dataset.data.axes[0].values += \
+                    self.parameters["correction_value"]
 
 
 class FrequencyCorrection(aspecd.processing.SingleProcessingStep):
