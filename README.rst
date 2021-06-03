@@ -1,6 +1,10 @@
 cwEPR
 =====
 
+.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.4896687.svg
+   :target: https://doi.org/10.5281/zenodo.4896687
+   :align: right
+
 The cwEPR package provides tools for handling experimental data obtained using continuous-wave EPR (cwEPR) spectroscopy and is derived from the `ASpecD framework <https://www.aspecd.de/>`_. Due to inheriting from the ASpecD superclasses, all data generated with the cwepr package are completely reproducible and have a complete history.
 
 What is even better: Actual data processing and analysis **no longer requires programming skills**, but is as simple as writing a text file summarising all the steps you want to have been performed on your dataset(s) in an organised way. Curious? Have a look at the following example::
