@@ -112,7 +112,6 @@ class InfofileReporter(unittest.TestCase):
         self.dataset = factory.get_dataset(source=source)
         self.reporter.context['dataset'] = self.dataset.to_dict()
 
-    @unittest.skip(reason='I want to see the file!')
     def tearDown(self):
         if os.path.exists(self.filename):
             os.remove(self.filename)

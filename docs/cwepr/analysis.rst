@@ -8,6 +8,7 @@ Eventually, fitting spectral simulations to the recorded data can be regarded as
 
 Nevertheless, there are a number of analysis steps that are rather generic, particularly regarding routine measurements necessary to find the appropriate experimental settings for :doc:`recording accurate cw-EPR spectra <recording>`, namely power and modulation sweeps.
 
+.. _power_sweep_analysis:
 
 Power sweep analysis
 ====================
@@ -23,6 +24,7 @@ Besides finding the maximum microwave power level for distortion-free recording 
 
     As mentioned already when discussing how to :doc:`record cw-EPR spectra <recording>`, the maximum microwave power level possible before saturating the signal usually needs to be determined for each sample individually. For one and the same type of samples measured at the same setup with comparable physical condition, a power sweep may, however, be performed only once. Nevertheless, keep in mind that those settings can usually *not* be transferred between different setups.
 
+.. _modulation_sweep_analysis:
 
 Modulation sweep analysis
 =========================

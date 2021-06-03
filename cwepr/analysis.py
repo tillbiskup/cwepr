@@ -60,7 +60,7 @@ class FieldCorrectionValue(aspecd.analysis.SingleAnalysisStep):
 
     References for the constants:
 
-    g value of Li:LiF::
+    g value of Li:LiF:
 
         g(LiLiF) = 2.002293 +- 0.000002
 
@@ -74,20 +74,37 @@ class FieldCorrectionValue(aspecd.analysis.SingleAnalysisStep):
 
     Attributes
     ----------
-    parameters['standard'] : :class:`str`
-        Field standard that should be applied.
+    parameters : :class:`dict`
+        All parameters necessary for this step.
 
-        Default: LiLiF
+        standard : :class:`str`
+            Field standard that should be applied.
+            Valid values are "LiLiF" and "DPPH"
 
-    parameters['mw_frequency'] : :class:`float`
-        Microwave frequency to be corrected for. In general, is taken from the
-        dataset what is recommended but can also be given.
+            Default: LiLiF
+
+        mw_frequency : :class:`float`
+            Microwave frequency to be corrected for. In general, is taken
+            from the dataset, what is recommended, but can also be given.
 
     Raises
     ------
     MissingInformationError
         Raised if no microwave frequency is given neither in the dataset nor
         as parameter.
+
+    Examples
+    --------
+
+    .. code-block:: yaml
+
+        - kind: singleanalysis
+          type: FieldCorrectionValue
+          properties:
+            parameters:
+                mw_frequency: 9.5
+                standard: LiLiF
+          result: deltaB
 
     """
 
@@ -153,15 +170,19 @@ class FieldCorrectionValue(aspecd.analysis.SingleAnalysisStep):
 
 
 class LinewidthPeakToPeak(aspecd.analysis.SingleAnalysisStep):
-    """Linewidth measurement (peak to peak in derivative).
+    """Peak to peak linewidth in derivative spectrum.
 
-    .. todo::
-        Combine all linewidth classes into one with a switch for the method
-        to use?
+    The linewidth is given in a dirst derivative spectrum as difference
+    between the two extreme points. However, this is valid only for simple
+    spectra with just one line or signal. This analysis step simply takes the
+    difference on the magnetic field axis which is then stored in the result.
+    The task can be used as following:
 
-        However: FWHM can only be used as linewidth measure in absorptive
-        spectra, not in derivative-shape spectra. Perhaps therefore rename
-        to Peak2PeakDistance or similar?
+    .. code-block:: yaml
+
+      - kind: singleanalysis
+        type: LinewidthPeakToPeak
+        result: linewidth
 
     """
 
@@ -198,21 +219,36 @@ class LinewidthPeakToPeak(aspecd.analysis.SingleAnalysisStep):
 
 
 class LinewidthFWHM(aspecd.analysis.SingleAnalysisStep):
-    """Full linewidth at half maximum."""
+    """Full linewidth at half maximum (FWHM).
+
+    In EPR, this linewidth can be applied to integrated cwEPR spectra or
+    spectra recorded in absorptive mode.
+    The calculation is done by subtracting maximum/2, getting the absolute
+    value and then determining the minima. The distance between these points
+    corresponds to the FWHM linewidth.
+
+    Examples
+    --------
+    Usage is quite simple as it requires no additional parameters:
+
+    .. code-block:: yaml
+
+        - kind: singleanalysis
+          type: LinewidthFWHM
+          result: linewidth
+
+
+    """
 
     def __init__(self):
         super().__init__()
         self.description = "Determine linewidth (full width at half max; FWHM)"
 
     def _perform_task(self):
-        self.result = self.get_fwhm_linewidth()
+        self.result = self._get_fwhm_linewidth()
 
-    def get_fwhm_linewidth(self):
+    def _get_fwhm_linewidth(self):
         """Calculates the line width (full width at half maximum, FWHM).
-
-        This is done by subtracting maximum/2, building the absolute value
-        and then determining the minima. The distance between these points
-        corresponds to the FWHM linewidth.
 
         Returns
         -------
@@ -244,9 +280,23 @@ class SignalToNoiseRatio(aspecd.analysis.SingleAnalysisStep):
     ----------
     parameters['percentage']: :class:`int`
         percentage of the spectrum to be considered edge part on any side
-        (i.e. 10 % means 10 % on each end).
+        (i.e. 10 % means 10 % on each side).
 
         Default: 10 %
+
+    Examples
+    --------
+    The analysis can be applied either with or without the additional
+    parameter "percentage":
+
+    .. code-block:: yaml
+
+        - kind: singleanalysis
+          type: SignalToNoiseRatio
+          properties:
+            parameters:
+                percentage: 7
+          result: SNR
 
     """
 
@@ -293,6 +343,16 @@ class Amplitude(aspecd.analysis.SingleAnalysisStep):
     result
         amplitude(s) row-wise, thus scalar or vector.
 
+    Examples
+    --------
+    The analysis is again called without additional parameters:
+
+    .. code-block:: yaml
+
+        - kind: singleanalysis
+          type: Amplitude
+          result: amplitude
+
     """
 
     def __init__(self):
@@ -322,7 +382,20 @@ class AmplitudeVsPower(aspecd.analysis.SingleAnalysisStep):
        Calculated Dataset where the data is the amplitude and the axis
        values is the root of the mw-power (in ascending order).
 
-    """
+    Examples
+    --------
+    For analysing a power sweep, extracting the amplitude and taking the root of
+    the microwave power is the first step to success (see
+    :ref:`power_sweep_analysis` for further details) and can be done as
+    follows without additional parameters:
+
+    .. code-block:: yaml
+
+        - kind: singleanalysis
+          type: AmplitudeVsPower
+          result: calc_dataset
+
+     """
 
     def __init__(self):
         super().__init__()
@@ -375,29 +448,49 @@ class PolynomialFitOnData(aspecd.analysis.SingleAnalysisStep):
 
     Attributes
     ----------
-    parameters['points']
-        first n points that should taken into account
+    parameters : :class:`dict`
+        All parameters necessary for this step.
 
-        Default: 3
+        points
+            first n points that should taken into account
 
-    parameters['order']
-        order of the fit.
+            Default: 3
 
-        Default: 1
+        order
+            order of the fit.
 
-    parameters['return_type'] : :class: `str`
-        Choose to returning the coefficients of the fit or a calculated
-        dataset containing the curve to plot.
+            Default: 1
 
-        Default: coefficients.
+        return_type : :class: `str`
+            Choose to returning the coefficients of the fit or a calculated
+            dataset containing the curve to plot.
 
-        Valid values: 'coefficients', 'dataset'
+            Default: coefficients.
 
-    parameters['add_origin'] : :class: `bool`
-        Adds the point (0,0) to the data and axes, but  does not guarantee
-        the fit really passes the origin.
+            Valid values: 'coefficients', 'dataset'
 
-        Default: False.
+        add_origin : :class: `bool`
+            Adds the point (0,0) to the data and axes, but  does not guarantee
+            the fit really passes the origin.
+
+            Default: False.
+
+    Examples
+    --------
+    Some Parameters can be chosen here, depending on the purpose and the
+    following analysis and processing steps.
+
+    .. code-block:: yaml
+
+        - kind: singleanalysis
+          type: PolynomialFitOnData
+          properties:
+            parameters:
+                points: 5
+                order: 2
+                return_type: dataset
+                add_origin: True
+          result: fit
 
     """
 
@@ -448,7 +541,23 @@ class PolynomialFitOnData(aspecd.analysis.SingleAnalysisStep):
 
 
 class PtpVsModAmp(aspecd.analysis.SingleAnalysisStep):
-    """Create calculated dataset for modulation sweep analysis."""
+    """Create calculated dataset for modulation sweep analysis.
+
+    For a modulation sweep analysis, the first step is to get the peak to
+    peak amplitude and correlate it to the modulation amplitude,
+    see :ref:`modulation_sweep_analysis` for further details.
+
+    Examples
+    --------
+    The usage is also quite simple without additional parameters necessary:
+
+    .. code-block:: yaml
+
+        - kind: singleanalysis
+          type: PtpVsModAmp
+          result: calc_dataset
+
+    """
 
     def __init__(self):
         super().__init__()
@@ -484,7 +593,18 @@ class PtpVsModAmp(aspecd.analysis.SingleAnalysisStep):
 class AreaUnderCurve(aspecd.analysis.SingleAnalysisStep):
     """Make definite integration, i.e. calculate the area under the curve.
 
-    Takes no other parameters.
+    Takes no other parameters and returns a single number. However, this step
+    does not (yet) account for baselines or noise thus that the value
+    obtained here is to be taken with care.
+
+    Examples
+    --------
+    .. code-block:: yaml
+
+        - kind: singleanalysis
+          type: AreaUnderCurve
+          result: area
+
     """
 
     def __init__(self):

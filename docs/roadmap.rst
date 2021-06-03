@@ -9,11 +9,6 @@ A few ideas how to develop the project further, currently a list as a reminder f
 For version 0.1
 ===============
 
-* Creating/correcting Info files afterwards
-
-  * Read *all* necessary parameters from vendor file format (done)
-  * Create/complete/correct info file (Report task)
-
 * Moooore documentation!
 
   * All attributes
