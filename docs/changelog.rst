@@ -10,6 +10,28 @@ Version 0.2.0
 
 Not yet released
 
+New features
+------------
+
+
+Changes
+-------
+
+
+Fixes
+-----
+
+
+Version 0.1.1
+=============
+
+Not yet released
+
+
+The following bugs have been fixed:
+
+* Bugfix in Normalisation in combination with aspecd ()
+
 
 Version 0.1.0
 =============

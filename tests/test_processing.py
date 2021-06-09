@@ -136,7 +136,7 @@ class TestNormalisationOfDerivativeToArea(unittest.TestCase):
 
 class TestNormalisation(unittest.TestCase):
     def setUp(self):
-        source = os.path.join(ROOTPATH, 'io/testdata/test-bes3t-1D-fieldsweep')
+        source = os.path.join(ROOTPATH, 'io/testdata/BDPA-1DFieldSweep')
         importer = cwepr.dataset.DatasetFactory()
         self.dataset = importer.get_dataset(source=source)
 
@@ -158,11 +158,27 @@ class TestNormalisation(unittest.TestCase):
         after = max(self.dataset.data.data)
         self.assertEqual(before/scans, after)
 
-    def test_normalisation_with_wrong_kind_raises(self):
+    def test_normalisation_to_maximum(self):
         correction = cwepr.processing.Normalisation()
-        correction.parameters['kind'] = 'bla'
-        with self.assertRaises(ValueError):
-            self.dataset.process(correction)
+        correction.parameters['kind'] = 'max'
+        before = np.max(self.dataset.data.data)
+        max_ = max(self.dataset.data.data)
+        self.dataset.process(correction)
+        after = max(self.dataset.data.data)
+        self.assertEqual(before/max_, after)
+
+    def test_normalisation_to_minimum(self):
+        correction = cwepr.processing.Normalisation()
+        correction.parameters['kind'] = 'min'
+        before = min(self.dataset.data.data)
+        min_ = min(self.dataset.data.data)
+        self.dataset.process(correction)
+        after = min(self.dataset.data.data)
+        self.assertEqual(before/abs(min_), after)
+
+    def test_normalisation_with_wrong_kind_raises(self):
+        # direct dependency to aspecd and tested there.
+        pass
 
 
 class TestBaselineCorrectionWithPolynomial(unittest.TestCase):
