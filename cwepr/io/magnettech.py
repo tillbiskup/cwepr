@@ -206,6 +206,8 @@ class MagnettechXmlImporter(aspecd.io.DatasetImporter):
             float(self.xml_metadata['Bfrom']['value'])
         self.dataset.metadata.magnetic_field.sweep_width.unit = \
             self.xml_metadata['Bfrom']['unit']
+        self.dataset.metadata.magnetic_field.points = \
+            len(self.dataset.data.axes[0].values)
         self.dataset.metadata.magnetic_field.field_probe_type = 'Hall'
         self.dataset.metadata.magnetic_field.field_probe_model = 'builtin'
         if self._xvalues[-1] - self._xvalues[0] > 0:
@@ -233,7 +235,7 @@ class MagnettechXmlImporter(aspecd.io.DatasetImporter):
             self._dict_to_string(self.xml_metadata['ModulationFreq']))
         self.dataset.metadata.signal_channel.modulation_amplitude.from_string(
             self._dict_to_string(self.xml_metadata['Modulation']))
-        self.dataset.metadata.signal_channel.phase = \
+        self.dataset.metadata.signal_channel.phase.value = \
             float(self.xml_metadata['Phase'])
         self.dataset.metadata.probehead.model = 'builtin'
         self.dataset.metadata.probehead.coupling = 'critical'

@@ -30,7 +30,8 @@ Not yet released
 
 The following bugs have been fixed:
 
-* Bugfix in Normalisation in combination with aspecd ()
+* Bugfix in Normalisation in combination with aspecd (afaa3c79)
+* Bugfix in Magnettech-Import, additional test for InfofileReporter ()
 
 
 Version 0.1.0

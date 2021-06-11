@@ -99,7 +99,7 @@ class TestDokuwikiCaptionsReporter(unittest.TestCase):
         self.assertTrue(os.path.exists(self.filename))
 
 
-class InfofileReporter(unittest.TestCase):
+class InfofileReporterBES3T(unittest.TestCase):
     def setUp(self):
         self.filename = 'MyInfofile.info'
         self.template_ = os.path.join(
@@ -122,4 +122,27 @@ class InfofileReporter(unittest.TestCase):
         self.reporter.create()
         self.assertTrue(os.path.exists(self.filename))
 
+
+class InfofileReporterMagnettech(unittest.TestCase):
+    def setUp(self):
+        self.filename = 'MyInfofile.info'
+        self.template_ = os.path.join(
+            MODULE_ROOTPATH, 'cwepr', 'templates', 'en', 'Infofile.info.jinja')
+        self.reporter = cwepr.report.InfofileReporter()
+        self.dataset = cwepr.dataset.ExperimentalDataset()
+        source = \
+            os.path.join(TEST_ROOTPATH, "io/testdata/test-magnettech")
+        factory = cwepr.dataset.DatasetFactory()
+        self.dataset = factory.get_dataset(source=source)
+        self.reporter.context['dataset'] = self.dataset.to_dict()
+
+    def tearDown(self):
+        if os.path.exists(self.filename):
+            os.remove(self.filename)
+
+    def test_reporter(self):
+        self.reporter.filename = self.filename
+        self.reporter.template = self.template_
+        self.reporter.create()
+        self.assertTrue(os.path.exists(self.filename))
 
