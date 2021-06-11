@@ -31,7 +31,8 @@ Not yet released
 The following bugs have been fixed:
 
 * Bugfix in Normalisation in combination with aspecd (afaa3c79)
-* Bugfix in Magnettech-Import, additional test for InfofileReporter ()
+* Bugfix in Magnettech-Import, additional test for InfofileReporter (36ea8257)
+* Bugfix in GoniometerSweepImporter and Reporter to get correct format of some numbers ()
 
 
 Version 0.1.0

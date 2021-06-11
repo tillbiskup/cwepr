@@ -269,7 +269,7 @@ class InfofileReporter(DokuwikiCaptionsReporter):
     --------
     .. code-block:: yaml
 
-        - kind: reporter
+        - kind: report
           type: InfofileReporter
           properties:
             parameters:

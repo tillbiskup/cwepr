@@ -2,6 +2,7 @@
 import base64
 import glob
 import os
+import re
 import struct
 import xml.etree.ElementTree as et
 import numpy as np
@@ -368,9 +369,26 @@ class GoniometerSweepImporter(aspecd.io.DatasetImporter):
             root_path, 'metadata_mapper_cwepr.yaml')
         mapper.map()
         self.dataset.metadata.from_dict(mapper.metadata)
+        self._convert_values_to_strings()
 
     def _map_infofile(self):
         """Bring the metadata to a given format."""
         infofile_version = self._infofile.infofile_info['version']
         self._map_metadata(infofile_version)
         self._assign_comment_as_annotation()
+
+    def _convert_values_to_strings(self):
+        def _convert_(value):
+            if isinstance(value, str):
+                match = re.match(r'[\d+.]', value)
+                if match:
+                    value = float(value)
+            return value
+
+        # ugly but works
+        self.dataset.metadata.signal_channel.accumulations = \
+            _convert_(self.dataset.metadata.signal_channel.accumulations)
+        self.dataset.metadata.bridge.q_value = \
+            _convert_(self.dataset.metadata.bridge.q_value)
+
+

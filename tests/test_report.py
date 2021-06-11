@@ -14,7 +14,8 @@ MODULE_ROOTPATH = os.path.split(os.path.split(os.path.abspath(__file__))[0])[0]
 
 class TestExperimentalDatasetLaTeXReporter(unittest.TestCase):
     def setUp(self):
-        source = os.path.join(TEST_ROOTPATH, "io/testdata/test-bes3t-1D-fieldsweep")
+        source = os.path.join(TEST_ROOTPATH,
+                              "io/testdata/test-bes3t-1D-fieldsweep")
         factory = cwepr.dataset.DatasetFactory()
         self.dataset = factory.get_dataset(source=source)
         analysator = cwepr.analysis.Amplitude()
@@ -78,7 +79,7 @@ class TestDokuwikiCaptionsReporter(unittest.TestCase):
         self.reporter = cwepr.report.DokuwikiCaptionsReporter()
         self.dataset = cwepr.dataset.ExperimentalDataset()
         source = \
-            os.path.join(TEST_ROOTPATH, "io/testdata/test-bes3t-1D-fieldsweep")
+            os.path.join(TEST_ROOTPATH, "io/testdata/test-magnettech")
         factory = cwepr.dataset.DatasetFactory()
         self.dataset = factory.get_dataset(source=source)
         self.reporter.context['dataset'] = self.dataset.to_dict()
@@ -130,19 +131,23 @@ class InfofileReporterMagnettech(unittest.TestCase):
             MODULE_ROOTPATH, 'cwepr', 'templates', 'en', 'Infofile.info.jinja')
         self.reporter = cwepr.report.InfofileReporter()
         self.dataset = cwepr.dataset.ExperimentalDataset()
-        source = \
+        self.source = \
             os.path.join(TEST_ROOTPATH, "io/testdata/test-magnettech")
-        factory = cwepr.dataset.DatasetFactory()
-        self.dataset = factory.get_dataset(source=source)
-        self.reporter.context['dataset'] = self.dataset.to_dict()
+        self.factory = cwepr.dataset.DatasetFactory()
+        self.source2 = \
+            os.path.join(TEST_ROOTPATH, "io/testdata/magnettech-goniometer/")
 
     def tearDown(self):
         if os.path.exists(self.filename):
             os.remove(self.filename)
 
     def test_reporter(self):
-        self.reporter.filename = self.filename
-        self.reporter.template = self.template_
-        self.reporter.create()
-        self.assertTrue(os.path.exists(self.filename))
+        for source in (self.source, self.source2):
+            with self.subTest(source=source):
+                self.dataset = self.factory.get_dataset(source=source)
+                self.reporter.context['dataset'] = self.dataset.to_dict()
+                self.reporter.filename = self.filename
+                self.reporter.template = self.template_
+                self.reporter.create()
+                self.assertTrue(os.path.exists(self.filename))
 
