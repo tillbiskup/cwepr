@@ -25,14 +25,13 @@ Fixes
 Version 0.1.1
 =============
 
-Not yet released
-
+Released 2021-06-19
 
 The following bugs have been fixed:
 
-* Bugfix in Normalisation in combination with aspecd (afaa3c79)
-* Bugfix in Magnettech-Import, additional test for InfofileReporter (36ea8257)
-* Bugfix in GoniometerSweepImporter and Reporter to get correct format of some numbers (5ab46142)
+* Bugfix in Normalisation in combination with aspecd
+* Bugfix in Magnettech-Import, additional test for InfofileReporter
+* Bugfix in GoniometerSweepImporter and Reporter to get correct format of some numbers
 
 
 Version 0.1.0
