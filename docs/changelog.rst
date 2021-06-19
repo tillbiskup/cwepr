@@ -22,6 +22,14 @@ Fixes
 -----
 
 
+Version 0.1.2
+=============
+
+Released 2021-06-19
+
+* Correct version on PyPI
+
+
 Version 0.1.1
 =============
 
