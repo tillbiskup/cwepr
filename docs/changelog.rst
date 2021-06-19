@@ -32,7 +32,7 @@ The following bugs have been fixed:
 
 * Bugfix in Normalisation in combination with aspecd (afaa3c79)
 * Bugfix in Magnettech-Import, additional test for InfofileReporter (36ea8257)
-* Bugfix in GoniometerSweepImporter and Reporter to get correct format of some numbers ()
+* Bugfix in GoniometerSweepImporter and Reporter to get correct format of some numbers (5ab46142)
 
 
 Version 0.1.0

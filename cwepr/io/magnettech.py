@@ -390,5 +390,3 @@ class GoniometerSweepImporter(aspecd.io.DatasetImporter):
             _convert_(self.dataset.metadata.signal_channel.accumulations)
         self.dataset.metadata.bridge.q_value = \
             _convert_(self.dataset.metadata.bridge.q_value)
-
-
