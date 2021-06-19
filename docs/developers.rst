@@ -143,7 +143,7 @@ For better readability, the prospector output can get printed into a file. The t
 
 .. code-block:: bash
 
-    prospector-o text:prospector-out.txt
+    prospector -o text:prospector-out.txt
 
 
 

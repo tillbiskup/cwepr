@@ -872,17 +872,13 @@ class Normalisation(aspecd.processing.Normalisation):
     """
 
     def _perform_task(self):
-        super()._perform_task()
         if 'receiver' in self.parameters["kind"].lower():
             self._normalise_for_receiver_gain()
         elif 'scan_number' in self.parameters["kind"].lower():
             self.dataset.data.data /= \
                 self.dataset.metadata.signal_channel.accumulations
         else:
-            # todo: If only python >=3.6: Use first version
-            #raise ValueError(f'Kind {self.parameters["kind"]} not recognised.')
-            raise ValueError('Kind %s not recognised.' % self.parameters[
-                "kind"])
+            super()._perform_task()
 
     def _normalise_for_receiver_gain(self):
         receiver_gain = self.dataset.metadata.signal_channel.receiver_gain.value
