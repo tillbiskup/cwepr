@@ -5,23 +5,6 @@ Changelog
 This page contains a summary of changes between the official cwEPR releases. Only the biggest changes are listed here. A complete and detailed log of all changes is available through the `GitHub Repository Browser <https://github.com/tillbiskup/cwepr/commits/master>`_.
 
 
-Version 0.2.0
-=============
-
-Not yet released
-
-New features
-------------
-
-
-Changes
--------
-
-
-Fixes
------
-
-
 Version 0.1.2
 =============
 
