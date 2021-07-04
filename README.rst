@@ -39,7 +39,7 @@ For more general information on the cwepr package and for how to use it, see its
 Features
 --------
 
-A list of features:
+A list of features, not all implemented yet but aimed at for the first public release (cwEPR 0.1):
 
 - Fully reproducible processing of cw-EPR data
 - Import of EPR data from diverse sources (Bruker ESP, EMX, Elexsys; Magnettech)
