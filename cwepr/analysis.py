@@ -397,7 +397,7 @@ class AmplitudeVsPower(aspecd.analysis.SingleAnalysisStep):
         self.description = "Return calculated dataset for power sweep analysis."
         self.result = aspecd.dataset.CalculatedDataset()
         # private properties
-        self._analysis = Amplitude()
+        self._analysis = None
         self._roots_of_mw_power = np.ndarray([])
 
     @staticmethod
@@ -559,7 +559,7 @@ class PtpVsModAmp(aspecd.analysis.SingleAnalysisStep):
         self.description = 'Create dataset with ptp-linewidth vs modulation ' \
                            'Amplitude.'
         self.new_dataset = aspecd.dataset.CalculatedDataset()
-        self.linewidths = np.ndarray([0])
+        self.linewidths = np.ndarray([])
 
     def _perform_task(self):
         self._get_linewidths()
@@ -571,12 +571,9 @@ class PtpVsModAmp(aspecd.analysis.SingleAnalysisStep):
         return len(dataset.data.axes) > 2
 
     def _get_linewidths(self):
-        for line in self.dataset.data.data:
-            index_max = np.argmax(line)
-            index_min = np.argmin(line)
-            linewidth = abs(self.dataset.data.axes[1].values[index_min] -
-                            self.dataset.data.axes[1].values[index_max])
-            self.linewidths = np.append(self.linewidths, linewidth)
+        index_max = np.argmax(self.dataset.data.data, axis=0)
+        index_min = np.argmin(self.dataset.data.data, axis=0)
+        self.linewidths = self.dataset.data.axes[0].values[index_min] - self.dataset.data.axes[0].values[index_max]
 
     def _fill_dataset(self):
         self.new_dataset.data.data = self.linewidths
@@ -607,11 +604,8 @@ class AreaUnderCurve(aspecd.analysis.SingleAnalysisStep):
         self.description = "Definite integration / area und the curve"
 
     def _perform_task(self):
-        """Perform the actual integration.
-
-        The x values from the dataset are used.
-        """
         x_values = self.dataset.data.axes[0].values
         y_values = self.dataset.data.data
 
         self.result = np.trapz(y_values, x_values)
+

@@ -928,8 +928,7 @@ class AxisInterpolation(aspecd.processing.SingleProcessingStep):
 
     def __init__(self):
         super().__init__()
-        self.description = 'Interpolate magnetic field axis to get ' \
-                           'equidistant field points.'
+        self.description = 'Interpolate axis to get equidistant points.'
         self.parameters['points'] = None
 
     def _perform_task(self):
@@ -1377,3 +1376,20 @@ class Filtering(aspecd.processing.Filtering):
     parameters a bit.
 
     """
+
+
+class ModifyAxisValues(aspecd.processing.SingleProcessingStep):
+    def __init__(self):
+        super().__init__()
+        self.parameters['axis'] = None
+        self.parameters['start'] = 0
+        self.parameters['stop'] = None
+
+    def _perform_task(self):
+        axis = self.dataset.data.axes[self.parameters['axis']]
+        new_axis = np.linspace(self.parameters['start'], self.parameters[
+            'stop'], num=len(axis))
+        self.dataset.data.axes[self.parameters['axis']] = new_axis
+
+    def _sanitise_parameters(self):
+        self.parameters['axis'] = int(self.parameters['axis'])

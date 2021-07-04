@@ -1,6 +1,9 @@
 default_package: cwepr
 datasets_source_directory: /Users/mirjamschroder/Programmierkram/Python/cwepr/tests/io/testdata/
 
+# TODO: Für ModAmp-Sweep: Vor ptp-Bestimmung Savitzky-Golay-Filter anwenden,
+# um Rauschen loszuwerden. --> in komplexen Analyseschritt?
+
 datasets:
   - BDPA-2DFieldPower
 

@@ -9,6 +9,8 @@ import cwepr.dataset
 import cwepr.io.magnettech
 import unittest
 
+import scipy.signal.windows
+
 ROOTPATH = os.path.split(os.path.abspath(__file__))[0]
 
 
@@ -153,11 +155,17 @@ class TestPolynomialFitOnData(unittest.TestCase):
 
 
 class TestPtpVsModAmp(TestCase):
+
     def setUp(self):
         self.analysator = cwepr.analysis.PtpVsModAmp()
         self.dataset = cwepr.dataset.ExperimentalDataset()
-        data = np.sin(np.linspace(0, 2*np.pi))
-        self.dataset.data.data = np.tile(data, (4, 1))
+        data = np.array([])
+        for sigma in np.linspace(5, 110):
+            data = np.append(data, np.gradient(scipy.signal.windows.gaussian(
+                1000, sigma)))
+        data = data.reshape(50, 1000).T
+        self.dataset.data.data = data
+        self.dataset.data.axes[1].values = np.linspace(0, 5, num=50)
 
     def test_instantiate_class(self):
         cwepr.analysis.PtpVsModAmp()
@@ -169,3 +177,15 @@ class TestPtpVsModAmp(TestCase):
         analysis = self.dataset.analyse(self.analysator)
         self.assertEqual(aspecd.dataset.CalculatedDataset,
                          type(analysis.result))
+
+    def test_result_has_no_values_in_last_axis(self):
+        analysis = self.dataset.analyse(self.analysator)
+        self.assertFalse(analysis.result.data.axes[1].values.size > 0)
+
+    def test_axis_zero_has_the_correct_length(self):
+        analysis = self.dataset.analyse(self.analysator)
+        self.assertTrue(len(analysis.result.data.axes[0].values) == 50)
+
+    def test_axis_zero_has_correct_values(self):
+        analysis = self.dataset.analyse(self.analysator)
+        self.assertTrue(analysis.result.data.axes[0].values[-1] == 5)
