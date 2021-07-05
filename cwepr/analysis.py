@@ -573,7 +573,8 @@ class PtpVsModAmp(aspecd.analysis.SingleAnalysisStep):
     def _get_linewidths(self):
         index_max = np.argmax(self.dataset.data.data, axis=0)
         index_min = np.argmin(self.dataset.data.data, axis=0)
-        self.linewidths = self.dataset.data.axes[0].values[index_min] - self.dataset.data.axes[0].values[index_max]
+        self.linewidths = self.dataset.data.axes[0].values[index_min] - \
+                          self.dataset.data.axes[0].values[index_max]
 
     def _fill_dataset(self):
         self.new_dataset.data.data = self.linewidths
@@ -608,4 +609,3 @@ class AreaUnderCurve(aspecd.analysis.SingleAnalysisStep):
         y_values = self.dataset.data.data
 
         self.result = np.trapz(y_values, x_values)
-

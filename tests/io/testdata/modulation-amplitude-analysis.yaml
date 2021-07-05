@@ -1,5 +1,5 @@
 default_package: cwepr
-datasets_source_directory: /Users/mirjamschroder/Programmierkram/Python/cwepr/tests/io/testdata/
+datasets_source_directory: io/testdata/
 
 # TODO: Für ModAmp-Sweep: Vor ptp-Bestimmung Savitzky-Golay-Filter anwenden,
 # um Rauschen loszuwerden. --> in komplexen Analyseschritt?
@@ -9,34 +9,52 @@ datasets:
 
 tasks:
   - kind: singleanalysis
-    type: LinewidthPeakToPeak
+    type: PtpVsModAmp
     result: linewidths
 
-  - kind: aspecd.singleplot
-    type: SinglePlotter
+  - kind: singleanalysis
+    type: PolynomialFitOnData
     properties:
-      filename: ModulationAmplitude.pdf
-      parameters:
-    label: MAplot
+        parameters:
+            points: 10
+            order: 1
+            return_type: dataset
+            add_origin: False
+    result: fittedCurve
     apply_to:
         - linewidths
+
+  - kind: aspecd.multiplot
+    type: MultiPlotter1D
+    properties:
+      filename: ModAmpSweepAnalysis.pdf
+      properties:
+        axes:
+          xscale: log
+        drawings:
+          - marker: +
+            color: darkred
+          - linestyle: '--'
+            color: gray
+      parameters:
+        draw_zero_lines: False
+    label: MSAPlot
+    apply_to:
+        - linewidths
+        - fittedCurve
 
   - kind: report
     type: PowerSweepAnalysisReporter
     properties:
-        template: /Users/mirjamschroder/Programmierkram/Python/cwepr/templates/de/power_sweep_report.tex.jinja
-        filename: PowerSweepReport.tex
+        template: ../cwepr/templates/de/modulation_sweep_analysis_report.tex.jinja
+        filename: ModAmpSweepReport.tex
         #dataset:  BDPA-2DFieldPower
         context:
             FITTING: fittedCurve
-            CALCDATA: calcAmplitudePower
+            CALCDATA: linewidths
             general:
                 title: Some fancy title to the report
                 author: John Doe
     compile: True
     apply_to:
         - BDPA-2DFieldPower
-
-
-    
-

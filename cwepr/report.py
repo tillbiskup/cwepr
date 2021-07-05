@@ -156,7 +156,7 @@ class PowerSweepAnalysisReporter(aspecd.report.LaTeXReporter):
         # Passendes Template bauen.
 
         self._prepare_metadata()
-        self._get_tasks()
+        #self._get_tasks()
         # TODO: Die Figures ggf aus der Liste rausholen und in ein dict packen?
         #self._get_figure_names()
         self._create_context()

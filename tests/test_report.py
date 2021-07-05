@@ -70,6 +70,29 @@ class TestPowerSweepAnalysisReport(unittest.TestCase):
         self.chef.serve(recipe_filename=self.recipe_filename)
 
 
+class TestModulationAmplitudeSweepAnalysisReport(unittest.TestCase):
+    def setUp(self):
+        self.recipe_filename = \
+            os.path.join(TEST_ROOTPATH,
+                         'io/testdata/modulation-amplitude-analysis.yaml')
+        self.tex_filename = 'ModAmpSweepReport.tex'
+        self.plot_filename = 'ModAmpSweepAnalysis.pdf'
+        self.chef = aspecd.tasks.ChefDeService()
+
+    def tearDown(self):
+        if os.path.exists(self.tex_filename):
+            os.remove(self.tex_filename)
+        for path in glob.glob(self.recipe_filename.replace('.yaml', '-*.yaml')):
+            os.remove(path)
+        if os.path.exists(self.plot_filename):
+            os.remove(self.plot_filename)
+        if os.path.exists(self.tex_filename.replace('tex', 'pdf')):
+            os.remove(self.tex_filename.replace('tex', 'pdf'))
+
+    def test_reporter(self):
+        self.chef.serve(recipe_filename=self.recipe_filename)
+
+
 class TestDokuwikiCaptionsReporter(unittest.TestCase):
     def setUp(self):
         self.filename = 'Dokuwiki-caption.txt'
