@@ -15,6 +15,14 @@ area, amplitude, maximum, minimum), and for EPR spectroscopy such things as
 field and frequency correction.
 
 
+Processing steps implemented
+============================
+
+The processing steps implemented in this module can be separated into those
+specific for cw-EPR data and those that are generally applicable and were
+inherited from the ASpecD framework.
+
+
 Processing steps specific for cw-EPR data
 -----------------------------------------
 
@@ -43,7 +51,7 @@ Implemented but not working as they should:
 General processing steps inherited from the ASpecD framework
 ------------------------------------------------------------
 
-Besides the processing steps specific for TREPR data, a number of further
+Besides the processing steps specific for cw-EPR data, a number of further
 processing steps that are generally applicable to spectroscopic data have
 been inherited from the underlying ASpecD framework:
 
