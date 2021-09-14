@@ -13,9 +13,14 @@ Not yet released
 New features
 ------------
 
+* *g* value can be provided for :class:`cwepr.analysis.FieldCalibration`
+
 
 Changes
 -------
+
+* Renamed class ``FieldCorrectionValue`` to :class:`cwepr.analysis.FieldCalibration`
+* :class:`cwepr.processing.FieldCorrection`: Rename parameter ``correction_value`` to ``offset``
 
 
 Fixes

@@ -448,14 +448,18 @@ class FieldCorrection(aspecd.processing.SingleProcessingStep):
 
     Attributes
     ----------
-    parameters['correction_value']: :class:`float`
-        Previously determined correction value.
+    parameters['offset']: :class:`float`
+        Offset to be added to the field axis values.
+
+
+    .. versionchanged:: 0.2
+        Renamed parameter ``correction_value`` to ``offset``
 
     """
 
     def __init__(self):
         super().__init__()
-        self.parameters["correction_value"] = None
+        self.parameters["offset"] = None
         self.description = "Linear field correction"
 
     def _perform_task(self):
@@ -466,7 +470,7 @@ class FieldCorrection(aspecd.processing.SingleProcessingStep):
             # if axis.quantity == 'magnetic field'
             if axis.unit in ('mT', 'G'):
                 self.dataset.data.axes[0].values += \
-                    self.parameters["correction_value"]
+                    self.parameters["offset"]
 
 
 class FrequencyCorrection(aspecd.processing.SingleProcessingStep):

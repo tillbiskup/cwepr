@@ -16,11 +16,6 @@ function of some parameter, such as the microwave frequency for each of a
 series of recordings, allowing to visualise drifts that may or may not
 impact data analysis.
 
-.. note::
-    This module may be split into different modules and thus converted into
-    a subpackage at some point in the future, depending on the number of
-    classes for analysis steps to come (but rather likely to happen).
-
 .. todo::
     Make methods dealing with both, 1D and 2D datasets or raising the
     respective errors.
@@ -42,31 +37,68 @@ import scipy.constants
 import aspecd.analysis
 import aspecd.dataset
 
-from cwepr.exceptions import MissingInformationError
+
+class FieldCalibration(aspecd.analysis.SingleAnalysisStep):
+    # noinspection PyUnresolvedReferences
+    """Determine offset value for a magnetic field calibration.
+
+    While the microwave frequency of an EPR spectrometer can be measured with
+    high accuracy independent of the resonator (and cryostat) used,
+    the magnetic field values recorded are usually measured by a Hall probe
+    or NMR teslameter away from the actual sample position. Hence,
+    calibrating the recorded magnetic field value is necessary in case you
+    are interested in quantitative *g*-value measurements or accurate
+    comparisons between measurements.
+
+    While spectrometers without removable probeheads (typically benchtop
+    devices) come often calibrated by the manufacturer, in the typical research
+    setup with probeheads and cryostats changing more frequent,
+    field calibration is typically performed by the individual researcher
+    recording the EPR spectrum of a standard sample with known *g* value.
+
+    Correcting the magnetic field axis of a recorded EPR spectrum is in such
+    cases actually a two-step process:
+
+    #. Obtain the magnetic field offset value from the EPR spectrum of a
+       field standard with known *g* value.
+
+    #. Add the obtained value to the values of the magnetic field axis of the
+       EPR spectrum that should be field-corrected.
+
+    This class provides the first step, obtaining the magnetic field offset
+    value for a number of well-known standards. And in case you use another
+    field standard, you can simply provide the *g* value for this standard as
+    well. The second step, correcting the magnetic field axis of your
+    spectrum, is taken care of by the class
+    :class:`cwepr.processing.FieldCorrection`. See the examples section
+    below for further details.
 
 
-class FieldCorrectionValue(aspecd.analysis.SingleAnalysisStep):
-    """Determine correction value for a field correction.
+    .. note::
 
-    As g standard reference, it can be chosen from two substances, LiLiF and
-    DPPH using the parameter "standard".
+        The method currently relies on the recorded spectrum of the field
+        standard to consist of a single symmetric line accurately recorded
+        with sufficient resolution. The *g* value
 
-    .. todo::
-        Check for units and make them consistent for both points.
 
-    References for the constants:
+    Currently, the following field standards are supported:
 
-    g value of Li:LiF:
+    =========  =====  ===================  =========
+    Substance  Name   *g* Value            Reference
+    =========  =====  ===================  =========
+    Li:LiF     LiLiF  2.002293 ± 0.000002     [1]
+    DPPH       DPPH   2.0036 ± 0.0002         [2]
+    =========  =====  ===================  =========
 
-        g(LiLiF) = 2.002293 +- 0.000002
+    References:
 
-    Reference: Rev. Sci. Instrum. 1989, 60, 2949-2952.
+    [1] Stesmans and Van Gorp, *Rev. Sci. Instrum.* 60(1989):2949--2952.
 
-    g value of DPPH:
+    [2] Yordanov, *Appl. Magn. Reson.* 10(1996):339--350.
 
-        g(DPPH) = 2.0036 ± 0.0002
+    The column "name" here refers to the value the parameter ``standard`` can
+    take (see below). These names are case-insensitive.
 
-    Reference: Appl. Magn. Reson. 10, 339-350 (1996)
 
     Attributes
     ----------
@@ -75,60 +107,145 @@ class FieldCorrectionValue(aspecd.analysis.SingleAnalysisStep):
 
         standard : :class:`str`
             Field standard that should be applied.
-            Valid values are "LiLiF" and "DPPH"
 
-            Default: LiLiF
+            For valid values, see the table above.
+
+        g_value : :class:`float`
+            *g* value of the standard sample.
+
+            If you provide a standard by name using the ``standard``
+            parameter above, this is not necessary. Providing a value here
+            overrides the value for the standard. Hence use with care not to
+            confuse you afterwards, when standard name and *g* value are
+            inconsistent.
 
         mw_frequency : :class:`float`
-            Microwave frequency to be corrected for. In general, is taken
-            from the dataset, what is recommended, but can also be given.
+            Microwave frequency to be corrected for.
+
+            In general, this value is taken from the dataset and should
+            therefore usually not be provided explicitly. Providing a value
+            overrides reading from the dataset.
 
     Raises
     ------
-    MissingInformationError
-        Raised if no microwave frequency is given neither in the dataset nor
-        as parameter.
+    ValueError
+        Raised if no microwave frequency or *g* value is available.
 
     Examples
     --------
+    For convenience, a series of examples in recipe style (for details of
+    the recipe-driven data analysis, see :mod:`aspecd.tasks`) is given below
+    for how to make use of this class. The examples focus each on a single
+    aspect.
+
+    Suppose you have recorded the spectrum of a Li:LiF field standard and
+    now you would like to obtain the field offset to correct your other
+    spectra:
+
     .. code-block:: yaml
 
         - kind: singleanalysis
-          type: FieldCorrectionValue
+          type: FieldCalibration
           properties:
             parameters:
-                mw_frequency: 9.5
+              standard: LiLiF
+          result: deltaB0
+
+
+    This result can now be used within the same recipe to perform a field
+    correction of your other data. A more detailed example may look as follows:
+
+    .. code-block:: yaml
+
+        datasets:
+          - /path/to/LiLiF/dataset
+            label: lilif
+          - /path/to/my/first/dataset
+            label: first
+          - /path/to/my/second/dataset
+            label: second
+
+        tasks:
+          - kind: singleanalysis
+            type: FieldCalibration
+            properties:
+              parameters:
                 standard: LiLiF
+            result: deltaB0
+            apply_to: lilif
+
+          - kind: processing
+            type: FieldCorrection
+            properties:
+              parameters:
+                offset: deltaB0
+            apply_to:
+              - first
+              - second
+
+    Here, we start by loading three datasets, a standard (LiLiF in this
+    case) and two actual spectra. The first task is the analysis step to
+    obtain the field offset value, performed only on the LiLiF spectrum,
+    and the second is a processing step performed only on the two actual
+    spectra to correct their field axis.
+
+    Suppose you have used a standard that's currently not supported by name.
+    Therefore, you will want to provide both, name and *g* value of the
+    standard:
+
+    .. code-block:: yaml
+
+        - kind: singleanalysis
+          type: FieldCalibration
+          properties:
+            parameters:
+              standard: Strong pitch
+              g_value: 2.0028
           result: deltaB
+
+    Of course, providing the name of the standard does not change how the
+    field offset is calculated, but it serves as documentation for you. Note
+    that providing a *g* value overrides the value stored internally.
+    Therefore, if you provide both, standard and *g* value, it is your sole
+    responsibility to ensure consistency between those two parameters.
+
+    .. versionchanged:: 0.2
+        Renamed to FieldCalibration, added parameter ``g_value``
 
     """
 
-    G_LILIF = 2.002293
-    G_DPPH = 2.0036
-
     def __init__(self):
         super().__init__()
+        self.parameters['standard'] = ''
+        self.parameters['g_value'] = None
         self.parameters['mw_frequency'] = None
-        self.parameters['standard'] = 'LiLiF'
-        self.description = "Determination of a field correction value"
-        self._g_correct = None
+        self.description = "Determine magnetic field offset from standard"
+        # NOTE: keys need to be all-lowercase
+        self.g_values = {
+            'dpph': 2.0036,
+            'lilif': 2.002293,
+        }
 
-    def _perform_task(self):
-        """Wrapper around field correction value determination method."""
-        self._get_mw_frequency()
-        self._get_sample_g_value()
-        self.result = self._get_field_correction_value()
-
-    def _get_mw_frequency(self):
+    def _sanitise_parameters(self):
         if not self.parameters['mw_frequency'] and not \
                 self.dataset.metadata.bridge.mw_frequency.value:
-            raise MissingInformationError(message='No microwave frequency '
-                                                  'provided, aborting.')
+            raise ValueError('No microwave frequency provided, aborting.')
+        if not self.parameters['standard'] and not self.parameters['g_value']:
+            raise ValueError('No standard or g value provided, aborting.')
+
+    def _perform_task(self):
+        self._assign_parameters()
+        self.result = self._get_field_offset()
+
+    def _assign_parameters(self):
         if not self.parameters['mw_frequency']:
             self.parameters['mw_frequency'] = \
                 self.dataset.metadata.bridge.mw_frequency.value
+        if not self.parameters['g_value']:
+            self.parameters['g_value'] = \
+                self.g_values[self.parameters['standard'].lower()]
 
-    def _get_field_correction_value(self):
+    def _get_field_offset(self):
         """Calculates a field correction value.
 
         Finds the zero-crossing of a (derivative) spectrum of a field
@@ -139,7 +256,7 @@ class FieldCorrectionValue(aspecd.analysis.SingleAnalysisStep):
         Returns
         -------
         delta_b0: :class:`float`
-            Field correction value
+            Field offset to be added to magnetic field axis of dataset(s)
 
         """
         i_max = np.argmax(self.dataset.data.data)
@@ -149,19 +266,10 @@ class FieldCorrectionValue(aspecd.analysis.SingleAnalysisStep):
         calculated_field = \
             scipy.constants.value('Planck constant') \
             * self.parameters['mw_frequency'] * 1e9 * 1e3 / \
-            (self._g_correct * scipy.constants.value('Bohr magneton'))
+            (self.parameters['g_value']
+             * scipy.constants.value('Bohr magneton'))
         delta_b0 = calculated_field - zero_crossing_exp
         return delta_b0
-
-    def _get_sample_g_value(self):
-        if 'standard' in self.parameters.keys():
-            if self.parameters['standard'].lower() == 'dpph':
-                self._g_correct = self.G_DPPH
-            elif self.parameters['standard'].lower() == 'lilif':
-                self._g_correct = self.G_LILIF
-            else:
-                print('This g-standard sample is not listed, LiLiF is chosen '
-                      'automatically.')
 
 
 class LinewidthPeakToPeak(aspecd.analysis.SingleAnalysisStep):
