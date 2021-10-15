@@ -15,6 +15,7 @@ import os.path
 import aspecd.io
 
 from cwepr.io.bes3t import BES3TImporter
+from cwepr.io.esp_winepr import ESPWinEPRImporter
 from cwepr.io.magnettech import MagnettechXmlImporter, GoniometerSweepImporter
 from cwepr.io.txt_file import TxtImporter, CsvImporter
 from cwepr.exceptions import NoMatchingFilePairError
@@ -30,10 +31,12 @@ class DatasetImporterFactory(aspecd.io.DatasetImporterFactory):
     def __init__(self):
         super().__init__()
         self.supported_formats = {"BES3T": [".DTA", ".DSC"],
+                                  "WinEPR": [".spc", ".par"],
                                   "Magnettech": [".xml"],
                                   "Txt": [".txt"],
                                   "Csv": [".csv"]}
         self.importers_for_formats = {"BES3T": BES3TImporter,
+                                      "WinEPR": ESPWinEPRImporter,
                                       "Magnettech": MagnettechXmlImporter,
                                       "Txt": TxtImporter,
                                       'Csv': CsvImporter}
