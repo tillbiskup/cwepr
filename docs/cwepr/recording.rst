@@ -59,7 +59,7 @@ The value of choice is the largest modulation amplitude that doesn't change the 
 
 How to automatically analyse such a modulation-amplitude sweep will be detailed later. But if you're looking for a "quick and dirty" approach, here it is: Record two spectra with different modulation amplitude and plot them scaled to same signal amplitude. If you see no difference in spectral shape, you can be rather sure that you are not overmodulating your signal. If you were already overmodulating, your line width would already be a function of the modulation amplitude applied, hence vary with the spectrometer setting.
 
-A word auf caution for this type of often automatically performed measurements: The setting of the modulation amplitude will directly and dramatically impact your overall signal strength, with signals being much larger with larger modulation amplitude. Hence, make sure with a short series of scans using the minimum and maximum modulation amplitude setting that you are not clipping your detector (receiver gain setting, see below) and that you still get signals with meaningful signal-to-noise ratio for analysis when recording with the smallest modulation amplitude.
+A word of caution for this type of often automatically performed measurements: The setting of the modulation amplitude will directly and dramatically impact your overall signal strength, with signals being much larger with larger modulation amplitude. Hence, make sure with a short series of scans using the minimum and maximum modulation amplitude setting that you are not clipping your detector (receiver gain setting, see below) and that you still get signals with meaningful signal-to-noise ratio for analysis when recording with the smallest modulation amplitude.
 
 
 Receiver gain

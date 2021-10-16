@@ -24,4 +24,5 @@ from .factory import DatasetImporterFactory
 from .magnettech import MagnettechXmlImporter
 from .txt_file import TxtImporter
 from .bes3t import BES3TImporter
+from .esp_winepr import ESPWinEPRImporter
 from .exporter import ASCIIExporter, MetadataExporter
