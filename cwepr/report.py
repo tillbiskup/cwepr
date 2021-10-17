@@ -259,7 +259,7 @@ class DokuwikiCaptionsReporter(aspecd.report.Reporter):
 class InfofileReporter(DokuwikiCaptionsReporter):
     """Write infofile with metadata od the dataset.
 
-    Because of it is humans who write the infofile, there may be wrong data
+    Because of it is humans who write the infofile, there may be incorrect data
     especially in the spectrometer's parameters. As they usually get also
     reported in the respective data file, they are also read from it and
     stored in the dataset's metadata. A corrected infofile can be written
@@ -272,8 +272,7 @@ class InfofileReporter(DokuwikiCaptionsReporter):
         - kind: report
           type: InfofileReporter
           properties:
-            parameters:
-                filename: NewInfofile.yaml
+            filename: NewInfofile.info
 
     """
 

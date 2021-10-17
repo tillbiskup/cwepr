@@ -28,6 +28,7 @@ Module documentation
 ====================
 
 """
+import datetime
 
 import aspecd.metadata
 import aspecd.utils
@@ -131,6 +132,8 @@ class Measurement(aspecd.metadata.Measurement):
         # public properties
         self.label = ''
         super().__init__(dict_=dict_)
+        self.start = datetime.datetime.now()
+        self.end = datetime.datetime.now()
 
 
 class Sample(aspecd.metadata.Sample):
@@ -468,7 +471,7 @@ class Bridge(aspecd.metadata.Metadata):
         self.detection = ""
         self.frequency_counter = ""
         self.mw_frequency = aspecd.metadata.PhysicalQuantity()
-        self.q_value = None
+        self.q_value = 0
         super().__init__(dict_=dict_)
 
 

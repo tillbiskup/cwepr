@@ -77,4 +77,6 @@ Cryostat:               {{METADATA['temperature_control']['cryostat']}}
 Cryogen:                {{METADATA['temperature_control']['cryogen']}}
 
 COMMENT
+{% if dataset['annotations'] %}
 {{','.join(dataset['annotations'][0]['annotation']['content']['comment'])}}
+{% endif %}

@@ -181,7 +181,7 @@ class ESPWinEPRImporter(aspecd.io.DatasetImporter):
         start = self.dataset.metadata.magnetic_field.start.value
         points = int(self.dataset.metadata.magnetic_field.points)
         sweep_width = self.dataset.metadata.magnetic_field.sweep_width.value
-        # in WinEPR, bruker takes the number of points correctls (in contrast
+        # in WinEPR, bruker takes the number of points correctly (in contrast
         # to other formats...)
         stop = start + sweep_width
         # Set axis
