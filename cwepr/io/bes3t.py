@@ -56,7 +56,6 @@ class BES3TImporter(aspecd.io.DatasetImporter):
         self._is_two_dimensional = False
         self._dimensions = []
         self._file_encoding = ''
-        self._points = int()
 
     def _import(self):
         self._extract_metadata_from_dsc()  # To get dimension information
@@ -226,6 +225,7 @@ class BES3TImporter(aspecd.io.DatasetImporter):
             setattr(
                 self.dataset.metadata.magnetic_field, object_,
                 magnetic_field_object)
+        # axes
         self.dataset.data.axes[0].values /= 10
         self.dataset.data.axes[0].unit = 'mT'
         # modulation frequency
