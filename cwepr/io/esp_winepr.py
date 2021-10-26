@@ -37,9 +37,9 @@ class ESPWinEPRImporter(aspecd.io.DatasetImporter):
 #        self._is_two_dimensional = False
 #        self._dimensions = []
         self._file_encoding = ''
-#        self._points = int()
 
     def _import(self):
+        self._set_defaults()
         self._read_parameter_file()
         self._import_data()
 
@@ -181,7 +181,7 @@ class ESPWinEPRImporter(aspecd.io.DatasetImporter):
         start = self.dataset.metadata.magnetic_field.start.value
         points = int(self.dataset.metadata.magnetic_field.points)
         sweep_width = self.dataset.metadata.magnetic_field.sweep_width.value
-        # in WinEPR, bruker takes the number of points correctly (in contrast
+        # in WinEPR, Bruker takes the number of points correctly (in contrast
         # to other formats...)
         stop = start + sweep_width
         # Set axis
@@ -197,3 +197,14 @@ class ESPWinEPRImporter(aspecd.io.DatasetImporter):
     def _get_number_of_points(self):
         self.dataset.metadata.magnetic_field.points = len(
             self.dataset.data.data)
+
+    def _set_defaults(self):
+        default_file = aspecd.utils.Yaml()
+        rootpath = os.path.split(os.path.abspath(__file__))[0]
+        print(rootpath)
+        default_file.read_from(os.path.join(rootpath, 'par_defaults.yaml'))
+        print(default_file.dict)
+        self.dataset.metadata.from_dict(default_file.dict)  # TODO: Hier
+        # platz es, da es die Daten nicht übernimmt...
+        print('Here2',
+              self.dataset.metadata.to_dict())

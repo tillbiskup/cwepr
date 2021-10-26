@@ -59,3 +59,11 @@ class TestESPWinEPRImporter(unittest.TestCase):
         self.assertTrue(self.dataset.data.axes[0].unit in ('G', 'mT'))
         self.assertFalse(self.dataset.data.axes[1].unit)
         print(self.dataset.metadata.to_dict())
+
+    def test_winepr_sets_default_values(self):
+        importer = cwepr.io.esp_winepr.ESPWinEPRImporter(source=self.sources[2])
+        self.dataset.import_from(importer)
+        print('Here',
+              self.dataset.metadata.signal_channel.to_dict())
+        self.assertEqual('100 kHz',
+                self.dataset.metadata.signal_channel.modulation_frequency)
