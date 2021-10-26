@@ -66,4 +66,4 @@ class TestESPWinEPRImporter(unittest.TestCase):
         print('Here',
               self.dataset.metadata.signal_channel.to_dict())
         self.assertEqual('100 kHz',
-                self.dataset.metadata.signal_channel.modulation_frequency)
+                    self.dataset.metadata.signal_channel.modulation_frequency)
