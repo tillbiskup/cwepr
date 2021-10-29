@@ -57,17 +57,11 @@ class ESPWinEPRImporter(aspecd.io.DatasetImporter):
         self._ensure_common_units()
         self._fill_axes()
 
-    def _import_data(self):
-        complete_filename = self.source + '.spc'
-        self._get_file_encoding()
-        raw_data = np.fromfile(complete_filename, self._file_encoding)
-        self.dataset.data.data = raw_data
-
-    def _get_file_encoding(self):
-        if ('DOS', 'Format') in self._par_dict.items():
-            self._file_encoding = '<f'
-        else:
-            self._file_encoding = '>i4'
+    def _set_defaults(self):
+        default_file = aspecd.utils.Yaml()
+        rootpath = os.path.split(os.path.abspath(__file__))[0]
+        default_file.read_from(os.path.join(rootpath, 'par_defaults.yaml'))
+        self._metadata_dict = default_file.dict
 
     def _read_parameter_file(self):
         par_filename = self.source + '.par'
@@ -84,6 +78,18 @@ class ESPWinEPRImporter(aspecd.io.DatasetImporter):
             if re.match(r'^[+-]?[0-9.]+([eE][+-]?[0-9]*)?$', value):
                 value = float(value)
             self._par_dict[key] = value
+
+    def _import_data(self):
+        complete_filename = self.source + '.spc'
+        self._get_file_encoding()
+        raw_data = np.fromfile(complete_filename, self._file_encoding)
+        self.dataset.data.data = raw_data
+
+    def _get_file_encoding(self):
+        if ('DOS', 'Format') in self._par_dict.items():
+            self._file_encoding = '<f'
+        else:
+            self._file_encoding = '>i4'
 
     def _infofile_exists(self):
         if self._get_infofile_name() and os.path.exists(
@@ -212,9 +218,3 @@ class ESPWinEPRImporter(aspecd.io.DatasetImporter):
     def _get_number_of_points(self):
         self.dataset.metadata.magnetic_field.points = len(
             self.dataset.data.data)
-
-    def _set_defaults(self):
-        default_file = aspecd.utils.Yaml()
-        rootpath = os.path.split(os.path.abspath(__file__))[0]
-        default_file.read_from(os.path.join(rootpath, 'par_defaults.yaml'))
-        self._metadata_dict = default_file.dict
