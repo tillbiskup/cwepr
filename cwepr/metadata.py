@@ -132,8 +132,6 @@ class Measurement(aspecd.metadata.Measurement):
         # public properties
         self.label = ''
         super().__init__(dict_=dict_)
-        self.start = datetime.datetime.now()
-        self.end = datetime.datetime.now()
 
 
 class Sample(aspecd.metadata.Sample):

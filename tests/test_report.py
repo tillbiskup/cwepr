@@ -173,4 +173,3 @@ class InfofileReporterMagnettech(unittest.TestCase):
                 self.reporter.template = self.template_
                 self.reporter.create()
                 self.assertTrue(os.path.exists(self.filename))
-

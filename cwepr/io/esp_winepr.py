@@ -14,6 +14,8 @@ two formats apart is to import the ``.par`` file and look, if it contains
 import glob
 import os
 import re
+from collections import OrderedDict
+from datetime import datetime
 
 import aspecd.io
 import aspecd.infofile
@@ -24,6 +26,7 @@ import numpy as np
 
 
 class ESPWinEPRImporter(aspecd.io.DatasetImporter):
+
     def __init__(self, source=None):
         # Dirty fix: Cut file extension
         if source.endswith((".spc", ".par")):
@@ -34,8 +37,9 @@ class ESPWinEPRImporter(aspecd.io.DatasetImporter):
         self._infofile = aspecd.infofile.Infofile()
         self._par_dict = dict()
         self._mapper_filename = 'par_keys.yaml'
-#        self._is_two_dimensional = False
-#        self._dimensions = []
+        self._metadata_dict: OrderedDict[()]
+        #        self._is_two_dimensional = False
+        #        self._dimensions = []
         self._file_encoding = ''
 
     def _import(self):
@@ -47,8 +51,8 @@ class ESPWinEPRImporter(aspecd.io.DatasetImporter):
             self._load_infofile()
             self._map_infofile()
 
-        # TODO: self._get_default_values()
-        self._map_par_into_dataset()
+        self._map_par_file()
+        self._set_metadata()
         self._get_number_of_points()
         self._ensure_common_units()
         self._fill_axes()
@@ -121,13 +125,24 @@ class ESPWinEPRImporter(aspecd.io.DatasetImporter):
         self._map_metadata(infofile_version)
         self._assign_comment_as_annotation()
 
-    def _map_par_into_dataset(self):
+    def _map_par_file(self):
         yaml_file = aspecd.utils.Yaml()
         rootpath = os.path.split(os.path.abspath(__file__))[0]
         yaml_file.read_from(os.path.join(rootpath, self._mapper_filename))
         metadata_dict = {}
         metadata_dict = self._traverse(yaml_file.dict, metadata_dict)
-        self.dataset.metadata.from_dict(metadata_dict)
+        aspecd.utils.copy_values_between_dicts(metadata_dict,
+                                               self._metadata_dict)
+        self.extract_datetime()
+
+    def extract_datetime(self):
+        start_date = datetime.strptime(self._par_dict['JDA'] + ' '+ \
+                                       self._par_dict['JTM'], "%m/%d/%Y %H:%M")
+        self._metadata_dict['measurement'] = {}
+        self._metadata_dict['measurement']['start'] = str(start_date)
+
+    def _set_metadata(self):
+        self.dataset.metadata.from_dict(self._metadata_dict)
 
     def _traverse(self, dict_, metadata_dict):
         for key, value in dict_.items():
@@ -201,10 +216,5 @@ class ESPWinEPRImporter(aspecd.io.DatasetImporter):
     def _set_defaults(self):
         default_file = aspecd.utils.Yaml()
         rootpath = os.path.split(os.path.abspath(__file__))[0]
-        print(rootpath)
         default_file.read_from(os.path.join(rootpath, 'par_defaults.yaml'))
-        print(default_file.dict)
-        self.dataset.metadata.from_dict(default_file.dict)  # TODO: Hier
-        # platz es, da es die Daten nicht übernimmt...
-        print('Here2',
-              self.dataset.metadata.to_dict())
+        self._metadata_dict = default_file.dict
