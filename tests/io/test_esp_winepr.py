@@ -63,15 +63,18 @@ class TestESPWinEPRImporter(unittest.TestCase):
     def test_winepr_sets_default_values(self):
         importer = cwepr.io.esp_winepr.ESPWinEPRImporter(source=self.sources[2])
         self.dataset.import_from(importer)
-
         self.assertEqual(100, self.dataset.metadata.signal_channel
                          .modulation_frequency.value)
         self.assertEqual('kHz', self.dataset.metadata.signal_channel
                          .modulation_frequency.unit)
-        print(self.dataset.metadata.measurement.start)
 
     def test_time_gets_imported_correctly_from_par(self):
         importer = cwepr.io.esp_winepr.ESPWinEPRImporter(source=self.sources[2])
         self.dataset.import_from(importer)
         date_time = datetime.datetime(2021, 10, 15, 10, 37)
         self.assertEqual(date_time, self.dataset.metadata.measurement.start)
+
+    def test_frequency_gets_written(self):
+        importer = cwepr.io.esp_winepr.ESPWinEPRImporter(source=self.sources[2])
+        self.dataset.import_from(importer)
+        self.assertTrue(self.dataset.metadata.bridge.mw_frequency.value)

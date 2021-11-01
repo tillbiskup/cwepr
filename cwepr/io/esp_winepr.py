@@ -15,7 +15,7 @@ import glob
 import os
 import re
 from collections import OrderedDict
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import aspecd.io
 import aspecd.infofile
@@ -38,8 +38,6 @@ class ESPWinEPRImporter(aspecd.io.DatasetImporter):
         self._par_dict = dict()
         self._mapper_filename = 'par_keys.yaml'
         self._metadata_dict: OrderedDict[()]
-        #        self._is_two_dimensional = False
-        #        self._dimensions = []
         self._file_encoding = ''
 
     def _import(self):
@@ -123,7 +121,13 @@ class ESPWinEPRImporter(aspecd.io.DatasetImporter):
         mapper.recipe_filename = os.path.join(
             root_path, 'metadata_mapper_cwepr.yaml')
         mapper.map()
-        self.dataset.metadata.from_dict(mapper.metadata)
+        infofile_dict = aspecd.utils.convert_keys_to_variable_names(
+            mapper.metadata)
+        # TODO: Infofile: Temperatur in Physical parameter mappen?
+        aspecd.utils.copy_keys_between_dicts(infofile_dict,
+                                             self._metadata_dict)
+        aspecd.utils.copy_values_between_dicts(infofile_dict,
+                                               self._metadata_dict)
 
     def _map_infofile(self):
         """Bring the metadata to a given format."""
@@ -137,15 +141,28 @@ class ESPWinEPRImporter(aspecd.io.DatasetImporter):
         yaml_file.read_from(os.path.join(rootpath, self._mapper_filename))
         metadata_dict = {}
         metadata_dict = self._traverse(yaml_file.dict, metadata_dict)
+        aspecd.utils.copy_keys_between_dicts(metadata_dict,
+                                               self._metadata_dict)
         aspecd.utils.copy_values_between_dicts(metadata_dict,
                                                self._metadata_dict)
         self.extract_datetime()
 
     def extract_datetime(self):
-        start_date = datetime.strptime(self._par_dict['JDA'] + ' '+ \
-                                       self._par_dict['JTM'], "%m/%d/%Y %H:%M")
+        start_date = self.try_parsing_date()
         self._metadata_dict['measurement'] = {}
         self._metadata_dict['measurement']['start'] = str(start_date)
+        if 'end' not in self._metadata_dict['measurement'].keys():
+            self._metadata_dict['measurement']['end'] = \
+                str(start_date + timedelta(minutes=1))
+
+    def try_parsing_date(self):
+        date = self._par_dict['JDA'] + ' ' + self._par_dict['JTM']
+        for fmt in ('%d-%b-%Y %H:%M:%S', '%d.%b.%Y %H:%M', '%m/%d/%Y %H:%M'):
+            try:
+                return datetime.strptime(date, fmt)
+            except ValueError:
+                pass
+        raise ValueError('no valid date format found')
 
     def _set_metadata(self):
         self.dataset.metadata.from_dict(self._metadata_dict)
@@ -189,6 +206,8 @@ class ESPWinEPRImporter(aspecd.io.DatasetImporter):
             setattr(
                 self.dataset.metadata.magnetic_field, object_,
                 magnetic_field_object)
+        if not self.dataset.metadata.temperature_control.temperature.unit:
+            self.dataset.metadata.temperature_control.temperature.unit = 'K'
 
     def _fill_axes(self):
         self._get_magnetic_field_axis()
