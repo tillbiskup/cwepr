@@ -172,10 +172,7 @@ class MagnettechXmlImporter(aspecd.io.DatasetImporter):
         mapper = aspecd.metadata.MetadataMapper()
         mapper.version = infofile_version
         mapper.metadata = self._infofile.parameters
-        root_path = \
-            os.path.split(os.path.split(os.path.abspath(__file__))[0])[0]
-        mapper.recipe_filename = os.path.join(
-            root_path, 'metadata_mapper_cwepr.yaml')
+        mapper.recipe_filename = 'cwepr@metadata_mapper_cwepr.yaml'
         mapper.map()
         self.dataset.metadata.from_dict(mapper.metadata)
 
@@ -363,10 +360,7 @@ class GoniometerSweepImporter(aspecd.io.DatasetImporter):
         mapper = aspecd.metadata.MetadataMapper()
         mapper.version = infofile_version
         mapper.metadata = self._infofile.parameters
-        root_path = \
-            os.path.split(os.path.split(os.path.abspath(__file__))[0])[0]
-        mapper.recipe_filename = os.path.join(
-            root_path, 'metadata_mapper_cwepr.yaml')
+        mapper.recipe_filename = 'cwepr@metadata_mapper_cwepr.yaml'
         mapper.map()
         self.dataset.metadata.from_dict(mapper.metadata)
         self._convert_values_to_strings()
