@@ -10,6 +10,8 @@ Version 0.2.0
 
 Not yet released
 
+**Note:** Starting with this version, cwepr requires **Python >=3.7**
+
 New features
 ------------
 
