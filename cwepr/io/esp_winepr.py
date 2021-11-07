@@ -37,7 +37,7 @@ class ESPWinEPRImporter(aspecd.io.DatasetImporter):
         self._infofile = aspecd.infofile.Infofile()
         self._par_dict = dict()
         self._mapper_filename = 'par_keys.yaml'
-        self._metadata_dict: OrderedDict[()]
+        self._metadata_dict = OrderedDict()
         self._file_encoding = ''
 
     def _import(self):
@@ -116,10 +116,7 @@ class ESPWinEPRImporter(aspecd.io.DatasetImporter):
         mapper = aspecd.metadata.MetadataMapper()
         mapper.version = infofile_version
         mapper.metadata = self._infofile.parameters
-        root_path = \
-            os.path.split(os.path.split(os.path.abspath(__file__))[0])[0]
-        mapper.recipe_filename = os.path.join(
-            root_path, 'metadata_mapper_cwepr.yaml')
+        mapper.recipe_filename = 'cwepr@metadata_mapper_cwepr.yaml'
         mapper.map()
         infofile_dict = aspecd.utils.convert_keys_to_variable_names(
             mapper.metadata)
@@ -141,8 +138,7 @@ class ESPWinEPRImporter(aspecd.io.DatasetImporter):
         yaml_file.read_from(os.path.join(rootpath, self._mapper_filename))
         metadata_dict = {}
         metadata_dict = self._traverse(yaml_file.dict, metadata_dict)
-        aspecd.utils.copy_keys_between_dicts(metadata_dict,
-                                               self._metadata_dict)
+        aspecd.utils.copy_keys_between_dicts(metadata_dict, self._metadata_dict)
         aspecd.utils.copy_values_between_dicts(metadata_dict,
                                                self._metadata_dict)
         self.extract_datetime()
