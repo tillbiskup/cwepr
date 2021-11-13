@@ -1,11 +1,11 @@
 Installation
 ============
 
-Installing the cwEPR package is as simple as installing any other Python package, as ASpecD is available from the `Python Package Index (PyPI) <https://www.pypi.org/>`_. Simply open a terminal on your computer and type::
+Installing the cwepr package is as simple as installing any other Python package, as ASpecD is available from the `Python Package Index (PyPI) <https://www.pypi.org/>`_. Simply open a terminal on your computer and type::
 
   pip install cwepr
 
-This will install the cwEPR package (and all its dependencies) on your computer.
+This will install the cwepr package (and all its dependencies) on your computer.
 
 Of course, you need to have Python (and pip) installed before you can use the above command, and it is always advisable to install packages in a **virtual environment** of their own.
 
@@ -13,11 +13,11 @@ Hence, a more thorough sequence of events would be:
 
 #. Install Python (if it is not already installed on your system).
 
-#. Create a Python virtual environment for cwEPR.
+#. Create a Python virtual environment for cwepr.
 
 #. Activate the newly created virtual environment.
 
-#. Install cwEPR therein, using the above command.
+#. Install cwepr therein, using the above command.
 
 A few details for all these steps are given below.
 
@@ -56,16 +56,16 @@ Assuming in this case that your virtual environment is called ``cwepr`` and that
 Deactivating is simple as well, once you are done. Either close the terminal, or issue the command ``deactivate``.
 
 
-Install cwEPR
+Install cwepr
 -------------
 
-Once you activated your virtual environment where you want to install the cwEPR package in, proceed as given above:
+Once you activated your virtual environment where you want to install the cwepr package in, proceed as given above:
 
 .. code-block:: bash
 
     pip install cwepr
 
-This will download the cwEPR package from the `Python Package Index (PyPI) <https://www.pypi.org/>`_ and install it locally. All dependencies will be installed as well.
+This will download the cwepr package from the `Python Package Index (PyPI) <https://www.pypi.org/>`_ and install it locally. All dependencies will be installed as well.
 
 
 .. note::

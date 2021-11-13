@@ -9,7 +9,7 @@ Besides information necessary for the developer, the modules increasingly contai
 Subpackages
 -----------
 
-An alphabetic list of the subpackages available within the cwEPR package. The actual documentation is split in pages for each submodule of each subpackage, respectively.
+An alphabetic list of the subpackages available within the cwepr package. The actual documentation is split in pages for each submodule of each subpackage, respectively.
 
 .. toctree::
    :maxdepth: 4
@@ -19,7 +19,7 @@ An alphabetic list of the subpackages available within the cwEPR package. The ac
 Submodules
 ----------
 
-An alphabetic list of the submodules available within the cwEPR package. The actual documentation is split in pages for each submodule, respectively.
+An alphabetic list of the submodules available within the cwepr package. The actual documentation is split in pages for each submodule, respectively.
 
 .. toctree::
    :maxdepth: 1
