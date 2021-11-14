@@ -347,8 +347,11 @@ class GoniometerSweepImporter(aspecd.io.DatasetImporter):
         self._infofile.parse()
 
     def _get_infofile_name(self):
-        folder_path = os.path.split(self.source)[0]
-        return glob.glob(folder_path + '.info')
+        if self.source.endswith('/'):
+            folder_path = os.path.split(self.source)[0]
+            return glob.glob(folder_path + '.info')
+        else:
+            return glob.glob(self.source + '.info')
 
     def _assign_comment_as_annotation(self):
         comment = aspecd.annotation.Comment()

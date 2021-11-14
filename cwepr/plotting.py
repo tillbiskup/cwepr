@@ -179,33 +179,45 @@ class GoniometerSweepPlotter(aspecd.plotting.SingleCompositePlotter):
         self._exclude_from_to_dict.extend(['dataset', 'zero_deg_slice',
                                            'hundredeighty_deg_slice'])
 
-    def _set_properties(self):
-        upper_contour = self.plotter[0]
-        upper_contour.type = 'contourf'
-        upper_contour.parameters['show_contour_lines'] = True
-
     def _create_plot(self):
+        self._configure_traces_plotter()
         self._configure_contour_plotter()
         self._extract_traces()
         self._configure_comparison_plotter()
-        self._set_properties()
         super()._create_plot()
+
+    def _configure_contour_plotter(self):
+        upper_contour = self.plotter[0]
+        upper_contour.type = 'contourf'
+        upper_contour.parameters['show_contour_lines'] = True
+        upper_contour.properties.from_dict({
+            'axes': {
+                'yticks': [0, 30, 60, 90, 120, 150, 180]
+            }
+        })
+        self.plotter[0] = upper_contour
 
     def _extract_traces(self):
         slicing = aspecd.processing.SliceExtraction()
-        slicing.parameters['position'] = 0
+        slicing.parameters['axis'] = axis_no = 1
+        zero_value = self._get_angle_closest_to_value(axis_no, 0)
+        hundredeighty_value = self._get_angle_closest_to_value(axis_no, 180)
         slicing.parameters['unit'] = 'axis'
-        slicing.parameters['axis'] = 1
+        slicing.parameters['position'] = zero_value
         self.zero_deg_slice = copy.deepcopy(self.dataset)
         self.zero_deg_slice.process(slicing)
-        self.zero_deg_slice.label = '0°'
-        slicing.parameters['position'] = 180
+        self.zero_deg_slice.label = f'{zero_value:.1f}°'
+        slicing.parameters['position'] = hundredeighty_value
         self.hundredeighty_deg_slice = copy.deepcopy(self.dataset)
         self.hundredeighty_deg_slice.process(slicing)
-        self.hundredeighty_deg_slice.label = '180°'
+        self.hundredeighty_deg_slice.label = f'{hundredeighty_value:.1f}°'
+
+    def _get_angle_closest_to_value(self, axis_no=0, value=None):
+        axis = self.dataset.data.axes[axis_no].values
+        return axis[min(range(len(axis)), key=lambda i: abs(axis[i]-value))]
 
     def _configure_comparison_plotter(self):
-        comparison_plotter = aspecd.plotting.MultiPlotter1D()
+        comparison_plotter = self.plotter[1]
         comparison_plotter.datasets = [self.zero_deg_slice,
                                        self.hundredeighty_deg_slice]
         comparison_plotter.properties.from_dict({
@@ -221,12 +233,9 @@ class GoniometerSweepPlotter(aspecd.plotting.SingleCompositePlotter):
         comparison_plotter.parameters['show_legend'] = True
         self.plotter[1] = comparison_plotter
 
-    def _configure_contour_plotter(self):
-        self.plotter[0].properties.from_dict({
-            'axes': {
-                'yticks': [0, 30, 60, 90, 120, 150, 180]
-            }
-        })
+    def _configure_traces_plotter(self):
+        self.plotter[2].parameters['yticklabelformat'] = '%.1f'
+        self.plotter[2].parameters['ytickcount'] = 19
 
 
 class SinglePlotter1D(aspecd.plotting.SinglePlotter1D):

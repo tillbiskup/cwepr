@@ -77,7 +77,7 @@ class TestMagnettechXmlImporter(unittest.TestCase):
 
 class TestGoniometerSweepImporter(unittest.TestCase):
     def setUp(self):
-        source = os.path.join(ROOTPATH, 'testdata/magnettech-goniometer/')
+        source = os.path.join(ROOTPATH, 'testdata/magnettech-goniometer')
         self.goniometer_importer = \
             cwepr.io.magnettech.GoniometerSweepImporter(source=source)
 
@@ -140,7 +140,7 @@ class TestGoniometerSweepImporter(unittest.TestCase):
                                     set_.metadata.bridge.mw_frequency.value)
         self.assertAlmostEqual(max(frequencies), min(frequencies))
 
-    def test_goniometer_import(self):
+    def test_goniometer_imports_with_slash_at_source(self):
         source = os.path.join(ROOTPATH, 'testdata/magnettech-goniometer/')
         dataset = cwepr.dataset.ExperimentalDataset()
         importer = cwepr.io.magnettech.GoniometerSweepImporter(
