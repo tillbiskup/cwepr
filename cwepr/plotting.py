@@ -174,6 +174,7 @@ class GoniometerSweepPlotter(aspecd.plotting.SingleCompositePlotter):
                                [0.25, 0, 0.9, 1.07]]
         self.zero_deg_slice = None
         self.hundredeighty_deg_slice = None
+        self.parameters['show_zero_lines'] = False
 
     def _set_properties(self):
         upper_contour = self.plotter[0]
