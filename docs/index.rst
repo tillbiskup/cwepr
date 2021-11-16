@@ -14,7 +14,12 @@ What is even better: Actual data processing and analysis **no longer requires pr
 .. code-block:: yaml
     :linenos:
 
-    default_package: cwepr
+    format:
+      type: ASpecD recipe
+      version: '0.2'
+
+    settings:
+      default_package: cwepr
 
     datasets:
       - /path/to/first/dataset
@@ -61,7 +66,7 @@ A list of features:
 
 And to make it even more convenient for users and future-proof:
 
-* Open source project written in Python (>= 3.5)
+* Open source project written in Python (>= 3.7)
 
 * Extensive user and API documentation
 

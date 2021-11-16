@@ -15,4 +15,4 @@ On the other hand, while cw-EPR spectroscopy is regarded as "simple" method, eve
 
 There are a number of aspects covered in this cw-EPR spectroscopy primer, as can be seen from the table of contents. One key idea is that recording cw-EPR spectra, however complicated in detail this may be, can be mostly automated and formalised. The central aspect of spectroscopy is *not* recording and accumulating raw data, but processing and analysing these data.
 
-Of course, processing and analysis are described with particular focus on the cwEPR package. However, there should be a lot of information there that is of more general use. After all, the cwEPR package is developed and maintained by people actively working in the field.
+Of course, processing and analysis are described with particular focus on the cwepr package. However, there should be a lot of information there that is of more general use. After all, the cwepr package is developed and maintained by people actively working in the field.

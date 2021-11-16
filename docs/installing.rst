@@ -1,7 +1,7 @@
 Installation
 ============
 
-Installing the cwepr package is as simple as installing any other Python package, as ASpecD is available from the `Python Package Index (PyPI) <https://www.pypi.org/>`_. Simply open a terminal on your computer and type::
+Installing the cwepr package is as simple as installing any other Python package, as cwepr is available from the `Python Package Index (PyPI) <https://www.pypi.org/>`_. Simply open a terminal on your computer and type::
 
   pip install cwepr
 
