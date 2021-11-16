@@ -25,7 +25,12 @@ setuptools.setup(
     include_package_data=True,
     license='BSD',
     keywords=[
-        'EPR spectroscopy',
+        "EPR spectroscopy",
+        "data processing and analysis",
+        "reproducible science",
+        "reproducible research",
+        "good scientific practice",
+        "recipe-driven data analysis",
     ],
     classifiers=[
         "Programming Language :: Python :: 3",
@@ -39,10 +44,10 @@ setuptools.setup(
         "Topic :: Scientific/Engineering",
     ],
     install_requires=[
-        'aspecd>=0.6.0',
+        'aspecd>=0.6.2',
         'numpy',
         'scipy',
         'matplotlib',
     ],
-    python_requires='>=3.5',
+    python_requires='>=3.7',
 )
