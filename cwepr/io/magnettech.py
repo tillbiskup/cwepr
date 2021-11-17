@@ -350,8 +350,7 @@ class GoniometerSweepImporter(aspecd.io.DatasetImporter):
         if self.source.endswith('/'):
             folder_path = os.path.split(self.source)[0]
             return glob.glob(folder_path + '.info')
-        else:
-            return glob.glob(self.source + '.info')
+        return glob.glob(self.source + '.info')
 
     def _assign_comment_as_annotation(self):
         comment = aspecd.annotation.Comment()

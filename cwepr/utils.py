@@ -12,9 +12,9 @@ import numpy as np
 import scipy.constants
 
 
-def convert_g2mT(values, mw_freq=None):
+def convert_g2mT(values, mw_freq=None):  # noqa
     """
-    Convert *g* values to millitesla (mT)
+    Convert *g* values to millitesla (mT).
 
     .. important::
 
@@ -43,9 +43,9 @@ def convert_g2mT(values, mw_freq=None):
     return (planck_constant * mw_freq * 1e9) / (-mu_b * values * 1e-3)
 
 
-def convert_mT2g(values, mw_freq=None):
+def convert_mT2g(values, mw_freq=None):  # noqa
     """
-    Convert magnetic field values (in millitesla, mT) to *g* values
+    Convert magnetic field values (in millitesla, mT) to *g* values.
 
     .. important::
 

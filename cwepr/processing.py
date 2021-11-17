@@ -1445,12 +1445,14 @@ class Filtering(aspecd.processing.Filtering):
 
 class ModifyAxisValues(aspecd.processing.SingleProcessingStep):
     """
+    Modify the values of an axis.
 
     .. todo::
         This class is most probably superseded by
         :class:`aspecd.processing.ChangeAxesValues`. If so, delete this one.
 
     """
+
     def __init__(self):
         super().__init__()
         self.parameters['axis'] = None

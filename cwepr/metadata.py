@@ -28,8 +28,6 @@ Module documentation
 ====================
 
 """
-import datetime
-
 import aspecd.metadata
 import aspecd.utils
 

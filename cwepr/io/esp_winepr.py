@@ -17,15 +17,32 @@ import re
 from collections import OrderedDict
 from datetime import datetime, timedelta
 
+import numpy as np
+
 import aspecd.io
 import aspecd.infofile
 import aspecd.annotation
 import aspecd.metadata
 import aspecd.utils
-import numpy as np
 
 
 class ESPWinEPRImporter(aspecd.io.DatasetImporter):
+    """Importer for the Bruker ESP and EMX formats.
+
+    The Bruker EMX and ESP formats consist of two files, a data file with
+    extension "spc" and a parameter file with extension "par". The
+    particular problem with these two file formats is the different format
+    of the binary data used. From the official specifications, there is no
+    way to discrimitate between ESP format (using Motorola format,
+    translating to four-byte integer big endian), while the (old) EMX format
+    (newer EMX machines probably use the BES3T format,
+    see :class:`cwepr.io.BES3TImporter` for details) uses standard IEEE
+    binary, transating to eight-byte float little endan.
+
+    Furthermore, the parameter file usually contains only those values that
+    deviate from the standard values given in the specification.
+
+    """
 
     def __init__(self, source=None):
         # Dirty fix: Cut file extension
@@ -141,17 +158,17 @@ class ESPWinEPRImporter(aspecd.io.DatasetImporter):
         aspecd.utils.copy_keys_between_dicts(metadata_dict, self._metadata_dict)
         aspecd.utils.copy_values_between_dicts(metadata_dict,
                                                self._metadata_dict)
-        self.extract_datetime()
+        self._extract_datetime()
 
-    def extract_datetime(self):
-        start_date = self.try_parsing_date()
+    def _extract_datetime(self):
+        start_date = self._try_parsing_date()
         self._metadata_dict['measurement'] = {}
         self._metadata_dict['measurement']['start'] = str(start_date)
         if 'end' not in self._metadata_dict['measurement'].keys():
             self._metadata_dict['measurement']['end'] = \
                 str(start_date + timedelta(minutes=1))
 
-    def try_parsing_date(self):
+    def _try_parsing_date(self):
         date = self._par_dict['JDA'] + ' ' + self._par_dict['JTM']
         for fmt in ('%d-%b-%Y %H:%M:%S', '%d.%b.%Y %H:%M', '%m/%d/%Y %H:%M'):
             try:

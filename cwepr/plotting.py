@@ -246,7 +246,7 @@ class GoniometerSweepPlotter(aspecd.plotting.SingleCompositePlotter):
 
     def _get_angle_closest_to_value(self, axis_no=0, value=None):
         axis = self.dataset.data.axes[axis_no].values
-        return axis[min(range(len(axis)), key=lambda i: abs(axis[i]-value))]
+        return axis[min(range(len(axis)), key=lambda i: abs(axis[i] - value))]
 
     def _configure_comparison_plotter(self):
         comparison_plotter = self.plotter[1]
@@ -322,7 +322,7 @@ class PlotterExtensions:
             return utils.convert_g2mT(values, mw_freq=mw_freq)
 
         gaxis = self.ax.secondary_xaxis('top', functions=(backward, forward))
-        gaxis.set_xlabel('$g\ value$')
+        gaxis.set_xlabel(r'$g\ value$')
 
 
 class SinglePlotter1D(aspecd.plotting.SinglePlotter1D, PlotterExtensions):
@@ -476,7 +476,7 @@ class SinglePlotter2D(aspecd.plotting.SinglePlotter2D, PlotterExtensions):
 
 class SinglePlotter2DStacked(aspecd.plotting.SinglePlotter2DStacked,
                              PlotterExtensions):
-    """Stacked plots of 2D data
+    """Stacked plots of 2D data.
 
     A stackplot creates a series of lines stacked on top of each other from
     a 2D dataset.

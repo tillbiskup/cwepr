@@ -2,8 +2,6 @@
 import numpy as np
 
 import aspecd.io
-import cwepr.processing
-import cwepr.dataset
 
 
 class TxtImporter(aspecd.io.DatasetImporter):
@@ -40,7 +38,6 @@ class CsvImporter(aspecd.io.DatasetImporter):
     def __init__(self, source=''):
         super().__init__(source=source)
         # public properties
-        self.dataset = cwepr.dataset.ExperimentalDataset()
         self.extension = '.csv'
 
     def _import(self):

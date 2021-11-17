@@ -90,8 +90,8 @@ class FieldCalibration(aspecd.analysis.SingleAnalysisStep):
     DPPH       DPPH   2.0036 ± 0.0002         [2]
     =========  =====  ===================  =========
 
-    References:
-
+    References
+    ----------
     [1] Stesmans and Van Gorp, *Rev. Sci. Instrum.* 60(1989):2949--2952.
 
     [2] Yordanov, *Appl. Magn. Reson.* 10(1996):339--350.
@@ -681,8 +681,8 @@ class PtpVsModAmp(aspecd.analysis.SingleAnalysisStep):
     def _get_linewidths(self):
         index_max = np.argmax(self.dataset.data.data, axis=0)
         index_min = np.argmin(self.dataset.data.data, axis=0)
-        self.linewidths = self.dataset.data.axes[0].values[index_min] - \
-                          self.dataset.data.axes[0].values[index_max]
+        self.linewidths = self.dataset.data.axes[0].values[index_min] \
+            - self.dataset.data.axes[0].values[index_max]
 
     def _fill_dataset(self):
         self.new_dataset.data.data = self.linewidths
