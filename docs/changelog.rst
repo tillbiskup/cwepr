@@ -19,7 +19,7 @@ New features
 * *g* value can be provided for :class:`cwepr.analysis.FieldCalibration`
 * New module :mod:`utils` for general-purpose functions regarding cw-EPR spectroscopy
 * Functions :func:`cwepr.utils.convert_g2mT` and :func:`cwepr.utils.convert_mT2g` to convert between magnetic field values (in mT) and g values
-* :class:`cwepr.plotting.SinglePlotter1D` can add *g* axis as second axis opposite the magnetic field axis.
+* Plotters can add *g* axis as second axis opposite the magnetic field axis.
 
 
 Changes

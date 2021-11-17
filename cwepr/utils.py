@@ -3,6 +3,9 @@
 To avoid circular dependencies, this module does *not* depend on any other
 modules of the cwepr package, but it can be imported into every other module.
 
+
+.. versionadded:: 0.2
+
 """
 
 import numpy as np
@@ -36,6 +39,7 @@ def convert_g2mT(values, mw_freq=None):
     planck_constant = scipy.constants.value('Planck constant')
     mu_b = scipy.constants.value('electron mag. mom.')
 
+    values = np.asarray([not_zero(value) for value in values])
     return (planck_constant * mw_freq * 1e9) / (-mu_b * values * 1e-3)
 
 
@@ -66,4 +70,35 @@ def convert_mT2g(values, mw_freq=None):
     planck_constant = scipy.constants.value('Planck constant')
     mu_b = scipy.constants.value('electron mag. mom.')
 
+    values = np.asarray([not_zero(value) for value in values])
     return (planck_constant * mw_freq * 1e9) / (-mu_b * values * 1e-3)
+
+
+def not_zero(value):
+    """
+    Return a value that is not zero to prevent DivisionByZero errors.
+
+    Dividing by zero results in NaN values and often hinders evaluating
+    mathematical models. A solution adopted from the lmfit Python package
+    (https://doi.org/10.5281/zenodo.598352) returns a value equivalent to
+    the resolution of a numpy float.
+
+    .. note::
+
+        If you use this function excessively within a module, mostly within
+        rather complicated mathematical equations, it might be a good idea
+        to import this function explicitly, to shorten the code, such as:
+        ``from aspecd.utils import not_zero``. As usual, readability is king.
+
+    Parameters
+    ----------
+    value : :class:`float`
+        Value that can become (too close to) zero to trigger NaN values
+
+    Returns
+    -------
+    value : :class:`float`
+        Value guaranteed not to be zero
+
+    """
+    return np.copysign(max(abs(value), np.finfo(np.float64).resolution), value)
