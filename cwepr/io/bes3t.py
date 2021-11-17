@@ -44,9 +44,6 @@ class BES3TImporter(aspecd.io.DatasetImporter):
     """
 
     def __init__(self, source=None):
-        # Dirty fix: Cut file extension
-        if source.endswith((".DSC", ".DTA", ".YGF")):
-            source = source[:-4]
         super().__init__(source=source)
         self.load_infofile = True
         # private properties
@@ -58,6 +55,7 @@ class BES3TImporter(aspecd.io.DatasetImporter):
         self._file_encoding = ''
 
     def _import(self):
+        self._clean_filenames()
         self._extract_metadata_from_dsc()  # To get dimension information
         self._check_experiment()
         self._set_dataset_dimension()
@@ -72,6 +70,11 @@ class BES3TImporter(aspecd.io.DatasetImporter):
         self._fill_axes()
 
         self._ensure_common_units()
+
+    def _clean_filenames(self):
+        # Dirty fix: Cut file extension
+        if self.source.endswith((".DSC", ".DTA", ".YGF")):
+            self.source = self.source[:-4]
 
     def _import_data(self):
         complete_filename = self.source + ".DTA"

@@ -45,9 +45,6 @@ class ESPWinEPRImporter(aspecd.io.DatasetImporter):
     """
 
     def __init__(self, source=None):
-        # Dirty fix: Cut file extension
-        if source.endswith((".spc", ".par")):
-            source = source[:-4]
         super().__init__(source=source)
         self.load_infofile = True
         # private properties
@@ -58,6 +55,7 @@ class ESPWinEPRImporter(aspecd.io.DatasetImporter):
         self._file_encoding = ''
 
     def _import(self):
+        self._clean_filenames()
         self._set_defaults()
         self._read_parameter_file()
         self._import_data()
@@ -71,6 +69,11 @@ class ESPWinEPRImporter(aspecd.io.DatasetImporter):
         self._get_number_of_points()
         self._ensure_common_units()
         self._fill_axes()
+
+    def _clean_filenames(self):
+        # Dirty fix: Cut file extension
+        if self.source.endswith((".par", ".spc")):
+            self.source = self.source[:-4]
 
     def _set_defaults(self):
         default_file = aspecd.utils.Yaml()

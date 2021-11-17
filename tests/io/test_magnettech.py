@@ -16,10 +16,10 @@ ROOTPATH = os.path.split(os.path.abspath(__file__))[0]
 class TestMagnettechXmlImporter(unittest.TestCase):
     def setUp(self):
         source = os.path.join(ROOTPATH, 'testdata/test-magnettech')
-        self.importer = cwepr.io.magnettech.MagnettechXmlImporter(source=source)
+        self.importer = cwepr.io.magnettech.MagnettechXMLImporter(source=source)
 
     def test_axis_dimensions_equals_one(self):
-        converter = cwepr.io.magnettech.MagnettechXmlImporter()
+        converter = cwepr.io.magnettech.MagnettechXMLImporter()
         testdata = 'CZzAKavudEA=5HabpLDudEA='
         self.assertEqual(1, converter._convert_base64string_to_np_array(
                              testdata).ndim)
@@ -45,14 +45,14 @@ class TestMagnettechXmlImporter(unittest.TestCase):
         self.assertIsInstance(q_value, float)
 
     def test_import_with_no_file_raises(self):
-        importer = cwepr.io.magnettech.MagnettechXmlImporter()
+        importer = cwepr.io.magnettech.MagnettechXMLImporter()
         dataset = cwepr.dataset.ExperimentalDataset()
         with self.assertRaises(cwepr.exceptions.MissingPathError):
             dataset.import_from(importer)
 
     def test_import_with_not_existing_file_raises(self):
         source = 'foo.xml'
-        importer = cwepr.io.magnettech.MagnettechXmlImporter(source=source)
+        importer = cwepr.io.magnettech.MagnettechXMLImporter(source=source)
         dataset = cwepr.dataset.ExperimentalDataset()
         with self.assertRaises(FileNotFoundError):
             dataset.import_from(importer)
@@ -63,14 +63,14 @@ class TestMagnettechXmlImporter(unittest.TestCase):
             new_source = os.path.join(testdir, 'test-wo-infofile')
             shutil.copyfile(source, new_source + '.xml')
             dataset = cwepr.dataset.ExperimentalDataset()
-            importer = cwepr.io.magnettech.MagnettechXmlImporter(
+            importer = cwepr.io.magnettech.MagnettechXMLImporter(
                 source=new_source)
             dataset.import_from(importer)
 
     def test_with_file_extension(self):
         source = os.path.join(ROOTPATH, 'testdata/test-magnettech.xml')
         dataset = cwepr.dataset.ExperimentalDataset()
-        importer = cwepr.io.magnettech.MagnettechXmlImporter(
+        importer = cwepr.io.magnettech.MagnettechXMLImporter(
             source=source)
         dataset.import_from(importer)
 

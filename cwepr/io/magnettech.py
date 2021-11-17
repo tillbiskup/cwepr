@@ -18,7 +18,7 @@ import cwepr.processing
 import cwepr.exceptions
 
 
-class MagnettechXmlImporter(aspecd.io.DatasetImporter):
+class MagnettechXMLImporter(aspecd.io.DatasetImporter):
     """Import cw-EPR raw data from the Magnettech benchtop spectrometer.
 
     Magnettech provides a XML-file with the results. Specialities of this
@@ -287,7 +287,7 @@ class GoniometerSweepImporter(aspecd.io.DatasetImporter):
         # import all files without infofile
         for num, filename in enumerate(self.filenames):
             filename = filename[:-4]  # remove extension
-            importer = cwepr.io.MagnettechXmlImporter(source=filename)
+            importer = cwepr.io.MagnettechXMLImporter(source=filename)
             importer.load_infofile = False
             self._data.append(cwepr.dataset.ExperimentalDataset())
             self._data[num].import_from(importer)

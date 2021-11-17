@@ -9,13 +9,12 @@ Currently, there is only one factory class:
 
 """
 
-
 import os.path
 
 import aspecd.io
 from aspecd.utils import object_from_class_name
 
-from cwepr.exceptions import NoMatchingFilePairError
+from cwepr.exceptions import UnsupportedDataFormatError
 
 
 class DatasetImporterFactory(aspecd.io.DatasetImporterFactory):
@@ -23,20 +22,31 @@ class DatasetImporterFactory(aspecd.io.DatasetImporterFactory):
 
     Currently, the data formats are distinguished by their file extensions.
 
+    Attributes
+    ----------
+    supported_formats : :class:`dict`
+        Dictionary who's keys correspond to the base name of the respective
+        importer (*i.e.*, without the suffix "Importer") and who's values are a
+        list of file extensions to detect the correct importer.
+
+    data_format : :class:`str`
+        Name of the format that has been detected.
+
+    Raises
+    ------
+    UnsupportedDataFormatError
+        Raised if a format is set but does not match any of the supported
+        formats
+
     """
 
     def __init__(self):
         super().__init__()
         self.supported_formats = {"BES3T": [".DTA", ".DSC"],
-                                  "WinEPR": [".spc", ".par"],
-                                  "Magnettech": [".xml"],
+                                  "ESPWinEPR": [".spc", ".par"],
+                                  "MagnettechXML": [".xml"],
                                   "Txt": [".txt"],
                                   "Csv": [".csv"]}
-        self.importers_for_formats = {"BES3T": "BES3TImporter",
-                                      "WinEPR": "ESPWinEPRImporter",
-                                      "Magnettech": "MagnettechXmlImporter",
-                                      "Txt": "TxtImporter",
-                                      'Csv': "CsvImporter"}
         self.data_format = None
 
     def _get_importer(self):
@@ -44,6 +54,13 @@ class DatasetImporterFactory(aspecd.io.DatasetImporterFactory):
 
         Call the correct importer for the data format set. If no format is set,
         it is automatically determined from the given filename.
+
+        .. note::
+
+            For developers: The actual class name is automatically generated
+            from the file format detected and afterwards an object from this
+            class created using :func:`aspecd.utils.object_from_class_name`.
+            Thus, cyclic imports are prevented.
 
         Raises
         ------
@@ -63,9 +80,9 @@ class DatasetImporterFactory(aspecd.io.DatasetImporterFactory):
             importer.source = self.source
             return importer
         self.data_format = self._find_format()
-        importer_class = ".".join(
-            ["cwepr", "io", self.importers_for_formats[self.data_format]])
-        importer = object_from_class_name(importer_class)
+        importer = \
+            object_from_class_name(".".join(["cwepr", "io", self.data_format
+                                             + "Importer"]))
         importer.source = self.source
         return importer
 
@@ -91,4 +108,4 @@ class DatasetImporterFactory(aspecd.io.DatasetImporterFactory):
             if all(file_exists):
                 return file_format
         msg = "No file format was found for path: " + self.source
-        raise NoMatchingFilePairError(message=msg)
+        raise UnsupportedDataFormatError(message=msg)

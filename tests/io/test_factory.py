@@ -12,6 +12,6 @@ class TestDatasetImporterFactory(unittest.TestCase):
         source = os.path.join(ROOTPATH, 'testdata',
                               'test-magnettech.xml').replace('xml', 'test')
         importer = cwepr.dataset.DatasetFactory()
-        with self.assertRaises(cwepr.exceptions.NoMatchingFilePairError) as error:
+        with self.assertRaises(cwepr.exceptions.UnsupportedDataFormatError) as error:
             dataset = importer.get_dataset(source=source)
         self.assertIn('No file format was found', error.exception.message)

@@ -21,7 +21,7 @@ there are a series of more general modules:
 """
 
 from .factory import DatasetImporterFactory
-from .magnettech import MagnettechXmlImporter, GoniometerSweepImporter
+from .magnettech import MagnettechXMLImporter, GoniometerSweepImporter
 from .txt_file import TxtImporter
 from .bes3t import BES3TImporter
 from .esp_winepr import ESPWinEPRImporter

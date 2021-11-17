@@ -39,7 +39,7 @@ class TestAutomaticPhaseCorrection(unittest.TestCase):
 class TestSubtraction(unittest.TestCase):
     def setUp(self):
         source = os.path.join(ROOTPATH, 'io/testdata/test-magnettech')
-        importer = cwepr.io.magnettech.MagnettechXmlImporter(source=source)
+        importer = cwepr.io.magnettech.MagnettechXMLImporter(source=source)
         self.dataset = cwepr.dataset.ExperimentalDataset()
         self.dataset.import_from(importer)
 
@@ -47,7 +47,7 @@ class TestSubtraction(unittest.TestCase):
 class TestFrequencyCorrection(unittest.TestCase):
     def setUp(self):
         source = os.path.join(ROOTPATH, 'io/testdata/test-magnettech')
-        importer = cwepr.io.magnettech.MagnettechXmlImporter(source=source)
+        importer = cwepr.io.magnettech.MagnettechXMLImporter(source=source)
         self.dataset = cwepr.dataset.ExperimentalDataset()
         self.dataset.import_from(importer)
         self.corrector = cwepr.processing.FrequencyCorrection()
@@ -120,7 +120,7 @@ class TestAxisInterpolation(unittest.TestCase):
 
     def test_interpolate_returns_new_axis(self):
         source = os.path.join(ROOTPATH, 'io/testdata/test-magnettech')
-        importer = cwepr.io.magnettech.MagnettechXmlImporter(source=source)
+        importer = cwepr.io.magnettech.MagnettechXMLImporter(source=source)
         dataset = cwepr.dataset.ExperimentalDataset()
         dataset.import_from(importer)
         old_axis = dataset.data.axes[0].values
