@@ -544,26 +544,45 @@ class FrequencyCorrection(aspecd.processing.SingleProcessingStep):
 
 
 class GAxisCreation(aspecd.processing.SingleProcessingStep):
-    """Change magnetic field axis to g axis.
+    """Change magnetic field axis to *g* axis.
+
+    Particularly when comparing EPR spectra recorded at different frequency
+    bands, the only sensible way to directly compare these spectra is to
+    transform their magnetic field axis to a *g* axis.
+
+    .. note::
+        If you only want to have a *g* axis appearing in your plots
+        (additionally to your magnetic field axis), you can tell the
+        plotters to add a *g* axis at the opposite side of your axes. See
+        the documentation of the plotters in the :mod:`cwepr.plotting`
+        module for more details.
+
 
     Attributes
     ----------
     self.parameters['frequency']
-        frequency to calculate g axis with.
+        Microwave frequency (**in GHz**) to calculate *g* axis with.
+
+        Default: 9.5
+
+
+    .. versionchanged:: 0.2
+        axis quantity is set to "g value", correct calculation of *g* values
 
     """
 
     def __init__(self):
         super().__init__()
         self.parameters["frequency"] = 9.5
-        self.description = "Return a g-axis."
+        self.description = "Convert magnetic field axis to g axis."
 
     def _perform_task(self):
         for axis in self.dataset.data.axes:
-            if axis.unit in ('mT', 'G'):
+            if axis.unit == 'mT':
                 mw_freq = self.dataset.metadata.bridge.mw_frequency.value
                 axis.values = utils.convert_mT2g(axis.values, mw_freq=mw_freq)
                 axis.unit = ''
+                axis.quantity = 'g value'
 
 
 class BaselineCorrectionWithPolynomial(aspecd.processing.SingleProcessingStep):
@@ -598,6 +617,11 @@ class BaselineCorrectionWithPolynomial(aspecd.processing.SingleProcessingStep):
         coefficients:
             Filled during evaluation of the task, coefficients of the
             baseline polynomial.
+
+
+    .. todo::
+        This class is most probably superseded by
+        :class:`aspecd.processing.BaselineCorrection`. If so, delete this one.
 
     """
 

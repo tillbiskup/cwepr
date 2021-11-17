@@ -77,6 +77,7 @@ class GAxisCreation(unittest.TestCase):
         self.dataset.data.data = np.random.random(100)
         self.dataset.data.axes[0].values = np.linspace(300, 400, num=100)
         self.dataset.data.axes[0].unit = 'mT'
+        self.dataset.data.axes[0].quantity = 'magnetic field'
         self.dataset.metadata.bridge.mw_frequency.value = 9.5
 
     def test_instantiate_class(self):
@@ -85,7 +86,7 @@ class GAxisCreation(unittest.TestCase):
 
     def test_description_is_appropriate(self):
         self.assertTrue(self.proc.description)
-        self.assertIn('g-axis', self.proc.description)
+        self.assertIn('magnetic field axis to g axis', self.proc.description)
 
     def test_axis_values_differs_after(self):
         values_before = np.copy(self.dataset.data.axes[0].values)
@@ -104,11 +105,13 @@ class GAxisCreation(unittest.TestCase):
         condition = np.floor(np.log10(self.dataset.data.axes[0].values)) == 0
         self.assertTrue(all(condition))
 
-    def test_axis_units_differ(self):
-        unit_before = np.copy(self.dataset.data.axes[0].unit)
+    def test_axis_unit_gets_removed(self):
         self.dataset.process(self.proc)
-        unit_after = self.dataset.data.axes[0].unit
-        self.assertNotEqual(unit_before, unit_after)
+        self.assertEqual("", self.dataset.data.axes[0].unit)
+
+    def test_axis_quantity_gets_set(self):
+        self.dataset.process(self.proc)
+        self.assertEqual("g value", self.dataset.data.axes[0].quantity)
 
 
 class TestAxisInterpolation(unittest.TestCase):
