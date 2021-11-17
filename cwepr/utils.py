@@ -88,7 +88,7 @@ def not_zero(value):
         If you use this function excessively within a module, mostly within
         rather complicated mathematical equations, it might be a good idea
         to import this function explicitly, to shorten the code, such as:
-        ``from aspecd.utils import not_zero``. As usual, readability is king.
+        ``from cwepr.utils import not_zero``. As usual, readability is king.
 
     Parameters
     ----------

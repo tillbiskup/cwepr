@@ -31,3 +31,4 @@ An alphabetic list of the submodules available within the cwepr package. The act
    cwepr.plotting
    cwepr.processing
    cwepr.report
+   cwepr.utils

@@ -1,6 +1,8 @@
 import os
 import unittest
 
+from aspecd.plotting import Saver
+
 import cwepr.plotting
 import cwepr.dataset
 import cwepr.io.magnettech
@@ -25,7 +27,7 @@ class TestGoniometerSweepPlotter(unittest.TestCase):
         plotter = cwepr.plotting.GoniometerSweepPlotter()
         plotter.dataset = self.dataset
         plotter.properties.axes.xlim = [337.5, 339]
-        saver = cwepr.plotting.Saver()
+        saver = Saver()
         saver.filename = self.filename
         self.dataset.plot(plotter)
         plotter.save(saver)

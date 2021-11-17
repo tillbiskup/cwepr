@@ -291,7 +291,8 @@ class PlotterExtensions:
             field axis
 
             This assumes the magnetic field axis to be the *x* axis and the
-            magnetic field unit to be millitesla (mT).
+            magnetic field values to be in millitesla (mT), as it calls
+            :func:`cwepr.utils.convert_mT2g`.
 
     """
 

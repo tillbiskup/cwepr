@@ -16,6 +16,11 @@ For version 0.2
   * At least for goniometer, power, and modulation amplitude sweeps, these should be transformed into single datasets.
   * Requires interpolation of data, as each individual dataset has its own *x* axis (usually field).
 
+* Cleanup
+
+  * Which classes are no longer used/necessary due to having been superseded by ASpecD classes?
+  * Which classes may not be sensible any more or are otherwise defunct?
+
 
 For later versions
 ==================
