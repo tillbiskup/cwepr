@@ -372,7 +372,6 @@ class SinglePlotter1D(aspecd.plotting.SinglePlotter1D, PlotterExtensions):
 
     def _create_plot(self):
         super()._create_plot()
-        print(">>>>", self.parameters.keys())
         if self.parameters['g-axis'] and self.dataset.data.axes[0].unit == 'mT':
             self._create_g_axis(self.dataset.metadata.bridge.mw_frequency.value)
 
