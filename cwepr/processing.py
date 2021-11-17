@@ -485,6 +485,12 @@ class FrequencyCorrection(aspecd.processing.SingleProcessingStep):
 
         Default: 9.5
 
+
+    .. todo::
+        Double-check according to units. Currently, it looks like even in
+        case of the field axis to be in Gauss (G), the values are assumed to
+        be in mT.
+
     """
 
     def __init__(self):
@@ -670,6 +676,10 @@ class PhaseCorrection(aspecd.processing.SingleProcessingStep):
 
             Default: deg
 
+
+    .. todo::
+        Remove this class due to being unnecessary and misleading?
+
     """
 
     def __init__(self):
@@ -713,7 +723,7 @@ class PhaseCorrection(aspecd.processing.SingleProcessingStep):
 class AutomaticPhaseCorrection(aspecd.processing.SingleProcessingStep):
     """Automatic phase correction via Hilbert transform.
 
-    ..important::
+    .. important::
         Experimental state: Other methods have been proven to provide a
         better and reliable phase correction.
 
@@ -842,11 +852,52 @@ class NormalisationOfDerivativeToArea(aspecd.processing.SingleProcessingStep):
 class Normalisation(aspecd.processing.Normalisation):
     """Normalise data.
 
+    Additional to kinds implemented in the parent class, this class provides
+    the following normalisations:
+
+    * receiver_gain
+
+      Normalise data to identical receiver gain
+
+    * scan_number
+
+      Normalise data to same number of scans
+
     For an extended documentation of the kinds implemented directly in
     ASpecD, see the corresponding documentation:
     :class:`aspecd.processing.Normalisation`.
 
-    The basic usage is as follows:
+
+    Some details for the two additional kinds of normalisation are given
+    below.
+
+    Due to the logarithmic scale of the **receiver gain** (in dB) at least in
+    Bruker spectrometers, it has to be transferred into the "normal" scale. It
+    calculates as following:
+
+        receiver gain = 10^(receiver gain in dB/20)
+
+    Source: Stefan Stoll, EasySpin source code, according to Xenon Manual 2011
+
+    The normalisation according to the **number of scans** is necessary to make
+    spectra in which the intensity of different scans is the sum of the
+    single scans, comparable to those where it is averaged.
+
+    .. important::
+
+        Know what you are doing, as depending on the software used for
+        recording your data, the data are already normalised with respect to
+        the number of scans.
+
+
+    Examples
+    --------
+    For convenience, a series of examples in recipe style (for details of
+    the recipe-driven data analysis, see :mod:`aspecd.tasks`) is given below
+    for how to make use of this class. The examples focus each on a single
+    aspect.
+
+    To normalise your dataset(s) with respect to the receiver gain used:
 
     .. code-block:: yaml
 
@@ -857,31 +908,25 @@ class Normalisation(aspecd.processing.Normalisation):
              kind: receiver_gain
 
 
-    The two additional kinds are explained below.
+    To normalise your dataset(s) with respect to the number of scans that
+    have been recorded:
 
-    Due to the logarithmic scale of the *receiver gain* (in dB) at least in
-    BRUKER spectrometers, it has to be transferred into the "normal" scale. It
-    calculates as following:
+    .. code-block:: yaml
 
-        receiver gain = 10^(receiver gain in dB/20)
+       - kind: processing
+         type: Normalisation
+         properties:
+           parameters:
+             kind: scan_number
 
-    Source: Stefan Stoll, EasySpin source code, according to Xenon Manual 2011
-
-    The normalisation according to the *number of scans* is necessary to make
-    spectra in which the intensity of different scans is the sum of the
-    single scans, comparable to those where it is averaged.
-
-    .. important::
-        Know what you are doing, sometimes the spectrometer's software does this
-        step silently...
     """
 
     def _perform_task(self):
         if 'receiver' in self.parameters["kind"].lower():
             self._normalise_for_receiver_gain()
         elif 'scan_number' in self.parameters["kind"].lower():
-            self.dataset.data.data /= \
-                self.dataset.metadata.signal_channel.accumulations
+            self.dataset.data.data \
+                /= self.dataset.metadata.signal_channel.accumulations
         else:
             super()._perform_task()
 
@@ -897,6 +942,11 @@ class Integration(aspecd.processing.SingleProcessingStep):
     Indefinite integration means integration yielding an integral function.
     The quality of the integration can be determined using
     :class:`cwepr.analysis.IntegrationVerification`
+
+    .. todo::
+        Is this class still necessary, or has it been superseded by the
+        class :class:`aspecd.processing.Integration`?
+
     """
 
     def __init__(self):
@@ -968,6 +1018,11 @@ class Averaging2DDataset(aspecd.processing.SingleProcessingStep):
 
         Default: 1
 
+
+    .. todo::
+        Is this class still necessary, or has it been superseded by the
+        class :class:`aspecd.processing.Projection`?
+
     """
 
     def __init__(self):
@@ -998,6 +1053,11 @@ class SubtractVector(aspecd.processing.SingleProcessingStep):
     ----------
     parameters['vector']
         Vector that is subtracted from the data
+
+
+    .. todo::
+        Is this class still necessary, or has it been superseded by the
+        (somewhat superior) class :class:`aspecd.processing.DatasetAlgebra`?
 
     """
 
@@ -1384,6 +1444,13 @@ class Filtering(aspecd.processing.Filtering):
 
 
 class ModifyAxisValues(aspecd.processing.SingleProcessingStep):
+    """
+
+    .. todo::
+        This class is most probably superseded by
+        :class:`aspecd.processing.ChangeAxesValues`. If so, delete this one.
+
+    """
     def __init__(self):
         super().__init__()
         self.parameters['axis'] = None
