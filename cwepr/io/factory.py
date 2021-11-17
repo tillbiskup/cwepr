@@ -13,11 +13,8 @@ Currently, there is only one factory class:
 import os.path
 
 import aspecd.io
+from aspecd.utils import object_from_class_name
 
-from cwepr.io.bes3t import BES3TImporter
-from cwepr.io.esp_winepr import ESPWinEPRImporter
-from cwepr.io.magnettech import MagnettechXmlImporter, GoniometerSweepImporter
-from cwepr.io.txt_file import TxtImporter, CsvImporter
 from cwepr.exceptions import NoMatchingFilePairError
 
 
@@ -35,11 +32,11 @@ class DatasetImporterFactory(aspecd.io.DatasetImporterFactory):
                                   "Magnettech": [".xml"],
                                   "Txt": [".txt"],
                                   "Csv": [".csv"]}
-        self.importers_for_formats = {"BES3T": BES3TImporter,
-                                      "WinEPR": ESPWinEPRImporter,
-                                      "Magnettech": MagnettechXmlImporter,
-                                      "Txt": TxtImporter,
-                                      'Csv': CsvImporter}
+        self.importers_for_formats = {"BES3T": "BES3TImporter",
+                                      "WinEPR": "ESPWinEPRImporter",
+                                      "Magnettech": "MagnettechXmlImporter",
+                                      "Txt": "TxtImporter",
+                                      'Csv': "CsvImporter"}
         self.data_format = None
 
     def _get_importer(self):
@@ -60,11 +57,17 @@ class DatasetImporterFactory(aspecd.io.DatasetImporterFactory):
             if self.source.endswith(end_):
                 self.source = self.source[:-len(end_)]
         if os.path.isdir(self.source):
-            return GoniometerSweepImporter(source=self.source)
+            # TODO: This should be handled better and more explicit...
+            importer = \
+                object_from_class_name('cwepr.io.GoniometerSweepImporter')
+            importer.source = self.source
+            return importer
         self.data_format = self._find_format()
-        special_importer = self.importers_for_formats[
-            self.data_format](source=self.source)
-        return special_importer
+        importer_class = ".".join(
+            ["cwepr", "io", self.importers_for_formats[self.data_format]])
+        importer = object_from_class_name(importer_class)
+        importer.source = self.source
+        return importer
 
     def _find_format(self):
         """Find out the format of the given file.
