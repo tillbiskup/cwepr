@@ -77,6 +77,7 @@ class GAxisCreation(unittest.TestCase):
         self.dataset.data.data = np.random.random(100)
         self.dataset.data.axes[0].values = np.linspace(300, 400, num=100)
         self.dataset.data.axes[0].unit = 'mT'
+        self.dataset.metadata.bridge.mw_frequency.value = 9.5
 
     def test_instantiate_class(self):
         proc = cwepr.processing.GAxisCreation()
@@ -93,6 +94,15 @@ class GAxisCreation(unittest.TestCase):
         diffs = values_before - values_after
         conditions = (diff == 0 for diff in diffs)
         self.assertFalse(all(conditions))
+
+    def test_axis_values_are_positive_values(self):
+        self.dataset.process(self.proc)
+        self.assertTrue(all(self.dataset.data.axes[0].values > 0))
+
+    def test_axis_values_have_correct_range(self):
+        self.dataset.process(self.proc)
+        condition = np.floor(np.log10(self.dataset.data.axes[0].values)) == 0
+        self.assertTrue(all(condition))
 
     def test_axis_units_differ(self):
         unit_before = np.copy(self.dataset.data.axes[0].unit)

@@ -12,10 +12,14 @@ Not yet released
 
 **Note:** Starting with this version, cwepr requires **Python >=3.7**
 
+
 New features
 ------------
 
 * *g* value can be provided for :class:`cwepr.analysis.FieldCalibration`
+* New module :mod:`utils` for general-purpose functions regarding cw-EPR spectroscopy
+* Functions :func:`cwepr.utils.convert_g2mT` and :func:`cwepr.utils.convert_mT2g` to convert between magnetic field values (in mT) and g values
+* :class:`cwepr.plotting.SinglePlotter1D` can add *g* axis as second axis opposite the magnetic field axis.
 
 
 Changes
@@ -27,6 +31,8 @@ Changes
 
 Fixes
 -----
+
+* :class:`cwepr.processing.GAxisCreation` returns correct *g* axis values
 
 
 Version 0.1.2

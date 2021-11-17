@@ -428,13 +428,13 @@ What  follows is the API documentation of each class implemented in this module.
 import copy
 import math
 import numpy as np
-import scipy.constants
 import scipy.integrate
 import scipy.interpolate
 import scipy.signal
 
 import aspecd.processing
 import cwepr.exceptions
+from cwepr import utils
 
 
 class FieldCorrection(aspecd.processing.SingleProcessingStep):
@@ -555,16 +555,9 @@ class GAxisCreation(aspecd.processing.SingleProcessingStep):
     def _perform_task(self):
         for axis in self.dataset.data.axes:
             if axis.unit in ('mT', 'G'):
-                axis.values = self._create_g_axis(axis.values)
+                mw_freq = self.dataset.metadata.bridge.mw_frequency.value
+                axis.values = utils.convert_mT2g(axis.values, mw_freq=mw_freq)
                 axis.unit = ''
-
-    def _create_g_axis(self, field_values=None):
-        planck_constant = scipy.constants.value('Planck constant')
-        mu_b = scipy.constants.value('electron mag. mom.')
-        # pylint: disable=invalid-name
-        nu = self.dataset.metadata.bridge.mw_frequency.value
-        g_ = (planck_constant * nu) / (mu_b * field_values)
-        return g_
 
 
 class BaselineCorrectionWithPolynomial(aspecd.processing.SingleProcessingStep):

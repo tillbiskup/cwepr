@@ -122,6 +122,8 @@ import copy
 import aspecd.plotting
 import aspecd.processing
 
+from cwepr import utils
+
 
 class GoniometerSweepPlotter(aspecd.plotting.SingleCompositePlotter):
     """Overview of the results of a goniometer sweep.
@@ -247,6 +249,21 @@ class SinglePlotter1D(aspecd.plotting.SinglePlotter1D):
     ASpecD documentation of the :class:`aspecd.plotting.SinglePlotter1D`
     class for details.
 
+
+    Attributes
+    ----------
+    parameters : :class:`dict`
+        All parameters necessary for the plot, implicit and explicit
+
+        The following keys exist, in addition to those of the superclass:
+
+        g-axis: :class:`bool`
+            Whether to show an additional opposite of the magnetic field axis
+
+            This assumes the magnetic field axis to be the *x* axis and the
+            magnetic field unit to be millitesla (mT).
+
+
     Examples
     --------
     For convenience, a series of examples in recipe style (for details of
@@ -264,7 +281,40 @@ class SinglePlotter1D(aspecd.plotting.SinglePlotter1D):
          properties:
            filename: output.pdf
 
+
+    In case you would have a *g* axis plotted as a second *x* axis on top:
+
+    .. code-block:: yaml
+
+       - kind: singleplot
+         type: SinglePlotter1D
+         properties:
+           parameters:
+             g-axis: true
+           filename: output.pdf
+
     """
+
+    def __init__(self):
+        super().__init__()
+        self.parameters['g-axis'] = False
+
+    def _create_plot(self):
+        super()._create_plot()
+        if self.parameters['g-axis'] and self.dataset.data.axes[0].unit == 'mT':
+            self._create_g_axis()
+
+    def _create_g_axis(self):
+        mw_freq = self.dataset.metadata.bridge.mw_frequency.value
+
+        def forward(values):
+            return utils.convert_mT2g(values, mw_freq=mw_freq)
+
+        def backward(values):
+            return utils.convert_g2mT(values, mw_freq=mw_freq)
+
+        gaxis = self.ax.secondary_xaxis('top', functions=(backward, forward))
+        gaxis.set_xlabel('$g\ value$')
 
 
 class SinglePlotter2D(aspecd.plotting.SinglePlotter2D):
