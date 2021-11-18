@@ -37,10 +37,10 @@ def convert_g2mT(values, mw_freq=None):  # noqa
 
     """
     planck_constant = scipy.constants.value('Planck constant')
-    mu_b = scipy.constants.value('electron mag. mom.')
+    mu_b = scipy.constants.value('Bohr magneton')
 
     values = np.asarray([not_zero(value) for value in values])
-    return (planck_constant * mw_freq * 1e9) / (-mu_b * values * 1e-3)
+    return (planck_constant * mw_freq * 1e9) / (mu_b * values * 1e-3)
 
 
 def convert_mT2g(values, mw_freq=None):  # noqa
@@ -68,10 +68,10 @@ def convert_mT2g(values, mw_freq=None):  # noqa
 
     """
     planck_constant = scipy.constants.value('Planck constant')
-    mu_b = scipy.constants.value('electron mag. mom.')
+    mu_b = scipy.constants.value('Bohr magneton')
 
     values = np.asarray([not_zero(value) for value in values])
-    return (planck_constant * mw_freq * 1e9) / (-mu_b * values * 1e-3)
+    return (planck_constant * mw_freq * 1e9) / (mu_b * values * 1e-3)
 
 
 def not_zero(value):

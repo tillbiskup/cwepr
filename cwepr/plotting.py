@@ -369,10 +369,6 @@ class SinglePlotter1D(aspecd.plotting.SinglePlotter1D, PlotterExtensions):
 
     """
 
-    def __init__(self):
-        super().__init__()
-        PlotterExtensions.__init__(self)
-
     def _create_plot(self):
         super()._create_plot()
         if self.parameters['g-axis'] and self.dataset.data.axes[0].unit == 'mT':
@@ -471,10 +467,6 @@ class SinglePlotter2D(aspecd.plotting.SinglePlotter2D, PlotterExtensions):
 
     """
 
-    def __init__(self):
-        super().__init__()
-        PlotterExtensions.__init__(self)
-
     def _create_plot(self):
         super()._create_plot()
         if self.parameters['g-axis'] and self.dataset.data.axes[0].unit == 'mT':
@@ -559,10 +551,6 @@ class SinglePlotter2DStacked(aspecd.plotting.SinglePlotter2DStacked,
 
     """
 
-    def __init__(self):
-        super().__init__()
-        PlotterExtensions.__init__(self)
-
     def _create_plot(self):
         super()._create_plot()
         if self.parameters['g-axis'] and self.dataset.data.axes[0].unit == 'mT':
@@ -636,10 +624,6 @@ class MultiPlotter1D(aspecd.plotting.MultiPlotter1D, PlotterExtensions):
            filename: output.pdf
 
     """
-
-    def __init__(self):
-        super().__init__()
-        PlotterExtensions.__init__(self)
 
     def _create_plot(self):
         super()._create_plot()
@@ -730,10 +714,6 @@ class MultiPlotter1DStacked(aspecd.plotting.MultiPlotter1DStacked,
            filename: output.pdf
 
     """
-
-    def __init__(self):
-        super().__init__()
-        PlotterExtensions.__init__(self)
 
     def _create_plot(self):
         super()._create_plot()
