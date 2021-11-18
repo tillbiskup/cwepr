@@ -33,6 +33,7 @@ Fixes
 -----
 
 * :class:`cwepr.processing.GAxisCreation` returns correct *g* axis values
+* Reporters do not contain dataset in their dict representation
 
 
 Version 0.1.2

@@ -553,14 +553,6 @@ class GAxisCreation(aspecd.processing.SingleProcessingStep):
         module for more details.
 
 
-    Attributes
-    ----------
-    self.parameters['frequency']
-        Microwave frequency (**in GHz**) to calculate *g* axis with.
-
-        Default: 9.5
-
-
     .. versionchanged:: 0.2
         axis quantity is set to "g value", correct calculation of *g* values
 
@@ -568,7 +560,6 @@ class GAxisCreation(aspecd.processing.SingleProcessingStep):
 
     def __init__(self):
         super().__init__()
-        self.parameters["frequency"] = 9.5
         self.description = "Convert magnetic field axis to g axis."
 
     def _perform_task(self):

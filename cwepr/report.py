@@ -36,6 +36,7 @@ class ExperimentalDatasetLaTeXReporter(aspecd.report.LaTeXReporter):
         self._metadata = dict()
         self._tasks = collections.OrderedDict()
         self._figure_name = dict()
+        self._exclude_from_to_dict.extend(['dataset'])
 
     def create(self):
         """Perform all methods to generate a report."""
@@ -144,6 +145,7 @@ class PowerSweepAnalysisReporter(aspecd.report.LaTeXReporter):
         # private properties
         self._metadata = dict()
         self._tasks = dict()
+        self._exclude_from_to_dict.extend(['dataset'])
 
     def create(self):
         """Perform all methods to generate a report."""
@@ -227,6 +229,7 @@ class DokuwikiCaptionsReporter(aspecd.report.Reporter):
         # private properties
         self._metadata = dict()
         self._figure_name = dict()
+        self._exclude_from_to_dict.extend(['dataset'])
 
     def create(self):
         """Perform all methods to create the captions."""
@@ -281,6 +284,7 @@ class InfofileReporter(DokuwikiCaptionsReporter):
         self.language = 'en'
         self.template = self._get_template()
         super().__init__(template=self.template, filename=self.filename)
+        self._exclude_from_to_dict.extend(['dataset'])
 
     def _get_template(self):
         language = self.language

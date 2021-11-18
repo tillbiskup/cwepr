@@ -47,6 +47,10 @@ class TestExperimentalDatasetLaTeXReporter(unittest.TestCase):
         self.reporter.create()
         #self.reporter.compile()
 
+    def test_to_dict_does_not_contain_dataset(self):
+        dict_ = self.reporter.to_dict()
+        self.assertNotIn('dataset', dict_)
+
 
 class TestPowerSweepAnalysisReport(unittest.TestCase):
     def setUp(self):
@@ -68,6 +72,11 @@ class TestPowerSweepAnalysisReport(unittest.TestCase):
 
     def test_reporter(self):
         self.chef.serve(recipe_filename=self.recipe_filename)
+
+    def test_to_dict_does_not_contain_dataset(self):
+        reporter = cwepr.report.PowerSweepAnalysisReporter()
+        dict_ = reporter.to_dict()
+        self.assertNotIn('dataset', dict_)
 
 
 class TestModulationAmplitudeSweepAnalysisReport(unittest.TestCase):
@@ -122,6 +131,10 @@ class TestDokuwikiCaptionsReporter(unittest.TestCase):
         self.reporter.create()
         self.assertTrue(os.path.exists(self.filename))
 
+    def test_to_dict_does_not_contain_dataset(self):
+        dict_ = self.reporter.to_dict()
+        self.assertNotIn('dataset', dict_)
+
 
 class InfofileReporterBES3T(unittest.TestCase):
     def setUp(self):
@@ -145,6 +158,10 @@ class InfofileReporterBES3T(unittest.TestCase):
         self.reporter.template = self.template_
         self.reporter.create()
         self.assertTrue(os.path.exists(self.filename))
+
+    def test_to_dict_does_not_contain_dataset(self):
+        dict_ = self.reporter.to_dict()
+        self.assertNotIn('dataset', dict_)
 
 
 class InfofileReporterMagnettech(unittest.TestCase):
