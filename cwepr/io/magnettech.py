@@ -34,7 +34,7 @@ class MagnettechXMLImporter(aspecd.io.DatasetImporter):
         path of the root directory
 
     .. todo::
-        Dokumentation der Attribute, Sortieren der Funktionen.
+        Documentation of the attributes
 
     """
 

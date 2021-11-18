@@ -499,12 +499,7 @@ class FrequencyCorrection(aspecd.processing.SingleProcessingStep):
         self.description = "Correct magnetic field axis for given frequency"
 
     def _perform_task(self):
-        """Perform the actual transformation / correction.
-
-        For the conversion the x axis data is first converted to an axis in
-        units of using the given frequency, then converted back using target
-        frequency.
-        """
+        """Perform the actual transformation / correction. """
         nu_target = self.parameters['frequency']
         for axis in self.dataset.data.axes:
             # TODO: Question: Better check for quantity rather than unit? (
