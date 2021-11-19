@@ -16,6 +16,7 @@ Not yet released
 New features
 ------------
 
+* Importer for Bruker EMX file format (.par/.spc)
 * *g* value can be provided for :class:`cwepr.analysis.FieldCalibration`
 * New module :mod:`utils` for general-purpose functions regarding cw-EPR spectroscopy
 * Functions :func:`cwepr.utils.convert_g2mT` and :func:`cwepr.utils.convert_mT2g` to convert between magnetic field values (in mT) and g values

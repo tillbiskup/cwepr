@@ -499,11 +499,11 @@ class FrequencyCorrection(aspecd.processing.SingleProcessingStep):
         self.description = "Correct magnetic field axis for given frequency"
 
     def _perform_task(self):
-        """Perform the actual transformation / correction. """
+        """Perform the actual transformation / correction."""
         nu_target = self.parameters['frequency']
         for axis in self.dataset.data.axes:
-            # TODO: Question: Better check for quantity rather than unit? (
-            #   Difficult if not filled)
+            # TODO: Question: Better check for quantity rather than unit?
+            #       (Difficult if not filled)
             # if axis.quantity == 'magnetic field'
             if axis.unit in ('mT', 'G'):
                 axis.values = self._correct_field_for_frequency(nu_target,
