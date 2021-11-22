@@ -33,15 +33,20 @@ class ESPWinEPRImporter(aspecd.io.DatasetImporter):
     extension "spc" and a parameter file with extension "par". The
     particular problem with these two file formats is the different format
     of the binary data used. From the official specifications, there is no
-    way to discrimitate between ESP format (using Motorola format,
+    way to discriminate between ESP format (using Motorola format,
     translating to four-byte integer big endian), while the (old) EMX format
     (newer EMX machines probably use the BES3T format,
     see :class:`cwepr.io.BES3TImporter` for details) uses standard IEEE
-    binary, transating to eight-byte float little endan.
+    binary, translating to eight-byte float little endian.
 
     Furthermore, the parameter file usually contains only those values that
-    deviate from the standard values given in the specification.
+    deviate from the standard values given in the specification. Both are
+    getting imported and the standard values overwritten by the differing
+    values specified in the parameter file.
 
+
+    .. versionchanged:: 0.2
+        Added importer.
     """
 
     def __init__(self, source=None):
