@@ -8,8 +8,9 @@ Currently, there is only one factory class:
     Class necessary in context of recipe-driven data analysis
 
 """
-
+import glob
 import os.path
+import re
 
 import aspecd.io
 from aspecd.utils import object_from_class_name
@@ -69,12 +70,9 @@ class DatasetImporterFactory(aspecd.io.DatasetImporterFactory):
             formats
 
         """
-        for end_ in [extension for sublist in self.supported_formats.values()
-                     for extension in sublist]:
-            if self.source.endswith(end_):
-                self.source = self.source[:-len(end_)]
-        if os.path.isdir(self.source):
-            # TODO: This should be handled better and more explicit...
+        self._cut_file_extension_if_necessary()
+        if os.path.isdir(self.source) and self.directory_contains_gon_data():
+            self.data_format = 'GoniometerSweep'
             importer = \
                 object_from_class_name('cwepr.io.GoniometerSweepImporter')
             importer.source = self.source
@@ -85,6 +83,12 @@ class DatasetImporterFactory(aspecd.io.DatasetImporterFactory):
                                              + "Importer"]))
         importer.source = self.source
         return importer
+
+    def _cut_file_extension_if_necessary(self):
+        for end_ in [extension for sublist in self.supported_formats.values()
+                     for extension in sublist]:
+            if self.source.endswith(end_):
+                self.source = self.source[:-len(end_)]
 
     def _find_format(self):
         """Find out the format of the given file.
@@ -109,3 +113,17 @@ class DatasetImporterFactory(aspecd.io.DatasetImporterFactory):
                 return file_format
         msg = "No file format was found for path: " + self.source
         raise UnsupportedDataFormatError(message=msg)
+
+    def directory_contains_gon_data(self):
+        check_gon_filenames = []
+        if not os.listdir(self.source):
+            return False
+        for element in os.listdir(self.source):
+            if 'gon' in element:
+                check_gon_filenames.append(True)
+            else:
+                check_gon_filenames.append(False)
+        if all(check_gon_filenames):
+            return True
+        return False
+

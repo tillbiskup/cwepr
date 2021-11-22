@@ -145,7 +145,6 @@ class ESPWinEPRImporter(aspecd.io.DatasetImporter):
         mapper.map()
         infofile_dict = aspecd.utils.convert_keys_to_variable_names(
             mapper.metadata)
-        # TODO: Infofile: Temperatur in Physical parameter mappen?
         aspecd.utils.copy_keys_between_dicts(infofile_dict,
                                              self._metadata_dict)
         aspecd.utils.copy_values_between_dicts(infofile_dict,
