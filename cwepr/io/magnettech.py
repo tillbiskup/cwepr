@@ -33,8 +33,14 @@ class MagnettechXMLImporter(aspecd.io.DatasetImporter):
     root: :class:`str`
         path of the root directory
 
-    .. todo::
-        Documentation of the attributes
+    full_filename: :class:`str`
+        Filename with file extension
+
+    load_infofile: :class:`bool`
+        Skips import of infofile if set to False.
+
+    xml_metadata: :class:`dict`
+        Metadata from xml file, eventually imported to metadata.
 
     """
 
@@ -43,10 +49,10 @@ class MagnettechXMLImporter(aspecd.io.DatasetImporter):
             source = source[:-4]
         super().__init__(source=source)
         # public properties
-        self.load_infofile = True
         self.root = None
-        self.xml_metadata = dict()
         self.full_filename = ''
+        self.load_infofile = True
+        self.xml_metadata = dict()
         # private properties
         self._infofile = aspecd.infofile.Infofile()
         self._bfrom = float()

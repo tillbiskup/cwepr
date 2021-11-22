@@ -8,9 +8,7 @@ Currently, there is only one factory class:
     Class necessary in context of recipe-driven data analysis
 
 """
-import glob
 import os.path
-import re
 
 import aspecd.io
 from aspecd.utils import object_from_class_name

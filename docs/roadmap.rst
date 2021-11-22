@@ -15,6 +15,7 @@ For version 0.2
   * Which classes are no longer used/necessary due to having been superseded by ASpecD classes?
   * Which classes may not be sensible any more or are otherwise defunct?
   * Remove classes that are currently only empty (and present due to ASpecD previously not automatically looking up classes in aspecd if not found in cwepr)? Perhaps, it would nevertheless be useful to have a list of classes available and relevant within the ASpecD framework to be present in the documentation at the top of the respective module.
+  * Handling of file extensions during import: Currently, they are cut in the init and again appended afterwards. The factory only gives source names without extension.
 
 
 For version 0.3

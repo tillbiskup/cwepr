@@ -489,7 +489,7 @@ class FrequencyCorrection(aspecd.processing.SingleProcessingStep):
     .. todo::
         Double-check according to units. Currently, it looks like even in
         case of the field axis to be in Gauss (G), the values are assumed to
-        be in mT.
+        be in mT. -> Does not matter here
 
     """
 
@@ -946,38 +946,6 @@ class Normalisation(aspecd.processing.Normalisation):
         self.dataset.data.data /= receiver_gain_value
 
 
-class Integration(aspecd.processing.SingleProcessingStep):
-    """Perform an indefinite integration.
-
-    Indefinite integration means integration yielding an integral function.
-    The quality of the integration can be determined using
-    :class:`cwepr.analysis.IntegrationVerification`
-
-    .. todo::
-        Is this class still necessary, or has it been superseded by the
-        class :class:`aspecd.processing.Integration`?
-
-    """
-
-    def __init__(self):
-        super().__init__()
-        self.description = "Indefinite Integration"
-
-    def _perform_task(self):
-        """Perform the actual integration.
-
-        Perform the actual integration using trapezoidal integration
-        functionality from scipy. The keyword argument initial=0 is used to
-        yield a list of length identical to the original one.
-        """
-        x_coordinates = self.dataset.data.axes[0].values
-        y_coordinates = self.dataset.data.data
-
-        integral_values = \
-            scipy.integrate.cumtrapz(y_coordinates, x_coordinates, initial=0)
-        self.dataset.data.data = integral_values
-
-
 class AxisInterpolation(aspecd.processing.SingleProcessingStep):
     """Interpolating axes to given number of equidistant field points.
 
@@ -1016,81 +984,6 @@ class AxisInterpolation(aspecd.processing.SingleProcessingStep):
 
     def _get_axis_length(self, ax_nr):
         self.parameters['points'] = len(self.dataset.data.axes[ax_nr].values)
-
-
-class Averaging2DDataset(aspecd.processing.SingleProcessingStep):
-    """Average over 2D dataset to get one dimensional dataset.
-
-    Attributes
-    ----------
-    parameters['axis']
-        Axis along which should be averaged.
-
-        Default: 1
-
-
-    .. todo::
-        Is this class still necessary, or has it been superseded by the
-        class :class:`aspecd.processing.Projection`?
-
-    """
-
-    def __init__(self):
-        super().__init__()
-        self.parameters['axis'] = 1
-        self.description = 'Project 2D data in one dimension.'
-        self.undoable = True
-
-    def _perform_task(self):
-        old_dataset = copy.deepcopy(self.dataset)
-        self.dataset.data.data = np.average(self.dataset.data.data,
-                                            axis=self.parameters['axis'])
-        if self.parameters['axis'] == 1:
-            self.dataset.data.axes[1] = old_dataset.data.axes[2]
-            del self.dataset.data.axes[2]
-
-    @staticmethod
-    def applicable(dataset):  # noqa: D102
-        return len(dataset.data.axes) == 3
-
-
-class SubtractVector(aspecd.processing.SingleProcessingStep):
-    """Subtract vector of same length from dataset.
-
-    With a 2D dataset, the vector is subtracted from
-
-    Attributes
-    ----------
-    parameters['vector']
-        Vector that is subtracted from the data
-
-
-    .. todo::
-        Is this class still necessary, or has it been superseded by the
-        (somewhat superior) class :class:`aspecd.processing.DatasetAlgebra`?
-
-    """
-
-    def __init__(self):
-        super().__init__()
-        self.description = 'Subtract vector of same length from dataset.'
-        self.parameters['vector'] = []
-
-    def _perform_task(self):
-        if len(self.parameters['vector']) != \
-                self.dataset.data.data.shape[0]:
-            raise cwepr.exceptions.DimensionError(
-                message='Vector to subtract is not of the same length as '
-                        'dataset.')
-        if self.dataset.data.data.ndim == 1:
-            self.dataset.data.data -= self.parameters['vector']
-        elif self.dataset.data.data.ndim == 2:
-            for second_dim in range(self.dataset.data.data.shape[1]):
-                self.dataset.data.data[:, second_dim] -= \
-                    self.parameters['vector']
-        else:
-            raise cwepr.exceptions.DimensionError(
-                message='Dataset has weird shape.')
 
 
 class ScalarAlgebra(aspecd.processing.ScalarAlgebra):
@@ -1451,29 +1344,3 @@ class Filtering(aspecd.processing.Filtering):
     parameters a bit.
 
     """
-
-
-class ModifyAxisValues(aspecd.processing.SingleProcessingStep):
-    """
-    Modify the values of an axis.
-
-    .. todo::
-        This class is most probably superseded by
-        :class:`aspecd.processing.ChangeAxesValues`. If so, delete this one.
-
-    """
-
-    def __init__(self):
-        super().__init__()
-        self.parameters['axis'] = None
-        self.parameters['start'] = 0
-        self.parameters['stop'] = None
-
-    def _perform_task(self):
-        axis = self.dataset.data.axes[self.parameters['axis']]
-        new_axis = np.linspace(self.parameters['start'], self.parameters[
-            'stop'], num=len(axis))
-        self.dataset.data.axes[self.parameters['axis']] = new_axis
-
-    def _sanitise_parameters(self):
-        self.parameters['axis'] = int(self.parameters['axis'])

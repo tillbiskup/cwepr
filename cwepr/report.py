@@ -148,18 +148,17 @@ class PowerSweepAnalysisReporter(aspecd.report.LaTeXReporter):
         self._exclude_from_to_dict.extend(['dataset'])
 
     def create(self):
-        """Perform all methods to generate a report."""
-        #TODO:
-        # nicht auf das angegebene Datenset aus den Rezept-Properties
-        # verlassen. Stattdessen das Dataset, das aus Apply_To in den Kontext
-        # gebaut wird, verwenden.
-        # Die Datensets aus dem Kontext soweit verhauen, dass sie (leicht?)
-        # in Template einbaubar sind.
-        # Passendes Template bauen.
+        """Perform all methods to generate a report.
+        TODO:
+            not rely on dataset from recipe properties but use the dataset
+            from `apply_to` that is imported into the context. Further deal
+            with (meta)data in the context thus that those are easily usable
+            in a template.
+        """
 
         self._prepare_metadata()
         #self._get_tasks()
-        # TODO: Die Figures ggf aus der Liste rausholen und in ein dict packen?
+        # TODO: Put figurenames in a dict instead of a list?
         #self._get_figure_names()
         self._create_context()
         self.context = self._sanitise_context(self.context)
@@ -213,11 +212,12 @@ class PowerSweepAnalysisReporter(aspecd.report.LaTeXReporter):
 
 
 class DokuwikiCaptionsReporter(aspecd.report.Reporter):
-    """Write DokuWiki Captions.
+    """Write DokuWiki captions.
 
-    ..todo::
-        Write Documentation
-
+    This reporter generates captions containing selected metadata of the
+    measurement, that can be directly used in an DokuWiki used e.g. as an
+    electronic lab notebook. Only the filename of the uploaded figure still
+    has to be inserted.
     """
 
     def __init__(self, template='', filename=''):
@@ -232,7 +232,7 @@ class DokuwikiCaptionsReporter(aspecd.report.Reporter):
         self._exclude_from_to_dict.extend(['dataset'])
 
     def create(self):
-        """Perform all methods to create the captions."""
+        """Perform all methods to create captions."""
         self._prepare_metadata()
         self._create_context()
         super().create()
