@@ -666,13 +666,12 @@ class PtpVsModAmp(aspecd.analysis.SingleAnalysisStep):
         super().__init__()
         self.description = 'Create dataset with ptp-linewidth vs modulation ' \
                            'Amplitude.'
-        self.new_dataset = aspecd.dataset.CalculatedDataset()
+        self.result = aspecd.dataset.CalculatedDataset()
         self.linewidths = np.ndarray([])
 
     def _perform_task(self):
         self._get_linewidths()
         self._fill_dataset()
-        self.result = self.new_dataset
 
     @staticmethod
     def applicable(dataset):  # noqa: D102
@@ -685,10 +684,10 @@ class PtpVsModAmp(aspecd.analysis.SingleAnalysisStep):
             - self.dataset.data.axes[0].values[index_max]
 
     def _fill_dataset(self):
-        self.new_dataset.data.data = self.linewidths
-        self.new_dataset.data.axes[0] = self.dataset.data.axes[1]
-        self.new_dataset.data.axes[1].unit = self.dataset.data.axes[0].unit
-        self.new_dataset.data.axes[1].quantity = 'peak to peak linewidth'
+        self.result.data.data = self.linewidths
+        self.result.data.axes[0] = self.dataset.data.axes[1]
+        self.result.data.axes[1].unit = self.dataset.data.axes[0].unit
+        self.result.data.axes[1].quantity = 'peak to peak linewidth'
 
 
 class AreaUnderCurve(aspecd.analysis.SingleAnalysisStep):
