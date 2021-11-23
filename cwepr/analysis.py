@@ -496,7 +496,53 @@ class AmplitudeVsPower(aspecd.analysis.SingleAnalysisStep):
 
         - kind: singleanalysis
           type: AmplitudeVsPower
-          result: calc_dataset
+          result: power_sweep_analysis
+
+    A more complete example of a power sweep analysis including linear fit
+    of the first *n* points and a graphical representation of the results may
+    look as follows:
+
+    .. code-block:: yaml
+
+        datasets:
+          - PowerSweep
+        tasks:
+          - kind: singleanalysis
+            type: AmplitudeVsPower
+            apply_to:
+              - PowerSweep
+            result: power_sweep_analysis
+          - kind: singleanalysis
+            type: PolynomialFitOnData
+            properties:
+              parameters:
+                order: 1
+                points: 5
+                return_type: dataset
+            apply_to:
+              - power_sweep_analysis
+            result: fit
+          - kind: multiplot
+            type: PowerSweepAnalysisPlotter
+            properties:
+              properties:
+                drawings:
+                  - marker: '*'
+                  - color: red
+                grid:
+                  show: true
+                  axis: both
+                axes:
+                  ylabel: '$EPR\ amplitude$'
+              filename: powersweepanalysis.pdf
+            apply_to:
+              - power_sweep_analysis
+              - fit
+
+
+    This would result in a power saturation curve (EPR signal amplitude as a
+    function of the square root of the microwave power, the latter usually
+    in mW), and a linear fit covering in this case the first five data points.
 
     """
 
@@ -541,7 +587,8 @@ class AmplitudeVsPower(aspecd.analysis.SingleAnalysisStep):
             self.result.data.axes[0].unit = 'sqrt(mW)'
         elif self.dataset.data.axes[1].unit == 'W':
             self.result.data.axes[0].unit = 'sqrt(W)'
-        self.result.data.axes[0].quantity = 'root of mw power'
+        self.result.data.axes[0].quantity = 'square root of mw power'
+        self.result.data.axes[1].quantity = 'EPR amplitude'
 
 
 class PolynomialFitOnData(aspecd.analysis.SingleAnalysisStep):

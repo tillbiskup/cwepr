@@ -128,6 +128,12 @@ Concrete plotters for multiple datasets
   Stacked line plots for multiple datasets, allowing to plot a series of
   line-type plots, including (semi)log plots
 
+* :class:`cwepr.plotting.PowerSweepAnalysisPlotter`
+
+  Line plot for multiple datasets particularly for power sweep analysis
+  (power saturation analysis) with a second *x* axis on top showing the
+  microwave power.
+
 
 A note for developers
 =====================
@@ -151,6 +157,7 @@ import copy
 
 import aspecd.plotting
 import aspecd.processing
+import numpy as np
 
 from cwepr import utils
 
@@ -270,6 +277,133 @@ class GoniometerSweepPlotter(aspecd.plotting.SingleCompositePlotter):
         self.plotter[2].parameters['ytickcount'] = 19
 
 
+class PowerSweepAnalysisPlotter(aspecd.plotting.MultiPlotter1D):
+    """
+    Plot results of a power saturation analysis with second axis for mw power.
+
+    To determine the microwave power level not saturating the cw-EPR signal,
+    usually a "power sweep" (power saturation study) is carried out with
+    systematically varying the incident microwave power. The signal
+    amplitude of the resulting data is plotted vs. the square root of the
+    microwave power, resulting in a power saturation curve. As long as the
+    signal is not saturated, the graph shows a linear relationship.
+
+    As the class inherites from :class:`aspecd.plotting.MultiPlotter1D`
+    see there for additional details of the parameters that can be set.
+
+    Attributes
+    ----------
+    parameters : :class:`dict`
+        All parameters necessary for the plot, implicit and explicit
+
+        Most parameters are documented in the base class. Here, only the
+        additional parameters or parameters with specific settings are
+        documented.
+
+        mw-axis : class:`bool`
+            Whether to show an additional microwave axis in units of power.
+
+            The main *x* axis gives the square root of the microwave power,
+            but as the microwave power needs to be set in power units
+            (typically mW), it is convenient to have this available as well.
+
+            Default: True
+
+        tight_layout: :class:`bool`
+            Whether to adjust the plot to fit into the figure area
+
+            For details see :meth:`matplotlib.figure.Figure.tight_layout`.
+
+            Default: True
+
+
+    Examples
+    --------
+    The class basically works like a usual MultiPlotter1D. A full power
+    saturation analysis may look like this:
+
+    .. code-block:: yaml
+
+        datasets:
+          - PowerSweep
+        tasks:
+          - kind: singleanalysis
+            type: AmplitudeVsPower
+            apply_to:
+              - PowerSweep
+            result: power_sweep_analysis
+          - kind: singleanalysis
+            type: PolynomialFitOnData
+            properties:
+              parameters:
+                order: 1
+                points: 5
+                return_type: dataset
+            apply_to:
+              - power_sweep_analysis
+            result: fit
+          - kind: multiplot
+            type: PowerSweepAnalysisPlotter
+            properties:
+              properties:
+                drawings:
+                  - marker: '*'
+                  - color: red
+                grid:
+                  show: true
+                  axis: both
+                axes:
+                  ylabel: '$EPR\ amplitude$'
+              filename: powersweepanalysis.pdf
+            apply_to:
+              - power_sweep_analysis
+              - fit
+
+
+    This would result in a power saturation curve (EPR signal amplitude as a
+    function of the square root of the microwave power, the latter usually
+    in mW), and a linear fit covering in this case the first five data points.
+
+    .. versionadded:: 0.2
+
+    """
+
+    def __init__(self):
+        super().__init__()
+        self.parameters['mw-axis'] = True
+        self.parameters['tight_layout'] = True
+
+    def _create_plot(self):
+        super()._create_plot()
+        if self.parameters['mw-axis']:
+            self._set_lower_xlim()
+            self._create_power_axis()
+
+    def _set_lower_xlim(self):
+        xlim = list(self.axes.get_xlim())
+        if xlim[0] < 0:
+            xlim[0] = 0
+            self.axes.set_xlim(xlim)
+
+    def _create_power_axis(self, mw_freq=None):
+        """
+        Add a mw power axis as second axis opposite the sqrt(mw power) axis.
+
+        Note that :func:`numpy.sqrt` returns NaN for negative values.
+        Therefore, the lower axis limit is set to be >= 0 in this plot.
+        """
+        def forward(values):
+            return np.power(values, 2)
+
+        def backward(values):
+            return np.sqrt(values)
+
+        power_axis = self.ax.secondary_xaxis('top',
+                                             functions=(backward, forward))
+        power_axis.set_xlabel('$mw\ power$')
+        power_axis.tick_params(labelrotation=90)
+
+
 class PlotterExtensions:
     """Extensions for plots of cw-EPR data.
 
@@ -293,6 +427,9 @@ class PlotterExtensions:
             This assumes the magnetic field axis to be the *x* axis and the
             magnetic field values to be in millitesla (mT), as it calls
             :func:`cwepr.utils.convert_mT2g`.
+
+
+    .. versionadded:: 0.2
 
     """
 
