@@ -44,7 +44,7 @@ What is even better: Actual data processing and analysis **no longer requires pr
             - second-dataset.pdf
 
 
-Interested in more real-live examples? Check out the :doc:`use cases section <usecases>`.
+Interested in more real-live examples? Check out the :doc:`use cases section <usecases>` and the growing :doc:`list of examples <examples/index>` providing complete recipes for different needs.
 
 
 

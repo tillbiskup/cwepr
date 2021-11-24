@@ -11,7 +11,7 @@ cwepr.io package
 
    cwepr.io.factory
    cwepr.io.bes3t
-   cwepr.io.magnettech
    cwepr.io.esp_winepr
+   cwepr.io.magnettech
    cwepr.io.txt_file
    cwepr.io.exporter

@@ -5,7 +5,11 @@ Currently, there is only one factory class:
 
   * :class:`cwepr.io.factory.DatasetImporterFactory`
 
-    Class necessary in context of recipe-driven data analysis
+    Factory for creating importer objects based on the source provided.
+
+    This class is necessary in context of recipe-driven data analysis and
+    allows to automatically import data in all supported formats without
+    need to explicitly provide either the file format or an importer.
 
 """
 import os.path

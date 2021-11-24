@@ -57,7 +57,7 @@ class ExperimentalDataset(aspecd.dataset.ExperimentalDataset):
 
     def __init__(self):
         super().__init__()
-        self.metadata = cwepr.metadata.DatasetMetadata()
+        self.metadata = cwepr.metadata.ExperimentalDatasetMetadata()
 
 
 class CalculatedDataset(aspecd.dataset.CalculatedDataset):

@@ -1,10 +1,10 @@
-"""Metadata.
+"""Metadata: Information on numeric data stored in a structured way.
 
 Metadata
 ========
 
 In this module, the individual metadata classes are defined which contain the
-individual information about the experiment:
+metadata for the different types of datasets:
 
   * :class:`cwepr.metadata.ExperimentalDatasetMetadata`
   * :class:`cwepr.metadata.CalculatedDatasetMetadata`
@@ -34,7 +34,7 @@ import aspecd.utils
 from cwepr.exceptions import UnequalUnitsError
 
 
-class DatasetMetadata(aspecd.metadata.ExperimentalDatasetMetadata):
+class ExperimentalDatasetMetadata(aspecd.metadata.ExperimentalDatasetMetadata):
     """Set of all metadata for a dataset object.
 
     Metadata as a unified structure of information coupled to the dataset are
@@ -216,6 +216,7 @@ class MagneticField(aspecd.metadata.Metadata):
         self.start = aspecd.metadata.PhysicalQuantity()
         self.stop = aspecd.metadata.PhysicalQuantity()
         self.sweep_width = aspecd.metadata.PhysicalQuantity()
+        self.step_width = aspecd.metadata.PhysicalQuantity()
         self.points = int()
         self.field_probe_type = ""
         self.field_probe_model = ""
@@ -447,7 +448,6 @@ class Bridge(aspecd.metadata.Metadata):
         step width, the potential impact in the signal shape can be directly
         calculated.
 
-
     q_value : :class:`int`
         Quality factor of the cavity.
 
@@ -545,6 +545,7 @@ class Probehead(aspecd.metadata.Metadata):
     dict_ : :class:`dict`
         Dictionary containing properties to set.
 
+
     Attributes
     ----------
     type : :class:`str`
@@ -556,16 +557,14 @@ class Probehead(aspecd.metadata.Metadata):
         Fabry-Perot and stripline resonators. Sometimes, even resonator-free
         designs are used as probeheads.
 
-
     model : :class:`str`
         Model of the probehead used.
 
         Commercial probeheads come with a distinct model that goes in here.
         In all other cases, use a short, memorisable, and unique name.
 
-
     coupling : :class:`str`
-        Type of coupling. In cwepr it is sually critically coupled.
+        Type of coupling. In cwepr it is usually critically coupled.
 
     """
 

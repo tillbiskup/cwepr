@@ -1,7 +1,16 @@
-"""Exporters for datasets.
+"""
+Exporters for datasets.
+
+Similarly to the need for importers supporting text and CSV files
+(:mod:`cwepr.io.txt_file`), exporting to text files allows for exchanging
+data with other software.
+
+The exporters provided in this module not only export the data, but the
+metadata contained in a dataset as well, using the YAML file format for the
+metadata.
 
 .. note::
-    not tested.
+    Not tested.
 
 """
 import collections

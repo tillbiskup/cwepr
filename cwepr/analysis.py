@@ -16,10 +16,6 @@ function of some parameter, such as the microwave frequency for each of a
 series of recordings, allowing to visualise drifts that may or may not
 impact data analysis.
 
-.. todo::
-    Make methods dealing with both, 1D and 2D datasets or raising the
-    respective errors.
-
 
 Note to developers
 ==================
@@ -27,6 +23,7 @@ Note to developers
 Processing steps can be based on analysis steps, but not inverse! Otherwise,
 we get cyclic dependencies what should obviously be avoided in order to keep
 code working.
+
 """
 
 import copy
@@ -226,6 +223,26 @@ class FieldCalibration(aspecd.analysis.SingleAnalysisStep):
             'lilif': 2.002293,
         }
 
+    @staticmethod
+    def applicable(dataset):
+        """
+        Check whether analysis step is applicable to the given dataset.
+
+        Field calibration can only be applied to 1D datasets.
+
+        Parameters
+        ----------
+        dataset : :class:`aspecd.dataset.Dataset`
+            Dataset to check
+
+        Returns
+        -------
+        applicable : :class:`bool`
+            Whether dataset is applicable
+
+        """
+        return dataset.data.data.ndim == 1
+
     def _sanitise_parameters(self):
         if not self.parameters['mw_frequency'] and not \
                 self.dataset.metadata.bridge.mw_frequency.value:
@@ -275,11 +292,11 @@ class FieldCalibration(aspecd.analysis.SingleAnalysisStep):
 class LinewidthPeakToPeak(aspecd.analysis.SingleAnalysisStep):
     """Peak to peak linewidth in derivative spectrum.
 
-    The linewidth is given in a dirst derivative spectrum as difference
+    The linewidth is given in a first derivative spectrum as difference
     between the two extreme points. However, this is valid only for simple
     spectra with just one line or signal. This analysis step simply takes the
     difference on the magnetic field axis which is then stored in the result.
-    The task can be used as following:
+    The task can be used as follows:
 
     .. code-block:: yaml
 
@@ -297,8 +314,24 @@ class LinewidthPeakToPeak(aspecd.analysis.SingleAnalysisStep):
         self.result = self.get_peak_to_peak_linewidth()
 
     @staticmethod
-    def applicable(dataset):  # noqa: D102
-        return isinstance(dataset.data.data.size, int)
+    def applicable(dataset):
+        """
+        Check whether analysis step is applicable to the given dataset.
+
+        Line width detection can only be applied to 1D datasets.
+
+        Parameters
+        ----------
+        dataset : :class:`aspecd.dataset.Dataset`
+            Dataset to check
+
+        Returns
+        -------
+        applicable : :class:`bool`
+            Whether dataset is applicable
+
+        """
+        return dataset.data.data.ndim == 1
 
     def get_peak_to_peak_linewidth(self):
         """Calculates the peak-to-peak linewidth.
@@ -346,6 +379,26 @@ class LinewidthFWHM(aspecd.analysis.SingleAnalysisStep):
     def __init__(self):
         super().__init__()
         self.description = "Determine linewidth (full width at half max; FWHM)"
+
+    @staticmethod
+    def applicable(dataset):
+        """
+        Check whether analysis step is applicable to the given dataset.
+
+        Line width detection can only be applied to 1D datasets.
+
+        Parameters
+        ----------
+        dataset : :class:`aspecd.dataset.Dataset`
+            Dataset to check
+
+        Returns
+        -------
+        applicable : :class:`bool`
+            Whether dataset is applicable
+
+        """
+        return dataset.data.data.ndim == 1
 
     def _perform_task(self):
         self.result = self._get_fwhm_linewidth()
@@ -555,8 +608,25 @@ class AmplitudeVsPower(aspecd.analysis.SingleAnalysisStep):
         self._roots_of_mw_power = np.ndarray([])
 
     @staticmethod
-    def applicable(dataset):  # noqa: D102
-        return len(dataset.data.axes) > 2
+    def applicable(dataset):
+        """
+        Check whether analysis step is applicable to the given dataset.
+
+        Extracting the EPR signal amplitude as function of the microwave
+        power can only be applied to 2D datasets.
+
+        Parameters
+        ----------
+        dataset : :class:`aspecd.dataset.Dataset`
+            Dataset to check
+
+        Returns
+        -------
+        applicable : :class:`bool`
+            Whether dataset is applicable
+
+        """
+        return len(dataset.data.axes) == 3
 
     def _perform_task(self):
         self._calculate_data_and_axis()
@@ -656,6 +726,26 @@ class PolynomialFitOnData(aspecd.analysis.SingleAnalysisStep):
         # private properties
         self._curve = None
 
+    @staticmethod
+    def applicable(dataset):
+        """
+        Check whether analysis step is applicable to the given dataset.
+
+        Polynomial fitting can only be applied to 1D datasets.
+
+        Parameters
+        ----------
+        dataset : :class:`aspecd.dataset.Dataset`
+            Dataset to check
+
+        Returns
+        -------
+        applicable : :class:`bool`
+            Whether dataset is applicable
+
+        """
+        return dataset.data.data.ndim == 1
+
     def _perform_task(self):
         if self.parameters['add_origin']:
             self._add_origin()
@@ -721,8 +811,25 @@ class PtpVsModAmp(aspecd.analysis.SingleAnalysisStep):
         self._fill_dataset()
 
     @staticmethod
-    def applicable(dataset):  # noqa: D102
-        return len(dataset.data.axes) > 2
+    def applicable(dataset):
+        """
+        Check whether analysis step is applicable to the given dataset.
+
+        Extracting the peak-to-peak linewidth as function of the modulation
+        amplitude can only be applied to 2D datasets.
+
+        Parameters
+        ----------
+        dataset : :class:`aspecd.dataset.Dataset`
+            Dataset to check
+
+        Returns
+        -------
+        applicable : :class:`bool`
+            Whether dataset is applicable
+
+        """
+        return len(dataset.data.axes) == 3
 
     def _get_linewidths(self):
         index_max = np.argmax(self.dataset.data.data, axis=0)
@@ -757,6 +864,26 @@ class AreaUnderCurve(aspecd.analysis.SingleAnalysisStep):
     def __init__(self):
         super().__init__()
         self.description = "Definite integration / area und the curve"
+
+    @staticmethod
+    def applicable(dataset):
+        """
+        Check whether analysis step is applicable to the given dataset.
+
+        Calculating the area can only be applied to 1D datasets.
+
+        Parameters
+        ----------
+        dataset : :class:`aspecd.dataset.Dataset`
+            Dataset to check
+
+        Returns
+        -------
+        applicable : :class:`bool`
+            Whether dataset is applicable
+
+        """
+        return dataset.data.data.ndim == 1
 
     def _perform_task(self):
         x_values = self.dataset.data.axes[0].values

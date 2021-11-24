@@ -1,4 +1,36 @@
-"""Import magnettech 1D and 2D datasets from its xml file(s)."""
+"""
+Importer for the Magnettech XML format.
+
+Magnettech spectrometers can write data to either XML or CSV files.
+Currently, only the XML file format is supported. Generally each individual
+scan gets saved into its own file, but the averaged data stored in an
+additional file with ``_result`` suffixed to its base name.
+
+Two-dimensional datasets, be it from modifying microwave power (power
+sweep), modulation amplitude, or goniometer angle, are stored as well in
+individual files per second parameter. Additionally, if you perform multiple
+averages per parameter value (microwave power, modulation amplitude, goniometer
+angle, ...) you will end up with directories for each of these and again
+additionally a file with the averaged data.
+
+A slight complication with the way Magnettech spectrometers obtain their
+data is the rather high magnetic field sampling frequency (typically 10^4
+points) and the non-equidistant field axis. The latter is unique for each
+individual measurement in terms of the number of points, grid, and start and
+end value. Despite the field range set in the software, the spectrometer
+typically records the spectra slightly broader.
+
+For two-dimensional datasets, all this means that the data for the
+individual traces have to be interpolated to a common axis before a
+two-dimensional matrix can be constructed. As the microwave frequency is
+recorded for each individual trace, a frequency correction can be applied
+beforehand.
+
+Currently, only one-dimensional datasets and angular-dependent measurements
+(goniometer sweeps) can be imported. Implementing importers for other types
+of two-dimensional datasets is planned for the future.
+
+"""
 import base64
 import glob
 import os
@@ -23,8 +55,8 @@ class MagnettechXMLImporter(aspecd.io.DatasetImporter):
 
     Magnettech provides a XML-file with the results. Specialities of this
     format are existing and will be briefly explained: The data is coded in
-    hex-numbers, and the y axis consists of 10 times more points than the
-    y-axis. Therefore, an interpolation is needed to expand the axis to the
+    hex numbers, and the *y* axis consists of 10 times more points than the
+    *y* axis. Therefore, an interpolation is needed to expand the axis to the
     necessary amount of points.
 
 
@@ -250,11 +282,12 @@ class MagnettechXMLImporter(aspecd.io.DatasetImporter):
 
 
 class GoniometerSweepImporter(aspecd.io.DatasetImporter):
-    """Import angular dependent data from Magnettech benchtop spectrometer.
+    """Import-angular dependent data from Magnettech benchtop spectrometer.
 
-    ..note::
+    .. note::
         Metadata are only taken from the infofile, ignoring the (much likely
         more accurate) xml-file metadata.
+
     """
 
     def __init__(self, source=''):

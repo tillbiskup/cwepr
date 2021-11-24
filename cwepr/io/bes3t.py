@@ -39,7 +39,7 @@ class BES3TImporter(aspecd.io.DatasetImporter):
     equidistant (at least the BES3T specification allows this situation).
 
     This importer aims to take the parameters from the standard parameter
-    layer if available, because it is given in SI units and is documented.
+    layer if available, because it uses SI units and is documented.
 
     """
 

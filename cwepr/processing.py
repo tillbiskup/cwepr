@@ -441,9 +441,6 @@ class FieldCorrection(aspecd.processing.SingleProcessingStep):
     Perform a linear field correction of the data with a correction value
     previously determined.
 
-    .. todo::
-        Doublecheck for units.
-
     Attributes
     ----------
     parameters['offset']: :class:`float`
@@ -463,8 +460,8 @@ class FieldCorrection(aspecd.processing.SingleProcessingStep):
     def _perform_task(self):
         """Shift all field axis data points by the correction value."""
         for axis in self.dataset.data.axes:
-            # TODO: Question: Better check for quantity rather than unit? (
-            #   Difficult if not filled)
+            # TODO: Question: Better check for quantity rather than unit?
+            #       (Difficult if not filled)
             # if axis.quantity == 'magnetic field'
             if axis.unit in ('mT', 'G'):
                 self.dataset.data.axes[0].values += \
@@ -482,12 +479,6 @@ class FrequencyCorrection(aspecd.processing.SingleProcessingStep):
         Frequency to correct for.
 
         Default: 9.5
-
-
-    .. todo::
-        Double-check according to units. Currently, it looks like even in
-        case of the field axis to be in Gauss (G), the values are assumed to
-        be in mT. -> Does not matter here
 
     """
 
@@ -664,68 +655,6 @@ class BaselineCorrectionWithPolynomial(aspecd.processing.SingleProcessingStep):
                                  self.parameters['order'])
         self.parameters['coefficients'] = polynomial_
         return np.polyval(polynomial_, self.dataset.data.axes[0].values)
-
-
-class PhaseCorrection(aspecd.processing.SingleProcessingStep):
-    """Phase correction if phase angle is given directly or in metadata.
-
-    Therefore the here used implementation of the processing step is also
-    highly problematic as most phase deviation is not introduced on purpose
-    and listed in the metadata.
-
-    Attributes
-    ----------
-    parameters : :class:`dict`
-        phase_angle_value: :class:`float`
-            Value of the phase shift, can be given in Degree or Rad
-
-        phase_angle_unit: :class:`str`
-            Unit of the phase shift.
-
-            Default: deg
-
-
-    .. todo::
-        Remove this class due to being unnecessary and misleading?
-
-    """
-
-    def __init__(self):
-        super().__init__()
-        self.description = "Phase Correction via Hilbert transform"
-        self.parameters["phase_angle_value"] = None
-        self.parameters["phase_angle_unit"] = 'deg'
-
-    def _perform_task(self):
-        """Perform the actual phase correction.
-
-        The phase angle is acquired from the dataset's metadata and
-        transformed to radians if necessary. The phase correction is then
-        applied and the corrected data inserted into the dataset.
-        """
-        if not self.parameters["phase_angle_value"]:
-            self._get_phase_from_metadata()
-        self._convert_deg_to_rad()
-        self._do_phase_correction()
-
-    def _do_phase_correction(self):
-        data = self.dataset.data.data
-        analytic_signal = scipy.signal.hilbert(data)
-        corrected_analytic_signal = np.exp(-1j * self.parameters[
-            "phase_angle_value"]) * analytic_signal 
-        corrected_data = np.real(corrected_analytic_signal)
-        self.dataset.data.data = corrected_data
-
-    def _convert_deg_to_rad(self):
-        if self.parameters["phase_angle_unit"] == "deg":
-            self.parameters["phase_angle_value"] = \
-                (np.pi * self.parameters["phase_angle_value"]) / 180
-            self.parameters["phase_angle_unit"] = "rad"
-
-    def _get_phase_from_metadata(self):
-        phase_angle_raw = self.dataset.metadata.signal_channel.phase
-        self.parameters["phase_angle_value"] = phase_angle_raw.value
-        self.parameters["phase_angle_unit"] = phase_angle_raw.unit
 
 
 class AutomaticPhaseCorrection(aspecd.processing.SingleProcessingStep):

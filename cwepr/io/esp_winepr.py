@@ -45,8 +45,8 @@ class ESPWinEPRImporter(aspecd.io.DatasetImporter):
     values specified in the parameter file.
 
 
-    .. versionchanged:: 0.2
-        Added importer.
+    .. versionadded:: 0.2
+
     """
 
     def __init__(self, source=None):
