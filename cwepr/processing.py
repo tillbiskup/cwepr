@@ -425,7 +425,6 @@ Module documentation
 What  follows is the API documentation of each class implemented in this module.
 
 """
-import copy
 import math
 import numpy as np
 import scipy.integrate
@@ -433,7 +432,6 @@ import scipy.interpolate
 import scipy.signal
 
 import aspecd.processing
-import cwepr.exceptions
 from cwepr import utils
 
 

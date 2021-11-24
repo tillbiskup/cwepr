@@ -69,7 +69,7 @@ class DatasetImporterFactory(aspecd.io.DatasetImporterFactory):
 
         """
         self._cut_file_extension_if_necessary()
-        if os.path.isdir(self.source) and self.directory_contains_gon_data():
+        if os.path.isdir(self.source) and self._directory_contains_gon_data():
             self.data_format = 'GoniometerSweep'
             importer = \
                 object_from_class_name('cwepr.io.GoniometerSweepImporter')
@@ -112,7 +112,7 @@ class DatasetImporterFactory(aspecd.io.DatasetImporterFactory):
         msg = "No file format was found for path: " + self.source
         raise UnsupportedDataFormatError(message=msg)
 
-    def directory_contains_gon_data(self):
+    def _directory_contains_gon_data(self):
         check_gon_filenames = []
         if not os.listdir(self.source):
             return False
@@ -124,4 +124,3 @@ class DatasetImporterFactory(aspecd.io.DatasetImporterFactory):
         if all(check_gon_filenames):
             return True
         return False
-

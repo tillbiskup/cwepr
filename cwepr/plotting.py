@@ -155,9 +155,10 @@ Module documentation
 """
 import copy
 
+import numpy as np
+
 import aspecd.plotting
 import aspecd.processing
-import numpy as np
 
 from cwepr import utils
 
@@ -278,7 +279,7 @@ class GoniometerSweepPlotter(aspecd.plotting.SingleCompositePlotter):
 
 
 class PowerSweepAnalysisPlotter(aspecd.plotting.MultiPlotter1D):
-    """
+    r"""
     Plot results of a power saturation analysis with second axis for mw power.
 
     To determine the microwave power level not saturating the cw-EPR signal,
@@ -353,7 +354,7 @@ class PowerSweepAnalysisPlotter(aspecd.plotting.MultiPlotter1D):
                   show: true
                   axis: both
                 axes:
-                  ylabel: '$EPR\ amplitude$'
+                  ylabel: '$EPR\\ amplitude$'
               filename: powersweepanalysis.pdf
             apply_to:
               - power_sweep_analysis
@@ -385,7 +386,7 @@ class PowerSweepAnalysisPlotter(aspecd.plotting.MultiPlotter1D):
             xlim[0] = 0
             self.axes.set_xlim(xlim)
 
-    def _create_power_axis(self, mw_freq=None):
+    def _create_power_axis(self):
         """
         Add a mw power axis as second axis opposite the sqrt(mw power) axis.
 
@@ -400,7 +401,7 @@ class PowerSweepAnalysisPlotter(aspecd.plotting.MultiPlotter1D):
 
         power_axis = self.ax.secondary_xaxis('top',
                                              functions=(backward, forward))
-        power_axis.set_xlabel('$mw\ power$')
+        power_axis.set_xlabel('$mw\\ power$')
         power_axis.tick_params(labelrotation=90)
 
 

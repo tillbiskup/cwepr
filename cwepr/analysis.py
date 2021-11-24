@@ -472,7 +472,7 @@ class Amplitude(aspecd.analysis.SingleAnalysisStep):
 
 
 class AmplitudeVsPower(aspecd.analysis.SingleAnalysisStep):
-    """Return a calculated dataset to further analyse a power-sweep experiment.
+    r"""Return a calculated dataset to further analyse a power-sweep experiment.
 
     The analysis of a power sweep results in a plot of the peak amplitude
     vs. the square root of the microwave power of the bridge. Both values
@@ -533,7 +533,7 @@ class AmplitudeVsPower(aspecd.analysis.SingleAnalysisStep):
                   show: true
                   axis: both
                 axes:
-                  ylabel: '$EPR\ amplitude$'
+                  ylabel: '$EPR\\ amplitude$'
               filename: powersweepanalysis.pdf
             apply_to:
               - power_sweep_analysis

@@ -14,6 +14,7 @@
 
 .. note::
     Still in active developing and not fail safe and easy to use.
+
 """
 
 import collections
@@ -149,13 +150,14 @@ class PowerSweepAnalysisReporter(aspecd.report.LaTeXReporter):
 
     def create(self):
         """Perform all methods to generate a report.
-        TODO:
+
+        .. todo::
             not rely on dataset from recipe properties but use the dataset
             from `apply_to` that is imported into the context. Further deal
             with (meta)data in the context thus that those are easily usable
             in a template.
-        """
 
+        """
         self._prepare_metadata()
         #self._get_tasks()
         # TODO: Put figurenames in a dict instead of a list?
