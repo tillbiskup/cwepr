@@ -153,6 +153,16 @@ Finally, don't forget to check out the website on `reproducible research <https:
    cwepr/processing
    cwepr/analysis
 
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Examples:
+   :hidden:
+
+   examples/index
+   examples/list
+
+
 .. toctree::
    :maxdepth: 2
    :caption: Developers:
