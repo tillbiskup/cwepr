@@ -9,7 +9,12 @@ The cwEPR package provides tools for handling experimental data obtained using c
 
 What is even better: Actual data processing and analysis **no longer requires programming skills**, but is as simple as writing a text file summarising all the steps you want to have been performed on your dataset(s) in an organised way. Curious? Have a look at the following example::
 
-    default_package: cwepr
+    format:
+      type: ASpecD recipe
+      version: '0.2'
+
+    settings:
+      default_package: cwepr
 
     datasets:
       - /path/to/first/dataset
@@ -49,7 +54,7 @@ A list of features, not all implemented yet but aimed at for the first public re
 
 And to make it even more convenient for users and future-proof:
 
-- Open source project written in Python (>= 3.5)
+- Open source project written in Python (>= 3.7)
 - Extensive user and API documentation
 
 
