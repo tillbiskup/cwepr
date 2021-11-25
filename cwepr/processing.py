@@ -114,11 +114,9 @@ evolves more and more towards a summary of how to properly record and
 (post-)process cwEPR data.
 
 For more authoritative answers, you may as well have a look into the EPR
-literature, particularly the "EPR Primer" by Chechik/Carter/Murphy and
-the book on quantitative EPR by the Eatons.
-
-.. todo::
-    Add references here, using the BIBTeX plugin
+literature, particularly the "EPR Primer" by Chechik/Carter/Murphy
+:cite:p:`proc-chechik-v-2016` and the book on quantitative EPR by the Eatons
+:cite:p:`proc-eaton-ge-2010`.
 
 
 Corrections
@@ -419,6 +417,14 @@ Implementing own processing steps is rather straight-forward. For details,
 see the documentation of the :mod:`aspecd.processing` module.
 
 
+Bibliography
+============
+
+.. bibliography::
+   :labelprefix: P:
+   :keyprefix: proc-
+
+
 Module documentation
 ====================
 
@@ -558,103 +564,6 @@ class GAxisCreation(aspecd.processing.SingleProcessingStep):
                 axis.values = utils.convert_mT2g(axis.values, mw_freq=mw_freq)
                 axis.unit = ''
                 axis.quantity = 'g value'
-
-
-class BaselineCorrectionWithPolynomial(aspecd.processing.SingleProcessingStep):
-    """Perform a baseline correction assuming an underlying polynomial function.
-
-    The coefficients to use will be calculated using the given order  and
-    written in the parameters. If no order is explicitely given, a shifted
-    baseline of zeroth order is assumed and will be processed for.
-    See also: :class:`cwepr.analysis.BaselineCorrectionWithCalculatedDataset`.
-
-    Attributes
-    ----------
-    parameters : :class:`dict`
-        All parameters necessary for this step.
-
-        percentage :
-            Parts of the spectrum to be considered as baseline, can be given
-            as list or single number. If one number is given, it takes that
-            percentage from both sides, respectively, i.e. 10 means 10% left
-            and 10 % right. If a list of two numbers is provided,
-            the corresponding percentages are taken from each side of the
-            spectrum, i.e. ``[5, 20]`` takes 5% from the left side and 20%
-            from the right.
-
-            Default: [10, 10]
-
-        order : :class:`int`
-            The order for the baseline correction if no coefficients are given.
-
-            Default: 0
-
-        coefficients:
-            Filled during evaluation of the task, coefficients of the
-            baseline polynomial.
-
-
-    .. todo::
-        This class is most probably superseded by
-        :class:`aspecd.processing.BaselineCorrection`. If so, delete this one.
-
-    """
-
-    def __init__(self):
-        super().__init__()
-        self.description = "Subtraction of baseline polynomial"
-        self.parameters['percentage'] = [10, 10]
-        self.parameters['order'] = 0
-        self._cut_x_data = np.ndarray([])
-        self._cut_y_data = np.ndarray([])
-        self.parameters['coefficients'] = None
-
-    @staticmethod
-    def applicable(dataset):  # noqa: D102
-        return dataset.data.data.ndim == 1
-
-    def _sanitise_parameters(self):
-        if isinstance(self.parameters['percentage'], (float, int)):
-            percentage = self.parameters['percentage']
-            self.parameters['percentage'] = [percentage, percentage]
-        if isinstance(self.parameters['percentage'], list) and len(
-                self.parameters['percentage']) == 1:
-            percentage = self.parameters['percentage'][0]
-            self.parameters['percentage'] = [percentage, percentage]
-
-    def _perform_task(self):
-        """Perform the actual correction.
-
-        Baseline correction is performed by subtraction of  an evaluated
-        polynomial.
-        """
-        self._get_spectrum_to_evaluate()
-        values_to_subtract = self._get_values_to_subtract()
-        self.dataset.data.data -= values_to_subtract
-
-    def _get_spectrum_to_evaluate(self):
-        number_of_points = len(self.dataset.data.data)
-        points_left = math.ceil(number_of_points * self.parameters[
-            "percentage"][0] / 100.0)
-        points_right = math.ceil(number_of_points * self.parameters[
-            "percentage"][1] / 100.0)
-        data = self.dataset.data.data
-        x_axis = self.dataset.data.axes[0].values
-        self._cut_y_data = np.r_[data[:points_left], data[-points_right:]]
-        self._cut_x_data = np.r_[x_axis[:points_left], x_axis[-points_right:]]
-
-    def _get_values_to_subtract(self):
-        # pylint: disable=using-constant-test
-        if np.polynomial.Polynomial:
-            polynomial_ = np.polynomial.Polynomial.fit(self._cut_x_data,
-                                                       self._cut_y_data,
-                                                       self.parameters['order'])
-            self.parameters['coefficients'] = polynomial_.coef
-            return polynomial_(self.dataset.data.axes[0].values)
-        polynomial_ = np.polyfit(self._cut_x_data, self._cut_y_data,
-                                 self.parameters['order'])
-        self.parameters['coefficients'] = polynomial_
-        return np.polyval(polynomial_, self.dataset.data.axes[0].values)
 
 
 class AutomaticPhaseCorrection(aspecd.processing.SingleProcessingStep):

@@ -20,6 +20,7 @@ setuptools.setup(
     project_urls={
         "Documentation": "https://docs.cwepr.de/",
         "Source": "https://github.com/tillbiskup/cwepr",
+        'Bug Tracker': 'https://github.com/tillbiskup/cwepr/issues',
     },
     packages=setuptools.find_packages(exclude=('tests', 'docs')),
     include_package_data=True,
@@ -44,7 +45,7 @@ setuptools.setup(
         "Topic :: Scientific/Engineering",
     ],
     install_requires=[
-        'aspecd>=0.6.2',
+        'aspecd>=0.6.3',
         'numpy',
         'scipy',
         'matplotlib',

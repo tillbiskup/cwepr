@@ -54,6 +54,7 @@ extensions = [
     # 'sphinx.ext.viewcode',
     'sphinx.ext.napoleon',
     'sphinx_multiversion',
+    'sphinxcontrib.bibtex'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -100,6 +101,9 @@ smv_released_pattern = r'^refs/tags/v\d+\.\d+$'
 tag = subprocess.run("git describe --tags `git rev-list --tags "
                      "--max-count=1`", shell=True, capture_output=True)
 smv_latest_version = tag.stdout.decode().strip()
+
+# Bibtex configuration
+bibtex_bibfiles = ['literature.bib']
 
 # -- Options for HTML output -------------------------------------------------
 
@@ -181,7 +185,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'cwepr.tex', 'cwEPR Documentation',
+    (master_doc, 'cwepr.tex', 'cwepr Documentation',
      author, 'manual'),
 ]
 
@@ -191,7 +195,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'cwepr', 'cwEPR Documentation',
+    (master_doc, 'cwepr', 'cwepr Documentation',
      [author], 1)
 ]
 
@@ -202,7 +206,7 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'cwepr', 'cwEPR Documentation',
+    (master_doc, 'cwepr', 'cwepr Documentation',
      author, 'cwepr', 'One line description of project.',
      'Miscellaneous'),
 ]
