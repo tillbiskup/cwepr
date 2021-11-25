@@ -128,6 +128,13 @@ class FieldCalibration(aspecd.analysis.SingleAnalysisStep):
     ValueError
         Raised if no microwave frequency or *g* value is available.
 
+
+    See Also
+    --------
+    cwepr.processing.FieldCorrection :
+        Correct magnetic field axis by a linear offset
+
+
     Examples
     --------
     For convenience, a series of examples in recipe style (for details of

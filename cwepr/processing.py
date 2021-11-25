@@ -431,7 +431,6 @@ Module documentation
 What  follows is the API documentation of each class implemented in this module.
 
 """
-import math
 import numpy as np
 import scipy.integrate
 import scipy.interpolate
@@ -442,7 +441,7 @@ from cwepr import utils
 
 
 class FieldCorrection(aspecd.processing.SingleProcessingStep):
-    """Processing step for field correction.
+    """Correct magnetic field axis by a linear offset.
 
     Perform a linear field correction of the data with a correction value
     previously determined.
@@ -451,6 +450,12 @@ class FieldCorrection(aspecd.processing.SingleProcessingStep):
     ----------
     parameters['offset']: :class:`float`
         Offset to be added to the field axis values.
+
+
+    See Also
+    --------
+    cwepr.analysis.FieldCalibration :
+        Determine offset value for a magnetic field calibration
 
 
     .. versionchanged:: 0.2

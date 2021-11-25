@@ -1,19 +1,24 @@
-"""Report implementation for cwepr module.
+"""Report facilities for cw-EPR data.
+
+Being able to automatically create well-formatted reports using pre-defined
+templates opens an entirely new dimension in terms of comparing different
+datasets and workflows, besides presenting the results of the research.
+
+This module provides functionality to create reports based on templates
+provided either by the user or by the package as such.
 
 .. note::
     The dataset can be given either as dataset in the properties of a recipe, or
     via the apply_to parameter. In the first case, the dataset can be accessed
     in the here implemented reporter class via ``self.dataset`` (and as an
-    object), in the latter
-    case indirectly via operating on the context-object ``self.context[
-    'dataset']`` (and as a dict). The dataset has to be given explicitly
-    while the dataset-context is applied implicitly. Therefore, here is
-    applied the usage of the context that is a bit more complicated in
-    operating but more intuitive to write in recipes.
-
+    object), in the latter case indirectly via operating on the
+    context-object ``self.context['dataset']`` (and as a dict). The dataset
+    has to be given explicitly while the dataset-context is applied
+    implicitly. Therefore, here is applied the usage of the context that is
+    a bit more complicated in operating but more intuitive to write in recipes.
 
 .. note::
-    Still in active developing and not fail safe and easy to use.
+    Still in active development and not fail-safe and easy to use.
 
 """
 
@@ -152,7 +157,7 @@ class PowerSweepAnalysisReporter(aspecd.report.LaTeXReporter):
         """Perform all methods to generate a report.
 
         .. todo::
-            not rely on dataset from recipe properties but use the dataset
+            Do not rely on dataset from recipe properties but use the dataset
             from `apply_to` that is imported into the context. Further deal
             with (meta)data in the context thus that those are easily usable
             in a template.

@@ -20,6 +20,8 @@ For version 0.3
 
 * Logging
 
+* Reorganise templates for reports, according to the directory layout proposed by aspecd (see :mod:`aspecd.report` for details).
+
 
 For later versions
 ==================
