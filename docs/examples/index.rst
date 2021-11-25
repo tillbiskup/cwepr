@@ -14,7 +14,7 @@ For each of the examples, a full recipe is provided ready to be copied and paste
 Prerequisites
 =============
 
-To be able to run the example recipes locally, you need to have a working installation of the cwepr package and its dependencies. Have a look at the :doc:`installation instructions <installing>` for details.
+To be able to run the example recipes locally, you need to have a working installation of the cwepr package and its dependencies. Have a look at the :doc:`installation instructions <../installing>` for details.
 
 Furthermore, to be able to run ("cook") the recipes and get ("serve") the results, you need to have access to a command line, as running recipes (still) is command-line based using the command :samp:`serve {recipe.yaml}`.
 
