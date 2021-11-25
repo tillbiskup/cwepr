@@ -50,5 +50,9 @@ setuptools.setup(
         'scipy',
         'matplotlib',
     ],
+    extras_require={
+        'dev': ['prospector'],
+        'docs': ['sphinx', 'sphinx-rtd-theme', 'sphinxcontrib-bibtex'],
+    },
     python_requires='>=3.7',
 )
