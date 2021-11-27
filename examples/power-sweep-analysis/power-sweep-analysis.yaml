@@ -1,15 +1,17 @@
 format:
   type: ASpecD recipe
   version: '0.2'
+
 settings:
   default_package: cwepr
   autosave_plots: false
-  write_history: true
+
 directories:
-  output: 
-  datasets_source: 
+  datasets_source: ../../tests/io/testdata/
+
 datasets:
 - BDPA-2DFieldPower
+
 tasks:
 - kind: processing
   type: BaselineCorrection

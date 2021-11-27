@@ -15,7 +15,7 @@ To this end, a series of tasks needs to be performed on each dataset:
 Furthermore, it can be quite useful to automatically generate a well-formatted report including the metadata (such as the parameters and settings used to record the data) as well.
 
 
-.. literalinclude:: first-overview.yaml
+.. literalinclude:: ../../examples/first-overview/first-overview.yaml
     :language: yaml
     :linenos:
     :caption: Complete recipe for getting a first overview of a recorded spectrum, with zeroth-oder baseline correction, frequency correction, a simple 1D plot, and a report covering as well the metadata contained in the dataset.
