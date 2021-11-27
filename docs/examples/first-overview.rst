@@ -12,7 +12,7 @@ To this end, a series of tasks needs to be performed on each dataset:
 
 #. Simple plot for graphical display of recorded data
 
-Furthermore, it can be quite useful to automatically generate a well-formatted report including the metadata (such as the parameters and settings used to record the data) as well.
+Furthermore, it can be quite useful to automatically generate a **well-formatted report** including the metadata (such as the parameters and settings used to record the data) as well.
 
 
 .. literalinclude:: ../../examples/first-overview/first-overview.yaml

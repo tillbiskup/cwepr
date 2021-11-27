@@ -21,7 +21,7 @@ XWID	100.000000
 *
 *	Documentational Text:
 *
-TITL	'Sa661 STG199_S3 Field Sweep'
+TITL	'Some sample: Field Sweep'
 IRNAM	'1st Harm Absorption'
 XNAM	'Field'
 IRUNI	''

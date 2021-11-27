@@ -72,7 +72,6 @@ Controller:             Oxford ITC 503
 Cryostat:               Oxford 935
 Cryogen:                N2
 
-COMMENT
 FIELD CALIBRATION
 Gaussmeter:
 Method:                 Standard | StartEnd  % Wichtig als "Schalter" beim Parsen
@@ -81,4 +80,5 @@ Signal field:           3448.99 G       % Felder fuer Freiburg
 MW Frequency:           9.666147 GHz
 Deviation:              0.18 G
 
+COMMENT
 Infofile changed from version 0.1, therefore some fields are missing

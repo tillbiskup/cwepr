@@ -1,0 +1,25 @@
+format:
+  type: ASpecD recipe
+  version: '0.2'
+
+settings:
+  default_package: cwepr
+
+directories:
+  datasets_source: ../../tests/io/testdata/
+
+datasets:      
+  - magnettech-goniometer
+
+tasks:
+- kind: processing
+  type: BaselineCorrection
+- kind: singleplot
+  type: GoniometerSweepPlotter
+  properties:
+    properties:
+      figure: 
+        dpi: 300
+      axes:
+        xlim: [337.5, 339.25]
+    filename: rotation-pattern.png

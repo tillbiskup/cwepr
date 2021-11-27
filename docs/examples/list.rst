@@ -10,3 +10,4 @@ Each example covers a specific aspect of working with cw-EPR spectra, is present
 
     first-overview
     power-sweep-analysis
+    rotation-pattern
