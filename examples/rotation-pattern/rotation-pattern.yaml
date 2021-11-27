@@ -19,7 +19,7 @@ tasks:
   properties:
     properties:
       figure: 
-        dpi: 300
+        dpi: 150
       axes:
         xlim: [337.5, 339.25]
     filename: rotation-pattern.png
