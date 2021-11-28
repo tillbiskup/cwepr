@@ -39,14 +39,11 @@ class BES3TImporter(aspecd.io.DatasetImporter):
     equidistant (at least the BES3T specification allows this situation).
 
     This importer aims to take the parameters from the standard parameter
-    layer if available, because it is given in SI units and is documented.
+    layer if available, because it uses SI units and is documented.
 
     """
 
     def __init__(self, source=None):
-        # Dirty fix: Cut file extension
-        if source.endswith((".DSC", ".DTA", ".YGF")):
-            source = source[:-4]
         super().__init__(source=source)
         self.load_infofile = True
         # private properties
@@ -56,9 +53,9 @@ class BES3TImporter(aspecd.io.DatasetImporter):
         self._is_two_dimensional = False
         self._dimensions = []
         self._file_encoding = ''
-        self._points = int()
 
     def _import(self):
+        self._clean_filenames()
         self._extract_metadata_from_dsc()  # To get dimension information
         self._check_experiment()
         self._set_dataset_dimension()
@@ -73,6 +70,11 @@ class BES3TImporter(aspecd.io.DatasetImporter):
         self._fill_axes()
 
         self._ensure_common_units()
+
+    def _clean_filenames(self):
+        # Dirty fix: Cut file extension
+        if self.source.endswith((".DSC", ".DTA", ".YGF")):
+            self.source = self.source[:-4]
 
     def _import_data(self):
         complete_filename = self.source + ".DTA"
@@ -188,10 +190,7 @@ class BES3TImporter(aspecd.io.DatasetImporter):
         mapper = aspecd.metadata.MetadataMapper()
         mapper.version = infofile_version
         mapper.metadata = self._infofile.parameters
-        root_path = \
-            os.path.split(os.path.split(os.path.abspath(__file__))[0])[0]
-        mapper.recipe_filename = os.path.join(
-            root_path, 'metadata_mapper_cwepr.yaml')
+        mapper.recipe_filename = 'cwepr@metadata_mapper_cwepr.yaml'
         mapper.map()
         self.dataset.metadata.from_dict(mapper.metadata)
 
@@ -226,6 +225,7 @@ class BES3TImporter(aspecd.io.DatasetImporter):
             setattr(
                 self.dataset.metadata.magnetic_field, object_,
                 magnetic_field_object)
+        # axes
         self.dataset.data.axes[0].values /= 10
         self.dataset.data.axes[0].unit = 'mT'
         # modulation frequency

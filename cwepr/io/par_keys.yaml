@@ -1,0 +1,32 @@
+experiment:
+  harmonic: RHA
+  type: JEX
+magnetic_field:
+  start:
+    unit: JUN
+    value: GST
+  stop:
+    unit: JUN
+  sweep_width:
+    unit: JUN
+    value: GSI
+  points: RES
+bridge:
+  power:
+    value: MP
+  mw_frequency:
+    value: MF
+signal_channel:
+  accumulations: JSD
+  receiver_gain:
+    value: RRG
+  conversion_time:
+    value: RCT
+  time_constant:
+    value: RTC
+  modulation_amplitude:
+    value: RMA
+temperature_control:
+  temperature:
+    value: TE
+

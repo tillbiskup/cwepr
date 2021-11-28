@@ -1,0 +1,89 @@
+format:
+  type: ASpecD recipe
+  version: '0.2'
+
+settings:
+  default_package: cwepr
+  autosave_plots: false
+
+directories:
+  datasets_source: ../../tests/io/testdata/
+
+datasets:
+- BDPA-2DFieldPower
+
+tasks:
+- kind: processing
+  type: BaselineCorrection
+- kind: singleanalysis
+  type: AmplitudeVsPower
+  apply_to:
+  - BDPA-2DFieldPower
+  result: power_sweep_analysis
+- kind: singleanalysis
+  type: PolynomialFitOnData
+  properties:
+    parameters:
+      order: 1
+      points: 5
+      return_type: dataset
+  apply_to:
+  - power_sweep_analysis
+  result: fit
+  comment: Linear fit covering the first five data points.
+- kind: multiplot
+  type: PowerSweepAnalysisPlotter
+  properties:
+    properties:
+      drawings:
+        - marker: '*'
+        - color: red
+      grid:
+        show: true
+        axis: both
+      axes:
+        title: Overview
+        ylabel: '$EPR\ amplitude$'
+        yticklabels: []
+  apply_to:
+  - power_sweep_analysis
+  - fit
+  result: overview
+- kind: multiplot
+  type: PowerSweepAnalysisPlotter
+  properties:
+    properties:
+      drawings:
+        - marker: '*'
+        - color: red
+      grid:
+        show: true
+        axis: both
+      axes:
+        title: Detailed view
+        xlim: [0, 1.65]
+        ylim: [0, 70]
+        ylabel: '$EPR\ amplitude$'
+        yticklabels: []
+  apply_to:
+  - power_sweep_analysis
+  - fit
+  result: details
+- kind: compositeplot
+  type: CompositePlotter
+  properties:
+    plotter:
+    - overview
+    - details
+    filename: power_sweep_analysis.pdf
+    caption:
+      title: Power saturation analysis.
+      text: >
+        The left panel provides an overview of the entire measurement, 
+        while the right panel provides a detailed view of the first points,
+        showing that 1 mW of microwave power already starts to saturate the
+        cw-EPR signal.
+    grid_dimensions: [1, 2]
+    subplot_locations:
+    - [0, 0, 1, 1]
+    - [0, 1, 1, 1]

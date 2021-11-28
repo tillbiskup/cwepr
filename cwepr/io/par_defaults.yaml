@@ -1,0 +1,36 @@
+temperature_control:
+  temperature:
+    unit: 'K'
+    value: 0.0
+experiment:
+  type: EPR
+magnetic_field:
+  start:
+    unit: 'G'
+    value: 3480.0
+  stop:
+    unit: 'G'
+    value: 0.0
+  sweep_width:
+    unit: 'G'
+    value: 50.0
+  points: 1024
+signal_channel:
+  accumulations: 0
+  modulation_frequency:
+    unit: 'kHz'
+    value: 100.0
+  modulation_amplitude:
+    unit: 'G'
+    value: 1.0
+  receiver_gain:
+    value: 2e4
+  conversion_time:
+    unit: 'ms'
+    value: 5.12
+  time_constant:
+    unit: 'ms'
+    value: 1.28
+  phase:
+    value: 0.0
+  offset: 0.0

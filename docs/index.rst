@@ -3,10 +3,10 @@
    :align: right
 
 ===================
-cwEPR documentation
+cwepr documentation
 ===================
 
-Welcome! This is the documentation for cwEPR, a Python package for **processing and analysis of continuous-wave electron paramagnetic resonance (cw-EPR) spectra** based on the `ASpecD framework <https://www.aspecd.de/>`_. For general information see its `Homepage <https://www.cwepr.de/>`_. Due to the inheritance from the ASpecD framework, all data generated with the cwepr package are completely reproducible and have a complete history.
+Welcome! This is the documentation for cwepr, a Python package for **processing and analysis of continuous-wave electron paramagnetic resonance (cw-EPR) spectra** based on the `ASpecD framework <https://www.aspecd.de/>`_. For general information see its `Homepage <https://www.cwepr.de/>`_. Due to the inheritance from the ASpecD framework, all data generated with the cwepr package are completely reproducible and have a complete history.
 
 What is even better: Actual data processing and analysis **no longer requires programming skills**, but is as simple as writing a text file summarising all the steps you want to have been performed on your dataset(s) in an organised way. Curious? Have a look at the following example:
 
@@ -14,7 +14,12 @@ What is even better: Actual data processing and analysis **no longer requires pr
 .. code-block:: yaml
     :linenos:
 
-    default_package: cwepr
+    format:
+      type: ASpecD recipe
+      version: '0.2'
+
+    settings:
+      default_package: cwepr
 
     datasets:
       - /path/to/first/dataset
@@ -39,7 +44,7 @@ What is even better: Actual data processing and analysis **no longer requires pr
             - second-dataset.pdf
 
 
-Interested in more real-live examples? Check out the :doc:`use cases section <usecases>`.
+Interested in more real-live examples? Check out the :doc:`use cases section <usecases>` and the growing :doc:`list of examples <examples/index>` providing complete recipes for different needs.
 
 
 
@@ -61,13 +66,13 @@ A list of features:
 
 And to make it even more convenient for users and future-proof:
 
-* Open source project written in Python (>= 3.5)
+* Open source project written in Python (>= 3.7)
 
 * Extensive user and API documentation
 
 
 .. warning::
-  The cwEPR package is currently under active development and still considered in Beta development state. Therefore, expect frequent changes in features and public APIs that may break your own code. Nevertheless, feedback as well as feature requests are highly welcome.
+  The cwepr package is currently under active development and still considered in Beta development state. Therefore, expect frequent changes in features and public APIs that may break your own code. Nevertheless, feedback as well as feature requests are highly welcome.
 
 
 .. _sec-how_to_cite:
@@ -88,7 +93,7 @@ To make things easier, cwepr has a `DOI <https://doi.org/10.5281/zenodo.4896687>
 Where to start
 ==============
 
-Users new to the cwEPR package should probably start :doc:`at the beginning <audience>`, those familiar with its :doc:`underlying concepts <concepts>` may jump straight to the section explaining frequent :doc:`use cases <usecases>`.
+Users new to the cwepr package should probably start :doc:`at the beginning <audience>`, those familiar with its :doc:`underlying concepts <concepts>` may jump straight to the section explaining frequent :doc:`use cases <usecases>`.
 
 Those interested in a hands-on primer on cw-EPR spectroscopy, covering necessary information for how to obtain usable data with your cw-EPR spectrometer, may have a look at the :doc:`cw-EPR primer <cwepr/index>`.
 
@@ -147,6 +152,16 @@ Finally, don't forget to check out the website on `reproducible research <https:
    cwepr/recording
    cwepr/processing
    cwepr/analysis
+
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Examples:
+   :hidden:
+
+   examples/index
+   examples/list
+
 
 .. toctree::
    :maxdepth: 2

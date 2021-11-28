@@ -16,70 +16,70 @@ ROOTPATH = os.path.split(os.path.abspath(__file__))[0]
 class TestMagnettechXmlImporter(unittest.TestCase):
     def setUp(self):
         source = os.path.join(ROOTPATH, 'testdata/test-magnettech')
-        self.importer = cwepr.io.magnettech.MagnettechXmlImporter(source=source)
+        self.importer = cwepr.io.magnettech.MagnettechXMLImporter(source=source)
+        self.dataset = cwepr.dataset.ExperimentalDataset()
 
     def test_axis_dimensions_equals_one(self):
-        converter = cwepr.io.magnettech.MagnettechXmlImporter()
+        converter = cwepr.io.magnettech.MagnettechXMLImporter()
         testdata = 'CZzAKavudEA=5HabpLDudEA='
         self.assertEqual(1, converter._convert_base64string_to_np_array(
                              testdata).ndim)
 
     def test_specific_fields_are_filled(self):
-        dataset = cwepr.dataset.ExperimentalDataset()
-        dataset.import_from(self.importer)
-
+        self.dataset.import_from(self.importer)
         # arbitrary attributes that must have been set
         teststr = ['temperature_control.temperature.value',
                    'magnetic_field.start.unit',
                    'bridge.mw_frequency.value']
         for string_ in teststr:
-            metadata_object = dataset.metadata
-            for e in string_.split('.'):
-                metadata_object = getattr(metadata_object, e)
+            metadata_object = self.dataset.metadata
+            for element in string_.split('.'):
+                metadata_object = getattr(metadata_object, element)
             self.assertTrue(metadata_object)
 
     def test_q_value_is_float(self):
-        dataset = cwepr.dataset.ExperimentalDataset()
-        dataset.import_from(self.importer)
-        q_value = dataset.metadata.bridge.q_value
+        self.dataset.import_from(self.importer)
+        q_value = self.dataset.metadata.bridge.q_value
         self.assertIsInstance(q_value, float)
 
     def test_import_with_no_file_raises(self):
-        importer = cwepr.io.magnettech.MagnettechXmlImporter()
-        dataset = cwepr.dataset.ExperimentalDataset()
+        importer = cwepr.io.magnettech.MagnettechXMLImporter()
         with self.assertRaises(cwepr.exceptions.MissingPathError):
-            dataset.import_from(importer)
+            self.dataset.import_from(importer)
 
     def test_import_with_not_existing_file_raises(self):
         source = 'foo.xml'
-        importer = cwepr.io.magnettech.MagnettechXmlImporter(source=source)
-        dataset = cwepr.dataset.ExperimentalDataset()
+        importer = cwepr.io.magnettech.MagnettechXMLImporter(source=source)
         with self.assertRaises(FileNotFoundError):
-            dataset.import_from(importer)
+            self.dataset.import_from(importer)
 
     def test_import_with_no_infofile_continues(self):
         source = os.path.join(ROOTPATH, 'testdata/test-magnettech.xml')
         with tempfile.TemporaryDirectory() as testdir:
             new_source = os.path.join(testdir, 'test-wo-infofile')
             shutil.copyfile(source, new_source + '.xml')
-            dataset = cwepr.dataset.ExperimentalDataset()
-            importer = cwepr.io.magnettech.MagnettechXmlImporter(
+            importer = cwepr.io.magnettech.MagnettechXMLImporter(
                 source=new_source)
-            dataset.import_from(importer)
+            self.dataset.import_from(importer)
 
     def test_with_file_extension(self):
         source = os.path.join(ROOTPATH, 'testdata/test-magnettech.xml')
-        dataset = cwepr.dataset.ExperimentalDataset()
-        importer = cwepr.io.magnettech.MagnettechXmlImporter(
-            source=source)
-        dataset.import_from(importer)
+        importer = cwepr.io.magnettech.MagnettechXMLImporter(source=source)
+        self.dataset.import_from(importer)
+
+    def test_comment_gets_written(self):
+        source = os.path.join(ROOTPATH, 'testdata/test-magnettech.xml')
+        importer = cwepr.io.magnettech.MagnettechXMLImporter(source=source)
+        self.dataset.import_from(importer)
+        self.assertTrue(self.dataset.annotations)
 
 
 class TestGoniometerSweepImporter(unittest.TestCase):
     def setUp(self):
-        source = os.path.join(ROOTPATH, 'testdata/magnettech-goniometer/')
+        source = os.path.join(ROOTPATH, 'testdata/magnettech-goniometer')
         self.goniometer_importer = \
             cwepr.io.magnettech.GoniometerSweepImporter(source=source)
+        self.dataset = cwepr.dataset.ExperimentalDataset()
 
     def instantiate_class(self):
         pass
@@ -91,9 +91,8 @@ class TestGoniometerSweepImporter(unittest.TestCase):
     def test_source_path_doesnt_exist_raises(self):
         source = 'foo/'
         importer = cwepr.io.magnettech.GoniometerSweepImporter(source=source)
-        dataset = cwepr.dataset.ExperimentalDataset()
         with self.assertRaises(FileNotFoundError):
-            dataset.import_from(importer)
+            self.dataset.import_from(importer)
 
     def test_sort_filenames_returns_sorted_list(self):
         self.goniometer_importer._get_filenames()
@@ -113,42 +112,36 @@ class TestGoniometerSweepImporter(unittest.TestCase):
             self.goniometer_importer._import_all_spectra_to_list))
 
     def test_angles_smaller_than_360_deg(self):
-        dataset = cwepr.dataset.ExperimentalDataset()
-        dataset.import_from(self.goniometer_importer)
+        self.dataset.import_from(self.goniometer_importer)
         self.assertTrue(all([x < 359 for x in
                              self.goniometer_importer._angles]))
 
     def test_import_data_fills_dataset(self):
-        dataset = cwepr.dataset.ExperimentalDataset()
-        dataset.import_from(self.goniometer_importer)
-        self.assertNotEqual(0, dataset.data.data.size)
+        self.dataset.import_from(self.goniometer_importer)
+        self.assertNotEqual(0, self.dataset.data.data.size)
 
     def test_data_and_filenames_have_same_lengths(self):
         # Check whether all data has been imported correctly and was moved
-        # entirely to the final dataset.
-        dataset = cwepr.dataset.ExperimentalDataset()
-        dataset.import_from(self.goniometer_importer)
+        # entirely to the final self.dataset.
+        self.dataset.import_from(self.goniometer_importer)
         self.assertEqual(len(self.goniometer_importer.filenames),
                          self.goniometer_importer.dataset.data.data.shape[1])
 
     def test_all_datasets_have_same_frequency(self):
-        dataset = cwepr.dataset.ExperimentalDataset()
-        dataset.import_from(self.goniometer_importer)
+        self.dataset.import_from(self.goniometer_importer)
         frequencies = np.array([])
         for set_ in self.goniometer_importer._data:
             frequencies = np.append(frequencies,
                                     set_.metadata.bridge.mw_frequency.value)
         self.assertAlmostEqual(max(frequencies), min(frequencies))
 
-    def test_goniometer_import(self):
+    def test_goniometer_imports_with_slash_at_source(self):
         source = os.path.join(ROOTPATH, 'testdata/magnettech-goniometer/')
-        dataset = cwepr.dataset.ExperimentalDataset()
         importer = cwepr.io.magnettech.GoniometerSweepImporter(
             source=source)
-        dataset.import_from(importer)
+        self.dataset.import_from(importer)
 
     def test_q_value_is_float(self):
-        dataset = cwepr.dataset.ExperimentalDataset()
-        dataset.import_from(self.goniometer_importer)
-        q_value = dataset.metadata.bridge.q_value
+        self.dataset.import_from(self.goniometer_importer)
+        q_value = self.dataset.metadata.bridge.q_value
         self.assertIsInstance(q_value, float)

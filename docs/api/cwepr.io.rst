@@ -9,7 +9,9 @@ cwepr.io package
 .. toctree::
    :maxdepth: 4
 
-   cwepr.io.bes3t
-   cwepr.io.exporter
    cwepr.io.factory
+   cwepr.io.bes3t
+   cwepr.io.esp_winepr
    cwepr.io.magnettech
+   cwepr.io.txt_file
+   cwepr.io.exporter

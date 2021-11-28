@@ -47,6 +47,10 @@ class TestExperimentalDatasetLaTeXReporter(unittest.TestCase):
         self.reporter.create()
         #self.reporter.compile()
 
+    def test_to_dict_does_not_contain_dataset(self):
+        dict_ = self.reporter.to_dict()
+        self.assertNotIn('dataset', dict_)
+
 
 class TestPowerSweepAnalysisReport(unittest.TestCase):
     def setUp(self):
@@ -65,6 +69,34 @@ class TestPowerSweepAnalysisReport(unittest.TestCase):
             os.remove(self.filename2)
         if os.path.exists(self.filename.replace('tex', 'pdf')):
             os.remove(self.filename.replace('tex', 'pdf'))
+
+    def test_reporter(self):
+        self.chef.serve(recipe_filename=self.recipe_filename)
+
+    def test_to_dict_does_not_contain_dataset(self):
+        reporter = cwepr.report.PowerSweepAnalysisReporter()
+        dict_ = reporter.to_dict()
+        self.assertNotIn('dataset', dict_)
+
+
+class TestModulationAmplitudeSweepAnalysisReport(unittest.TestCase):
+    def setUp(self):
+        self.recipe_filename = \
+            os.path.join(TEST_ROOTPATH,
+                         'io/testdata/modulation-amplitude-analysis.yaml')
+        self.tex_filename = 'ModAmpSweepReport.tex'
+        self.plot_filename = 'ModAmpSweepAnalysis.pdf'
+        self.chef = aspecd.tasks.ChefDeService()
+
+    def tearDown(self):
+        if os.path.exists(self.tex_filename):
+            os.remove(self.tex_filename)
+        for path in glob.glob(self.recipe_filename.replace('.yaml', '-*.yaml')):
+            os.remove(path)
+        if os.path.exists(self.plot_filename):
+            os.remove(self.plot_filename)
+        if os.path.exists(self.tex_filename.replace('tex', 'pdf')):
+            os.remove(self.tex_filename.replace('tex', 'pdf'))
 
     def test_reporter(self):
         self.chef.serve(recipe_filename=self.recipe_filename)
@@ -99,6 +131,10 @@ class TestDokuwikiCaptionsReporter(unittest.TestCase):
         self.reporter.create()
         self.assertTrue(os.path.exists(self.filename))
 
+    def test_to_dict_does_not_contain_dataset(self):
+        dict_ = self.reporter.to_dict()
+        self.assertNotIn('dataset', dict_)
+
 
 class InfofileReporterBES3T(unittest.TestCase):
     def setUp(self):
@@ -122,6 +158,10 @@ class InfofileReporterBES3T(unittest.TestCase):
         self.reporter.template = self.template_
         self.reporter.create()
         self.assertTrue(os.path.exists(self.filename))
+
+    def test_to_dict_does_not_contain_dataset(self):
+        dict_ = self.reporter.to_dict()
+        self.assertNotIn('dataset', dict_)
 
 
 class InfofileReporterMagnettech(unittest.TestCase):
@@ -150,4 +190,3 @@ class InfofileReporterMagnettech(unittest.TestCase):
                 self.reporter.template = self.template_
                 self.reporter.create()
                 self.assertTrue(os.path.exists(self.filename))
-

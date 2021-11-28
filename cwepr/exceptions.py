@@ -13,10 +13,8 @@ class Error(Exception):
     """Base class for exceptions in this module."""
 
 
-class NoMatchingFilePairError(Error):
-    """Exception raised when no pair of data and parameter file is found.
-
-    Data and parameter files' extensions must match a single format.
+class UnsupportedDataFormatError(Error):
+    """Exception raised when data format is not supported.
 
     Attributes
     ----------

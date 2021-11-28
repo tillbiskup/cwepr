@@ -12,7 +12,7 @@ Therefore, the structure of each of the dataset classes is provided below in YAM
 Experimental dataset
 ====================
 
-Entity containing both, numerical data as well as the corresponding metadata that are specific for the cwEPR method. For implementation details, see the API documentation of :class:`cwepr.dataset.ExperimentalDataset` and :class:`cwepr.dataset.ExperimentalDatasetMetadata`.
+Entity containing both, numerical data as well as the corresponding metadata that are specific for the cw-EPR method. For implementation details, see the API documentation of :class:`cwepr.dataset.ExperimentalDataset` and :class:`cwepr.dataset.ExperimentalDatasetMetadata`.
 
 .. literalinclude:: ExperimentalDataset.yaml
    :language: yaml

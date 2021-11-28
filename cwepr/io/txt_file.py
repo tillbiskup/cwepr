@@ -1,9 +1,19 @@
-"""Functionalities to simply import a txt file containing data."""
+"""
+Importer for simple text and CSV files.
+
+Despite its obvious limitations (normally no metadata, limited resolution,
+large files) text or CSV files are an often-encountered exchange format and
+can serve as an easy way to import data from otherwise not supported file
+formats, as nearly every software to record data allows to export these data
+as simple text or CSV files.
+
+You may have a look as well at the importers provided by the ASpecD package
+for similar situations, particularly :class:`aspecd.io.TxtImporter`.
+
+"""
 import numpy as np
 
 import aspecd.io
-import cwepr.processing
-import cwepr.dataset
 
 
 class TxtImporter(aspecd.io.DatasetImporter):
@@ -40,7 +50,6 @@ class CsvImporter(aspecd.io.DatasetImporter):
     def __init__(self, source=''):
         super().__init__(source=source)
         # public properties
-        self.dataset = cwepr.dataset.ExperimentalDataset()
         self.extension = '.csv'
 
     def _import(self):

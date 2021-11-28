@@ -33,7 +33,7 @@ Field probe type:       {{METADATA['magnetic_field']['field_probe_type']}}
 Field probe model:      {{METADATA['magnetic_field']['field_probe_model']}}
 Start:                  {{'%3.2f' %METADATA['magnetic_field']['start']['value']}} {{METADATA['magnetic_field']['start']['unit']}}
 Stop:                   {{'%3.2f' %METADATA['magnetic_field']['stop']['value']}} {{METADATA['magnetic_field']['stop']['unit']}}
-Step:                   {% if METADATA['magnetic_field']['points'] != 0: %}{{ '%2.5f' %(METADATA['magnetic_field']['sweep_width']['value']/METADATA['magnetic_field']['points'])}} {{METADATA['magnetic_field']['start']['unit']}} {% else %} N/A {%endif%}
+Step:                   {% if METADATA['magnetic_field']['points'] != 0: %}{{'%2.5f' %(METADATA['magnetic_field']['sweep_width']['value']/METADATA['magnetic_field']['points'])}} {{METADATA['magnetic_field']['start']['unit']}} {% else %} N/A {%endif%}
 Sequence:               {{METADATA['magnetic_field']['sequence']}}
 Controller:             {{METADATA['magnetic_field']['controller']}}
 Power supply:           {{METADATA['magnetic_field']['power_supply']}}
@@ -46,7 +46,7 @@ Power:                  {{'%2.4f' %METADATA['bridge']['power']['value']}} {{META
 Detection:              {{METADATA['bridge']['detection']}}
 Frequency counter:      {{METADATA['bridge']['frequency_counter']}}
 MW frequency:           {{'%2.6f' %METADATA['bridge']['mw_frequency']['value']}} {{METADATA['bridge']['mw_frequency']['unit']}}
-Q value:                {{'%6.1f' %METADATA['bridge']['q_value']}}
+Q value:                {% if METADATA['bridge']['q_value'] is float%}{{'%6.1f' %METADATA['bridge']['q_value']}}{% else %} {{METADATA['bridge']['q_value']}} {%endif%}
 
 SIGNAL CHANNEL
 Model:                  {{METADATA['signal_channel']['model']}}
@@ -77,4 +77,6 @@ Cryostat:               {{METADATA['temperature_control']['cryostat']}}
 Cryogen:                {{METADATA['temperature_control']['cryogen']}}
 
 COMMENT
+{% if dataset['annotations'] %}
 {{','.join(dataset['annotations'][0]['annotation']['content']['comment'])}}
+{% endif %}

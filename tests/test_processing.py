@@ -39,7 +39,7 @@ class TestAutomaticPhaseCorrection(unittest.TestCase):
 class TestSubtraction(unittest.TestCase):
     def setUp(self):
         source = os.path.join(ROOTPATH, 'io/testdata/test-magnettech')
-        importer = cwepr.io.magnettech.MagnettechXmlImporter(source=source)
+        importer = cwepr.io.magnettech.MagnettechXMLImporter(source=source)
         self.dataset = cwepr.dataset.ExperimentalDataset()
         self.dataset.import_from(importer)
 
@@ -47,7 +47,7 @@ class TestSubtraction(unittest.TestCase):
 class TestFrequencyCorrection(unittest.TestCase):
     def setUp(self):
         source = os.path.join(ROOTPATH, 'io/testdata/test-magnettech')
-        importer = cwepr.io.magnettech.MagnettechXmlImporter(source=source)
+        importer = cwepr.io.magnettech.MagnettechXMLImporter(source=source)
         self.dataset = cwepr.dataset.ExperimentalDataset()
         self.dataset.import_from(importer)
         self.corrector = cwepr.processing.FrequencyCorrection()
@@ -77,6 +77,8 @@ class GAxisCreation(unittest.TestCase):
         self.dataset.data.data = np.random.random(100)
         self.dataset.data.axes[0].values = np.linspace(300, 400, num=100)
         self.dataset.data.axes[0].unit = 'mT'
+        self.dataset.data.axes[0].quantity = 'magnetic field'
+        self.dataset.metadata.bridge.mw_frequency.value = 9.5
 
     def test_instantiate_class(self):
         proc = cwepr.processing.GAxisCreation()
@@ -84,7 +86,7 @@ class GAxisCreation(unittest.TestCase):
 
     def test_description_is_appropriate(self):
         self.assertTrue(self.proc.description)
-        self.assertIn('g-axis', self.proc.description)
+        self.assertIn('magnetic field axis to g axis', self.proc.description)
 
     def test_axis_values_differs_after(self):
         values_before = np.copy(self.dataset.data.axes[0].values)
@@ -94,11 +96,22 @@ class GAxisCreation(unittest.TestCase):
         conditions = (diff == 0 for diff in diffs)
         self.assertFalse(all(conditions))
 
-    def test_axis_units_differ(self):
-        unit_before = np.copy(self.dataset.data.axes[0].unit)
+    def test_axis_values_are_positive_values(self):
         self.dataset.process(self.proc)
-        unit_after = self.dataset.data.axes[0].unit
-        self.assertNotEqual(unit_before, unit_after)
+        self.assertTrue(all(self.dataset.data.axes[0].values > 0))
+
+    def test_axis_values_have_correct_range(self):
+        self.dataset.process(self.proc)
+        condition = np.floor(np.log10(self.dataset.data.axes[0].values)) == 0
+        self.assertTrue(all(condition))
+
+    def test_axis_unit_gets_removed(self):
+        self.dataset.process(self.proc)
+        self.assertEqual("", self.dataset.data.axes[0].unit)
+
+    def test_axis_quantity_gets_set(self):
+        self.dataset.process(self.proc)
+        self.assertEqual("g value", self.dataset.data.axes[0].quantity)
 
 
 class TestAxisInterpolation(unittest.TestCase):
@@ -110,7 +123,7 @@ class TestAxisInterpolation(unittest.TestCase):
 
     def test_interpolate_returns_new_axis(self):
         source = os.path.join(ROOTPATH, 'io/testdata/test-magnettech')
-        importer = cwepr.io.magnettech.MagnettechXmlImporter(source=source)
+        importer = cwepr.io.magnettech.MagnettechXMLImporter(source=source)
         dataset = cwepr.dataset.ExperimentalDataset()
         dataset.import_from(importer)
         old_axis = dataset.data.axes[0].values
@@ -175,106 +188,3 @@ class TestNormalisation(unittest.TestCase):
         self.dataset.process(correction)
         after = min(self.dataset.data.data)
         self.assertEqual(before/abs(min_), after)
-
-    def test_normalisation_with_wrong_kind_raises(self):
-        # direct dependency to aspecd and tested there.
-        pass
-
-
-class TestBaselineCorrectionWithPolynomial(unittest.TestCase):
-    def setUp(self):
-        self.dataset = cwepr.dataset.ExperimentalDataset()
-
-    def test_baseline_correction_without_coefficients_works(self):
-        self.dataset.data.data = np.ones(100) + 10
-        self.dataset.data.axes[0].values = np.linspace(1, 100, num=100)
-        baseline_corr = cwepr.processing.BaselineCorrectionWithPolynomial()
-        blc = self.dataset.process(baseline_corr)  # Only works upon a copy!
-        self.assertAlmostEqual(self.dataset.data.data[5], 0)
-
-    def test_blc_writes_coefficients(self):
-        self.dataset.data.data = np.ones(100) + 10
-        self.dataset.data.axes[0].values = np.linspace(1, 100, num=100)
-        baseline_corr = cwepr.processing.BaselineCorrectionWithPolynomial()
-        blc = self.dataset.process(baseline_corr)  # Only works upon a copy!
-        self.assertTrue(blc.parameters['coefficients'])
-
-    def test_baseline_correction_with_unequal_no_of_points_per_side(self):
-        baseline_corr = cwepr.processing.BaselineCorrectionWithPolynomial()
-        self.dataset.data.data = np.r_[np.ones(5) + 5, np.ones(75), np.ones(
-            20)+5]
-        self.dataset.data.axes[0].values = np.linspace(1, 100, num=100)
-        baseline_corr.parameters['percentage'] = [5, 20]
-        blc = self.dataset.process(baseline_corr)  # Only works upon a copy!
-        self.assertAlmostEqual(self.dataset.data.data[-20], 0)
-
-    def test_baseline_correction_with_percentage_float(self):
-        baseline_corr = cwepr.processing.BaselineCorrectionWithPolynomial()
-        self.dataset.data.data = np.r_[np.ones(20) + 5, np.ones(60), np.ones(
-            20)+5]
-        self.dataset.data.axes[0].values = np.linspace(1, 100, num=100)
-        baseline_corr.parameters['percentage'] = 20
-        blc = self.dataset.process(baseline_corr)  # Only works upon a copy!
-        self.assertAlmostEqual(self.dataset.data.data[19], 0)
-
-    def test_baseline_correction_with_percentage_list_one_element(self):
-        baseline_corr = cwepr.processing.BaselineCorrectionWithPolynomial()
-        self.dataset.data.data = np.r_[np.ones(20) + 5, np.ones(60), np.ones(
-            20)+5]
-        self.dataset.data.axes[0].values = np.linspace(1, 100, num=100)
-        baseline_corr.parameters['percentage'] = [20,]
-        self.dataset.process(baseline_corr)
-        self.assertAlmostEqual(self.dataset.data.data[19], 0)
-
-
-class TestAveraging2DDataset(unittest.TestCase):
-    def setUp(self):
-        source = os.path.join(ROOTPATH, 'io/testdata/BDPA-2DFieldDelay')
-        importer = cwepr.dataset.DatasetFactory()
-        self.dataset = importer.get_dataset(source=source)
-
-    def test_average_2D_dataset(self):
-        avg = cwepr.processing.Averaging2DDataset()
-        self.assertEqual(3, len(self.dataset.data.axes))
-        self.dataset.process(avg)
-        self.assertEqual(2, len(self.dataset.data.axes))
-
-    def test_with_1D_dataset_raises(self):
-        source = os.path.join(ROOTPATH, 'io/testdata/BDPA-1DFieldSweep')
-        importer = cwepr.dataset.DatasetFactory()
-        dataset = importer.get_dataset(source=source)
-        avg = cwepr.processing.Averaging2DDataset()
-        with self.assertRaises(aspecd.exceptions.NotApplicableToDatasetError):
-            dataset.process(avg)
-
-
-class TestSubtractVector(unittest.TestCase):
-    def setUp(self):
-        source1 = os.path.join(ROOTPATH, 'io/testdata/BDPA-1DFieldSweep')
-        importer = cwepr.dataset.DatasetFactory()
-        self.dataset1 = importer.get_dataset(source=source1)
-        source2 = os.path.join(ROOTPATH, 'io/testdata/BDPA-2DFieldDelay')
-        self.dataset2 = importer.get_dataset(source=source2)
-        self.vector1 = np.linspace(1, self.dataset1.data.data.shape[0],
-                                   num=self.dataset1.data.data.shape[0])
-        self.vector2 =  np.linspace(1, self.dataset2.data.data.shape[0],
-                                   num=self.dataset2.data.data.shape[0])
-
-    def test_subtract_vector_with_1D_dataset(self):
-        subtract = cwepr.processing.SubtractVector()
-        subtract.parameters['vector'] = self.vector1
-        self.dataset1.process(subtract)
-
-    def test_subtract_vector_with_2D_dataset(self):
-        subtract = cwepr.processing.SubtractVector()
-        subtract.parameters['vector'] = self.vector2
-        before = copy.deepcopy(self.dataset2)
-        self.dataset2.process(subtract)
-        self.assertAlmostEqual(before.data.data[2, 5]-self.vector2[2],
-                               self.dataset2.data.data[2, 5])
-
-    def test_subtract_vector_with_wrong_dim_raises(self):
-        subtract = cwepr.processing.SubtractVector()
-        subtract.parameters['vector'] = self.vector2
-        with self.assertRaises(cwepr.exceptions.DimensionError):
-            self.dataset1.process(subtract)

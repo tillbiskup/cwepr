@@ -1,19 +1,25 @@
-"""Report implementation for cwepr module.
+"""Report facilities for cw-EPR data.
+
+Being able to automatically create well-formatted reports using pre-defined
+templates opens an entirely new dimension in terms of comparing different
+datasets and workflows, besides presenting the results of the research.
+
+This module provides functionality to create reports based on templates
+provided either by the user or by the package as such.
 
 .. note::
     The dataset can be given either as dataset in the properties of a recipe, or
     via the apply_to parameter. In the first case, the dataset can be accessed
     in the here implemented reporter class via ``self.dataset`` (and as an
-    object), in the latter
-    case indirectly via operating on the context-object ``self.context[
-    'dataset']`` (and as a dict). The dataset has to be given explicitly
-    while the dataset-context is applied implicitly. Therefore, here is
-    applied the usage of the context that is a bit more complicated in
-    operating but more intuitive to write in recipes.
-
+    object), in the latter case indirectly via operating on the
+    context-object ``self.context['dataset']`` (and as a dict). The dataset
+    has to be given explicitly while the dataset-context is applied
+    implicitly. Therefore, here is applied the usage of the context that is
+    a bit more complicated in operating but more intuitive to write in recipes.
 
 .. note::
-    Still in active developing and not fail safe and easy to use.
+    Still in active development and not fail-safe and easy to use.
+
 """
 
 import collections
@@ -36,6 +42,7 @@ class ExperimentalDatasetLaTeXReporter(aspecd.report.LaTeXReporter):
         self._metadata = dict()
         self._tasks = collections.OrderedDict()
         self._figure_name = dict()
+        self._exclude_from_to_dict.extend(['dataset'])
 
     def create(self):
         """Perform all methods to generate a report."""
@@ -144,20 +151,21 @@ class PowerSweepAnalysisReporter(aspecd.report.LaTeXReporter):
         # private properties
         self._metadata = dict()
         self._tasks = dict()
+        self._exclude_from_to_dict.extend(['dataset'])
 
     def create(self):
-        """Perform all methods to generate a report."""
-        #TODO:
-        # nicht auf das angegebene Datenset aus den Rezept-Properties
-        # verlassen. Stattdessen das Dataset, das aus Apply_To in den Kontext
-        # gebaut wird, verwenden.
-        # Die Datensets aus dem Kontext soweit verhauen, dass sie (leicht?)
-        # in Template einbaubar sind.
-        # Passendes Template bauen.
+        """Perform all methods to generate a report.
 
+        .. todo::
+            Do not rely on dataset from recipe properties but use the dataset
+            from `apply_to` that is imported into the context. Further deal
+            with (meta)data in the context thus that those are easily usable
+            in a template.
+
+        """
         self._prepare_metadata()
-        self._get_tasks()
-        # TODO: Die Figures ggf aus der Liste rausholen und in ein dict packen?
+        #self._get_tasks()
+        # TODO: Put figurenames in a dict instead of a list?
         #self._get_figure_names()
         self._create_context()
         self.context = self._sanitise_context(self.context)
@@ -211,11 +219,12 @@ class PowerSweepAnalysisReporter(aspecd.report.LaTeXReporter):
 
 
 class DokuwikiCaptionsReporter(aspecd.report.Reporter):
-    """Write DokuWiki Captions.
+    """Write DokuWiki captions.
 
-    ..todo::
-        Write Documentation
-
+    This reporter generates captions containing selected metadata of the
+    measurement, that can be directly used in an DokuWiki used e.g. as an
+    electronic lab notebook. Only the filename of the uploaded figure still
+    has to be inserted.
     """
 
     def __init__(self, template='', filename=''):
@@ -227,9 +236,10 @@ class DokuwikiCaptionsReporter(aspecd.report.Reporter):
         # private properties
         self._metadata = dict()
         self._figure_name = dict()
+        self._exclude_from_to_dict.extend(['dataset'])
 
     def create(self):
-        """Perform all methods to create the captions."""
+        """Perform all methods to create captions."""
         self._prepare_metadata()
         self._create_context()
         super().create()
@@ -259,7 +269,7 @@ class DokuwikiCaptionsReporter(aspecd.report.Reporter):
 class InfofileReporter(DokuwikiCaptionsReporter):
     """Write infofile with metadata od the dataset.
 
-    Because of it is humans who write the infofile, there may be wrong data
+    Because of it is humans who write the infofile, there may be incorrect data
     especially in the spectrometer's parameters. As they usually get also
     reported in the respective data file, they are also read from it and
     stored in the dataset's metadata. A corrected infofile can be written
@@ -272,8 +282,7 @@ class InfofileReporter(DokuwikiCaptionsReporter):
         - kind: report
           type: InfofileReporter
           properties:
-            parameters:
-                filename: NewInfofile.yaml
+            filename: NewInfofile.info
 
     """
 
@@ -282,6 +291,7 @@ class InfofileReporter(DokuwikiCaptionsReporter):
         self.language = 'en'
         self.template = self._get_template()
         super().__init__(template=self.template, filename=self.filename)
+        self._exclude_from_to_dict.extend(['dataset'])
 
     def _get_template(self):
         language = self.language

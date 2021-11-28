@@ -15,6 +15,14 @@ area, amplitude, maximum, minimum), and for EPR spectroscopy such things as
 field and frequency correction.
 
 
+Processing steps implemented
+============================
+
+The processing steps implemented in this module can be separated into those
+specific for cw-EPR data and those that are generally applicable and were
+inherited from the ASpecD framework.
+
+
 Processing steps specific for cw-EPR data
 -----------------------------------------
 
@@ -43,7 +51,7 @@ Implemented but not working as they should:
 General processing steps inherited from the ASpecD framework
 ------------------------------------------------------------
 
-Besides the processing steps specific for TREPR data, a number of further
+Besides the processing steps specific for cw-EPR data, a number of further
 processing steps that are generally applicable to spectroscopic data have
 been inherited from the underlying ASpecD framework:
 
@@ -106,11 +114,9 @@ evolves more and more towards a summary of how to properly record and
 (post-)process cwEPR data.
 
 For more authoritative answers, you may as well have a look into the EPR
-literature, particularly the "EPR Primer" by Chechik/Carter/Murphy and
-the book on quantitative EPR by the Eatons.
-
-.. todo::
-    Add references here, using the BIBTeX plugin
+literature, particularly the "EPR Primer" by Chechik/Carter/Murphy
+:cite:p:`proc-chechik-v-2016` and the book on quantitative EPR by the Eatons
+:cite:p:`proc-eaton-ge-2010`.
 
 
 Corrections
@@ -411,54 +417,66 @@ Implementing own processing steps is rather straight-forward. For details,
 see the documentation of the :mod:`aspecd.processing` module.
 
 
+Bibliography
+============
+
+.. bibliography::
+   :labelprefix: P:
+   :keyprefix: proc-
+
+
 Module documentation
 ====================
 
 What  follows is the API documentation of each class implemented in this module.
 
 """
-import copy
-import math
 import numpy as np
-import scipy.constants
 import scipy.integrate
 import scipy.interpolate
 import scipy.signal
 
 import aspecd.processing
-import cwepr.exceptions
+from cwepr import utils
 
 
 class FieldCorrection(aspecd.processing.SingleProcessingStep):
-    """Processing step for field correction.
+    """Correct magnetic field axis by a linear offset.
 
     Perform a linear field correction of the data with a correction value
     previously determined.
 
-    .. todo::
-        Doublecheck for units.
-
     Attributes
     ----------
-    parameters['correction_value']: :class:`float`
-        Previously determined correction value.
+    parameters['offset']: :class:`float`
+        Offset to be added to the field axis values.
+
+
+    See Also
+    --------
+    cwepr.analysis.FieldCalibration :
+        Determine offset value for a magnetic field calibration
+
+
+    .. versionchanged:: 0.2
+        Renamed parameter ``correction_value`` to ``offset``
 
     """
 
     def __init__(self):
         super().__init__()
-        self.parameters["correction_value"] = None
+        self.parameters["offset"] = None
         self.description = "Linear field correction"
 
     def _perform_task(self):
         """Shift all field axis data points by the correction value."""
         for axis in self.dataset.data.axes:
-            # TODO: Question: Better check for quantity rather than unit? (
-            #   Difficult if not filled)
+            # TODO: Question: Better check for quantity rather than unit?
+            #       (Difficult if not filled)
             # if axis.quantity == 'magnetic field'
             if axis.unit in ('mT', 'G'):
                 self.dataset.data.axes[0].values += \
-                    self.parameters["correction_value"]
+                    self.parameters["offset"]
 
 
 class FrequencyCorrection(aspecd.processing.SingleProcessingStep):
@@ -481,16 +499,11 @@ class FrequencyCorrection(aspecd.processing.SingleProcessingStep):
         self.description = "Correct magnetic field axis for given frequency"
 
     def _perform_task(self):
-        """Perform the actual transformation / correction.
-
-        For the conversion the x axis data is first converted to an axis in
-        units of using the given frequency, then converted back using target
-        frequency.
-        """
+        """Perform the actual transformation / correction."""
         nu_target = self.parameters['frequency']
         for axis in self.dataset.data.axes:
-            # TODO: Question: Better check for quantity rather than unit? (
-            #   Difficult if not filled)
+            # TODO: Question: Better check for quantity rather than unit?
+            #       (Difficult if not filled)
             # if axis.quantity == 'magnetic field'
             if axis.unit in ('mT', 'G'):
                 axis.values = self._correct_field_for_frequency(nu_target,
@@ -526,189 +539,42 @@ class FrequencyCorrection(aspecd.processing.SingleProcessingStep):
 
 
 class GAxisCreation(aspecd.processing.SingleProcessingStep):
-    """Change magnetic field axis to g axis.
+    """Change magnetic field axis to *g* axis.
 
-    Attributes
-    ----------
-    self.parameters['frequency']
-        frequency to calculate g axis with.
+    Particularly when comparing EPR spectra recorded at different frequency
+    bands, the only sensible way to directly compare these spectra is to
+    transform their magnetic field axis to a *g* axis.
+
+    .. note::
+        If you only want to have a *g* axis appearing in your plots
+        (additionally to your magnetic field axis), you can tell the
+        plotters to add a *g* axis at the opposite side of your axes. See
+        the documentation of the plotters in the :mod:`cwepr.plotting`
+        module for more details.
+
+
+    .. versionchanged:: 0.2
+        axis quantity is set to "g value", correct calculation of *g* values
 
     """
 
     def __init__(self):
         super().__init__()
-        self.parameters["frequency"] = 9.5
-        self.description = "Return a g-axis."
+        self.description = "Convert magnetic field axis to g axis."
 
     def _perform_task(self):
         for axis in self.dataset.data.axes:
-            if axis.unit in ('mT', 'G'):
-                axis.values = self._create_g_axis(axis.values)
+            if axis.unit == 'mT':
+                mw_freq = self.dataset.metadata.bridge.mw_frequency.value
+                axis.values = utils.convert_mT2g(axis.values, mw_freq=mw_freq)
                 axis.unit = ''
-
-    def _create_g_axis(self, field_values=None):
-        planck_constant = scipy.constants.value('Planck constant')
-        mu_b = scipy.constants.value('electron mag. mom.')
-        # pylint: disable=invalid-name
-        nu = self.dataset.metadata.bridge.mw_frequency.value
-        g_ = (planck_constant * nu) / (mu_b * field_values)
-        return g_
-
-
-class BaselineCorrectionWithPolynomial(aspecd.processing.SingleProcessingStep):
-    """Perform a baseline correction assuming an underlying polynomial function.
-
-    The coefficients to use will be calculated using the given order  and
-    written in the parameters. If no order is explicitely given, a shifted
-    baseline of zeroth order is assumed and will be processed for.
-    See also: :class:`cwepr.analysis.BaselineCorrectionWithCalculatedDataset`.
-
-    Attributes
-    ----------
-    parameters : :class:`dict`
-        All parameters necessary for this step.
-
-        percentage :
-            Parts of the spectrum to be considered as baseline, can be given
-            as list or single number. If one number is given, it takes that
-            percentage from both sides, respectively, i.e. 10 means 10% left
-            and 10 % right. If a list of two numbers is provided,
-            the corresponding percentages are taken from each side of the
-            spectrum, i.e. ``[5, 20]`` takes 5% from the left side and 20%
-            from the right.
-
-            Default: [10, 10]
-
-        order : :class:`int`
-            The order for the baseline correction if no coefficients are given.
-
-            Default: 0
-
-        coefficients:
-            Filled during evaluation of the task, coefficients of the
-            baseline polynomial.
-
-    """
-
-    def __init__(self):
-        super().__init__()
-        self.description = "Subtraction of baseline polynomial"
-        self.parameters['percentage'] = [10, 10]
-        self.parameters['order'] = 0
-        self._cut_x_data = np.ndarray([])
-        self._cut_y_data = np.ndarray([])
-        self.parameters['coefficients'] = None
-
-    @staticmethod
-    def applicable(dataset):  # noqa: D102
-        return dataset.data.data.ndim == 1
-
-    def _sanitise_parameters(self):
-        if isinstance(self.parameters['percentage'], (float, int)):
-            percentage = self.parameters['percentage']
-            self.parameters['percentage'] = [percentage, percentage]
-        if isinstance(self.parameters['percentage'], list) and len(
-                self.parameters['percentage']) == 1:
-            percentage = self.parameters['percentage'][0]
-            self.parameters['percentage'] = [percentage, percentage]
-
-    def _perform_task(self):
-        """Perform the actual correction.
-
-        Baseline correction is performed by subtraction of  an evaluated
-        polynomial.
-        """
-        self._get_spectrum_to_evaluate()
-        values_to_subtract = self._get_values_to_subtract()
-        self.dataset.data.data -= values_to_subtract
-
-    def _get_spectrum_to_evaluate(self):
-        number_of_points = len(self.dataset.data.data)
-        points_left = math.ceil(number_of_points * self.parameters[
-            "percentage"][0] / 100.0)
-        points_right = math.ceil(number_of_points * self.parameters[
-            "percentage"][1] / 100.0)
-        data = self.dataset.data.data
-        x_axis = self.dataset.data.axes[0].values
-        self._cut_y_data = np.r_[data[:points_left], data[-points_right:]]
-        self._cut_x_data = np.r_[x_axis[:points_left], x_axis[-points_right:]]
-
-    def _get_values_to_subtract(self):
-        # pylint: disable=using-constant-test
-        if np.polynomial.Polynomial:
-            polynomial_ = np.polynomial.Polynomial.fit(self._cut_x_data,
-                                                       self._cut_y_data,
-                                                       self.parameters['order'])
-            self.parameters['coefficients'] = polynomial_.coef
-            return polynomial_(self.dataset.data.axes[0].values)
-        polynomial_ = np.polyfit(self._cut_x_data, self._cut_y_data,
-                                 self.parameters['order'])
-        self.parameters['coefficients'] = polynomial_
-        return np.polyval(polynomial_, self.dataset.data.axes[0].values)
-
-
-class PhaseCorrection(aspecd.processing.SingleProcessingStep):
-    """Phase correction if phase angle is given directly or in metadata.
-
-    Therefore the here used implementation of the processing step is also
-    highly problematic as most phase deviation is not introduced on purpose
-    and listed in the metadata.
-
-    Attributes
-    ----------
-    parameters : :class:`dict`
-        phase_angle_value: :class:`float`
-            Value of the phase shift, can be given in Degree or Rad
-
-        phase_angle_unit: :class:`str`
-            Unit of the phase shift.
-
-            Default: deg
-
-    """
-
-    def __init__(self):
-        super().__init__()
-        self.description = "Phase Correction via Hilbert transform"
-        self.parameters["phase_angle_value"] = None
-        self.parameters["phase_angle_unit"] = 'deg'
-
-    def _perform_task(self):
-        """Perform the actual phase correction.
-
-        The phase angle is acquired from the dataset's metadata and
-        transformed to radians if necessary. The phase correction is then
-        applied and the corrected data inserted into the dataset.
-        """
-        if not self.parameters["phase_angle_value"]:
-            self._get_phase_from_metadata()
-        self._convert_deg_to_rad()
-        self._do_phase_correction()
-
-    def _do_phase_correction(self):
-        data = self.dataset.data.data
-        analytic_signal = scipy.signal.hilbert(data)
-        corrected_analytic_signal = np.exp(-1j * self.parameters[
-            "phase_angle_value"]) * analytic_signal 
-        corrected_data = np.real(corrected_analytic_signal)
-        self.dataset.data.data = corrected_data
-
-    def _convert_deg_to_rad(self):
-        if self.parameters["phase_angle_unit"] == "deg":
-            self.parameters["phase_angle_value"] = \
-                (np.pi * self.parameters["phase_angle_value"]) / 180
-            self.parameters["phase_angle_unit"] = "rad"
-
-    def _get_phase_from_metadata(self):
-        phase_angle_raw = self.dataset.metadata.signal_channel.phase
-        self.parameters["phase_angle_value"] = phase_angle_raw.value
-        self.parameters["phase_angle_unit"] = phase_angle_raw.unit
+                axis.quantity = 'g value'
 
 
 class AutomaticPhaseCorrection(aspecd.processing.SingleProcessingStep):
     """Automatic phase correction via Hilbert transform.
 
-    ..important::
+    .. important::
         Experimental state: Other methods have been proven to provide a
         better and reliable phase correction.
 
@@ -837,11 +703,52 @@ class NormalisationOfDerivativeToArea(aspecd.processing.SingleProcessingStep):
 class Normalisation(aspecd.processing.Normalisation):
     """Normalise data.
 
+    Additional to kinds implemented in the parent class, this class provides
+    the following normalisations:
+
+    * receiver_gain
+
+      Normalise data to identical receiver gain
+
+    * scan_number
+
+      Normalise data to same number of scans
+
     For an extended documentation of the kinds implemented directly in
     ASpecD, see the corresponding documentation:
     :class:`aspecd.processing.Normalisation`.
 
-    The basic usage is as follows:
+
+    Some details for the two additional kinds of normalisation are given
+    below.
+
+    Due to the logarithmic scale of the **receiver gain** (in dB) at least in
+    Bruker spectrometers, it has to be transferred into the "normal" scale. It
+    calculates as following:
+
+        receiver gain = 10^(receiver gain in dB/20)
+
+    Source: Stefan Stoll, EasySpin source code, according to Xenon Manual 2011
+
+    The normalisation according to the **number of scans** is necessary to make
+    spectra in which the intensity of different scans is the sum of the
+    single scans, comparable to those where it is averaged.
+
+    .. important::
+
+        Know what you are doing, as depending on the software used for
+        recording your data, the data are already normalised with respect to
+        the number of scans.
+
+
+    Examples
+    --------
+    For convenience, a series of examples in recipe style (for details of
+    the recipe-driven data analysis, see :mod:`aspecd.tasks`) is given below
+    for how to make use of this class. The examples focus each on a single
+    aspect.
+
+    To normalise your dataset(s) with respect to the receiver gain used:
 
     .. code-block:: yaml
 
@@ -852,31 +759,25 @@ class Normalisation(aspecd.processing.Normalisation):
              kind: receiver_gain
 
 
-    The two additional kinds are explained below.
+    To normalise your dataset(s) with respect to the number of scans that
+    have been recorded:
 
-    Due to the logarithmic scale of the *receiver gain* (in dB) at least in
-    BRUKER spectrometers, it has to be transferred into the "normal" scale. It
-    calculates as following:
+    .. code-block:: yaml
 
-        receiver gain = 10^(receiver gain in dB/20)
+       - kind: processing
+         type: Normalisation
+         properties:
+           parameters:
+             kind: scan_number
 
-    Source: Stefan Stoll, EasySpin source code, according to Xenon Manual 2011
-
-    The normalisation according to the *number of scans* is necessary to make
-    spectra in which the intensity of different scans is the sum of the
-    single scans, comparable to those where it is averaged.
-
-    .. important::
-        Know what you are doing, sometimes the spectrometer's software does this
-        step silently...
     """
 
     def _perform_task(self):
         if 'receiver' in self.parameters["kind"].lower():
             self._normalise_for_receiver_gain()
         elif 'scan_number' in self.parameters["kind"].lower():
-            self.dataset.data.data /= \
-                self.dataset.metadata.signal_channel.accumulations
+            self.dataset.data.data \
+                /= self.dataset.metadata.signal_channel.accumulations
         else:
             super()._perform_task()
 
@@ -884,33 +785,6 @@ class Normalisation(aspecd.processing.Normalisation):
         receiver_gain = self.dataset.metadata.signal_channel.receiver_gain.value
         receiver_gain_value = 10 ** (receiver_gain / 20)
         self.dataset.data.data /= receiver_gain_value
-
-
-class Integration(aspecd.processing.SingleProcessingStep):
-    """Perform an indefinite integration.
-
-    Indefinite integration means integration yielding an integral function.
-    The quality of the integration can be determined using
-    :class:`cwepr.analysis.IntegrationVerification`
-    """
-
-    def __init__(self):
-        super().__init__()
-        self.description = "Indefinite Integration"
-
-    def _perform_task(self):
-        """Perform the actual integration.
-
-        Perform the actual integration using trapezoidal integration
-        functionality from scipy. The keyword argument initial=0 is used to
-        yield a list of length identical to the original one.
-        """
-        x_coordinates = self.dataset.data.axes[0].values
-        y_coordinates = self.dataset.data.data
-
-        integral_values = \
-            scipy.integrate.cumtrapz(y_coordinates, x_coordinates, initial=0)
-        self.dataset.data.data = integral_values
 
 
 class AxisInterpolation(aspecd.processing.SingleProcessingStep):
@@ -928,8 +802,7 @@ class AxisInterpolation(aspecd.processing.SingleProcessingStep):
 
     def __init__(self):
         super().__init__()
-        self.description = 'Interpolate magnetic field axis to get ' \
-                           'equidistant field points.'
+        self.description = 'Interpolate axis to get equidistant points.'
         self.parameters['points'] = None
 
     def _perform_task(self):
@@ -952,71 +825,6 @@ class AxisInterpolation(aspecd.processing.SingleProcessingStep):
 
     def _get_axis_length(self, ax_nr):
         self.parameters['points'] = len(self.dataset.data.axes[ax_nr].values)
-
-
-class Averaging2DDataset(aspecd.processing.SingleProcessingStep):
-    """Average over 2D dataset to get one dimensional dataset.
-
-    Attributes
-    ----------
-    parameters['axis']
-        Axis along which should be averaged.
-
-        Default: 1
-
-    """
-
-    def __init__(self):
-        super().__init__()
-        self.parameters['axis'] = 1
-        self.description = 'Project 2D data in one dimension.'
-        self.undoable = True
-
-    def _perform_task(self):
-        old_dataset = copy.deepcopy(self.dataset)
-        self.dataset.data.data = np.average(self.dataset.data.data,
-                                            axis=self.parameters['axis'])
-        if self.parameters['axis'] == 1:
-            self.dataset.data.axes[1] = old_dataset.data.axes[2]
-            del self.dataset.data.axes[2]
-
-    @staticmethod
-    def applicable(dataset):  # noqa: D102
-        return len(dataset.data.axes) == 3
-
-
-class SubtractVector(aspecd.processing.SingleProcessingStep):
-    """Subtract vector of same length from dataset.
-
-    With a 2D dataset, the vector is subtracted from
-
-    Attributes
-    ----------
-    parameters['vector']
-        Vector that is subtracted from the data
-
-    """
-
-    def __init__(self):
-        super().__init__()
-        self.description = 'Subtract vector of same length from dataset.'
-        self.parameters['vector'] = []
-
-    def _perform_task(self):
-        if len(self.parameters['vector']) != \
-                self.dataset.data.data.shape[0]:
-            raise cwepr.exceptions.DimensionError(
-                message='Vector to subtract is not of the same length as '
-                        'dataset.')
-        if self.dataset.data.data.ndim == 1:
-            self.dataset.data.data -= self.parameters['vector']
-        elif self.dataset.data.data.ndim == 2:
-            for second_dim in range(self.dataset.data.data.shape[1]):
-                self.dataset.data.data[:, second_dim] -= \
-                    self.parameters['vector']
-        else:
-            raise cwepr.exceptions.DimensionError(
-                message='Dataset has weird shape.')
 
 
 class ScalarAlgebra(aspecd.processing.ScalarAlgebra):

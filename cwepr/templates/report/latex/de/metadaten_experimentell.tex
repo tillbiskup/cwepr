@@ -1,0 +1,93 @@
+\begin{multicols}{2}
+
+\subsection{Messung}
+
+\begin{description}
+%{ for key, value in dataset.metadata.measurement.items() }%
+%{ if value }%
+\item[{@ key | replace("_", "\\_") | replace("#", "\\#") }] {@ value | replace("_", "\\_") | replace("#", "\\#") }
+%{ endif }%
+%{ endfor }%
+\end{description}
+
+\subsection{Probe}
+
+\begin{description}
+%{ for key, value in dataset.metadata.sample.items() }%
+%{ if value }%
+\item[{@ key | replace("_", "\\_") | replace("#", "\\#") }] {@ value | replace("_", "\\_") | replace("#", "\\#") }
+%{ endif }%
+%{ endfor }%
+\end{description}
+
+\subsection{Temperatur}
+
+\begin{description}
+%{ for key, value in dataset.metadata.temperatureControl.items() }%
+%{ if value }%
+\item[{@ key | replace("_", "\\_") | replace("#", "\\#") }] %{ if 'value' in value }%{@ value.value } {@ value.unit }%{ else }%{@ value | replace("_", "\\_") | replace("#", "\\#") }%{ endif }%
+%{ endif }%
+%{ endfor }%
+\end{description}
+
+\subsection{Experiment}
+
+\begin{description}
+%{ for key, value in dataset.metadata.experiment.items() }%
+%{ if value }%
+\item[{@ key | replace("_", "\\_") | replace("#", "\\#") }] {@ value | replace("_", "\\_") | replace("#", "\\#") }
+%{ endif }%
+%{ endfor }%
+\end{description}
+
+\subsection{Spektrometer}
+
+\begin{description}
+%{ for key, value in dataset.metadata.spectrometer.items() }%
+%{ if value }%
+\item[{@ key | replace("_", "\\_") | replace("#", "\\#") }] {@ value | replace("_", "\\_") | replace("#", "\\#") }
+%{ endif }%
+%{ endfor }%
+\end{description}
+
+\subsection{Magnetfeld}
+
+\begin{description}
+%{ for key, value in dataset.metadata.magneticField.items() }%
+%{ if value }%
+\item[{@ key | replace("_", "\\_") | replace("#", "\\#") }] %{ if not value|int and 'value' in value }%{@ value.value } {@ value.unit }%{ else }%{@ value | replace("_", "\\_") | replace("#", "\\#") }%{ endif }%
+%{ endif }%
+%{ endfor }%
+\end{description}
+
+\subsection{Mikrowellenbrücke}
+
+\begin{description}
+%{ for key, value in dataset.metadata.bridge.items() }%
+%{ if value }%
+\item[{@ key | replace("_", "\\_") | replace("#", "\\#") }] %{ if not value|int and 'value' in value }%{@ value.value } {@ value.unit }%{ else }%{@ value | replace("_", "\\_") | replace("#", "\\#") }%{ endif }%
+%{ endif }%
+%{ endfor }%
+\end{description}
+
+\subsection{Signalkanal}
+
+\begin{description}
+%{ for key, value in dataset.metadata.signalChannel.items() }%
+%{ if value }%
+\item[{@ key | replace("_", "\\_") | replace("#", "\\#") }] %{ if not value|int and 'value' in value }%{@ value.value } {@ value.unit }%{ else }%{@ value | replace("_", "\\_") | replace("#", "\\#") }%{ endif }%
+%{ endif }%
+%{ endfor }%
+\end{description}
+
+\subsection{Resonator}
+
+\begin{description}
+%{ for key, value in dataset.metadata.probehead.items() }%
+%{ if value }%
+\item[{@ key | replace("_", "\\_") | replace("#", "\\#") }] %{ if not value|int and 'value' in value }%{@ value.value } {@ value.unit }%{ else }%{@ value | replace("_", "\\_") | replace("#", "\\#") }%{ endif }%
+%{ endif }%
+%{ endfor }%
+\end{description}
+
+\end{multicols}

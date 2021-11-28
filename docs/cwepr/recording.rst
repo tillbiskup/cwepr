@@ -6,7 +6,7 @@ What is the usual way of recording cw-EPR spectra of an unknown sample?
 
 To obtain data that can be properly post-processed and analysed, the signal should not be distorted by either saturation or overmodulation, and it should be as good as possible in terms of its signal-to-noise ratio.
 
-Furthermore, if you would like to compare spectra among each other, you will need to ensure that you calibrate your field, usually by recording the spectrum of a sample with known g factor (commonly referred to as "field standard") or have it properly calibrated (once by a technician upon setting up the spectrometer in your lab).
+Furthermore, if you would like to compare spectra among each other, you will need to ensure that you calibrate your field, usually by recording the spectrum of a sample with known *g* factor (commonly referred to as "field standard") or have it properly calibrated (*e.g.*, once by a technician upon setting up the spectrometer in your lab).
 
 
 .. note::
@@ -57,15 +57,15 @@ The value of choice is the largest modulation amplitude that doesn't change the 
     The modulation amplitude for a given resonator needs to be calibrated, typically using a standard sample with a very narrow line. Therefore, make sure you've loaded and applied the correct calibration file corresponding to the resonator you're using. Besides that, be aware that due to miscalibration or missing calibration, modulation amplitude settings may not be easily transferred between setups. Technically speaking, they should be comparable if everything was properly calibrated. Reality has it that your setup is not always properly calibrated (and that you sometimes simply forget to check for the correct calibration file to be loaded).
 
 
-How to automatically analyse such a modulation-amplitude sweep will be detailed later. But if you're looking for a "quick and dirty" approach, here it is: Record two spectra with different modulation amplitude and plot them scaled to same signal amplitude. If you see no difference in spectral shape, you can be rather sure that you are not overmodulating your signal. If you were already overmodulating, your line width would already be a function of the modulation amplitude applied, hence vary with the spectrometer setting.
+How to automatically analyse such a modulation-amplitude sweep will be detailed later. But if you're looking for a "quick and dirty" approach, here it is: Record two spectra with different modulation amplitude and plot them scaled to same signal amplitude. If you see no difference in spectral shape, you can be rather sure that you are not overmodulating your signal. If you were already overmodulating, your line width would be a function of the modulation amplitude applied, hence vary with the spectrometer setting.
 
-A word auf caution for this type of often automatically performed measurements: The setting of the modulation amplitude will directly and dramatically impact your overall signal strength, with signals being much larger with larger modulation amplitude. Hence, make sure with a short series of scans using the minimum and maximum modulation amplitude setting that you are not clipping your detector (receiver gain setting, see below) and that you still get signals with meaningful signal-to-noise ratio for analysis when recording with the smallest modulation amplitude.
+A word of caution for this type of often automatically performed measurements: The setting of the modulation amplitude will directly and dramatically impact your overall signal strength, with signals being much larger with larger modulation amplitude. Hence, make sure with a short series of scans using the minimum and maximum modulation amplitude setting that you are not clipping your detector (receiver gain setting, see below) and that you still get signals with meaningful signal-to-noise ratio for analysis when recording with the smallest modulation amplitude.
 
 
 Receiver gain
 =============
 
-The amplification of the preamplifier in the signal path of your cwEPR spectrometer can usually be controlled. Typically, the amplification (gain) setting is given in dB values, as the available range spans several orders of magnitude (60-90 dB are a typical range).
+The amplification of the preamplifier in the signal path of your cw-EPR spectrometer can usually be controlled. Typically, the amplification (gain) setting is given in dB values, as the available range spans several orders of magnitude (60-90 dB are a typical range).
 
 Why does the receiver gain setting matter at all? Two reasons: If you set the gain to a value too high, your signal will be amplified by more than what your detector can handle. Hence, you're clipping your signal and therefore distorting it. If you really overdo this, you will get a flat horizontal line. Much more tricky are those cases where you still overload your detector, but it will respond with a somewhat "smooth" curve that is nevertheless distorted. Usually, one only finds out in retrospect by trying to simulate the data. Sometimes, if you know what you expect, you can judge from the spectral shape that there is some distortion from a too high gain setting.
 
@@ -111,6 +111,6 @@ Usually, you will need to record more than one scan to obtain a sufficient signa
 
 One problem with recording multiple scans can be that many spectrometers average the scans immediately, not saving the individual scans. This is fine as long as everything goes smooth. However, having personal experience with an environment where you frequently obtain random noise from unknown sources resulting in narrow spikes in your spectra, we strongly recommend saving each scan individually wherever possible.
 
-Some spectrometers do this *per se*, with others, such as Bruker spectrometers, you can usually perform "field delay" measurements, a paraphrase for an experiment where you repeatedly perform a convential field sweep experiment, but save the results as individual rows of a two-dimensional dataset. In this case, all information regarding other parameters of the setup, such as the microwave frequency, that may change during the measurement, are nevertheless lost.
+Some spectrometers do this *per se*, with others, such as Bruker spectrometers, you can usually perform "field delay" measurements and set the delay to a very short time. A "field delay" measurement is kind of a kinetic experiment where you repeatedly perform a convential field sweep experiment and save the results as individual rows of a two-dimensional dataset. In this case, all information regarding other parameters of the setup, such as the microwave frequency, that may change during the measurement, are nevertheless lost.
 
-Of course, having recorded 2D datasets instead of the usual 1D datasets makes it less convenient to look at the data, as you first need to average over the second dimension. However, given a software package like cwEPR, this should be easy to deal with.
+Of course, having recorded 2D datasets instead of the usual 1D datasets makes it less convenient to look at the data, as you first need to average over the second dimension. However, given a software package like cwepr, this can pretty easily be dealt with.

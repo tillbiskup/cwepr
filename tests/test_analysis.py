@@ -9,6 +9,8 @@ import cwepr.dataset
 import cwepr.io.magnettech
 import unittest
 
+import scipy.signal.windows
+
 ROOTPATH = os.path.split(os.path.abspath(__file__))[0]
 
 
@@ -20,11 +22,11 @@ class TestAnalysis(unittest.TestCase):
         self.dataset.import_from(importer)
 
     def test_field_correction_value(self):
-        analysator = cwepr.analysis.FieldCorrectionValue()
+        analysator = cwepr.analysis.FieldCalibration()
         analysator.parameters['standard'] = 'dpph'
         analysator = self.dataset.analyse(analysator)
         self.assertTrue(analysator.parameters['mw_frequency'])
-        self.assertTrue(analysator._g_correct == 2.0036)
+        self.assertTrue(analysator.parameters['g_value'] == 2.0036)
         self.assertEqual(np.float64, type(analysator.result))
 
     def test_area_under_curve(self):
@@ -46,6 +48,61 @@ class TestAnalysis(unittest.TestCase):
         analysator = cwepr.analysis.SignalToNoiseRatio()
         analysator = self.dataset.analyse(analysator)
         self.assertEqual(np.float64, type(analysator.result))
+
+
+class TestFieldCalibration(unittest.TestCase):
+    def setUp(self):
+        self.analysis = cwepr.analysis.FieldCalibration()
+        self.dataset = cwepr.dataset.ExperimentalDataset()
+        self.data = np.sin(np.linspace(0, 2 * np.pi, num=500))
+        self.mw_frequency = 9.68
+        self.standard = 'LiLiF'
+        self.center_field = 345.410996  # For LiLiF with given MW freq
+
+    def test_instantiate_class(self):
+        pass
+
+    def test_has_appropriate_description(self):
+        self.assertIn('magnetic field offset',
+                      self.analysis.description.lower())
+
+    def test_perform_without_frequency_raises(self):
+        with self.assertRaisesRegex(ValueError, "microwave frequency"):
+            self.dataset.analyse(self.analysis)
+
+    def test_perform_without_standard_and_g_value_raises(self):
+        self.analysis.parameters["mw_frequency"] = 9.68
+        with self.assertRaisesRegex(ValueError, "standard or g value"):
+            self.dataset.analyse(self.analysis)
+
+    def test_perform_sets_parameters(self):
+        self.dataset.data.data = self.data
+        self.dataset.metadata.bridge.mw_frequency.value = self.mw_frequency
+        self.analysis.parameters["standard"] = self.standard
+        analysis = self.dataset.analyse(self.analysis)
+        self.assertEqual(self.mw_frequency,
+                         analysis.parameters["mw_frequency"])
+        self.assertEqual(2.002293, analysis.parameters["g_value"])
+
+    def test_perform_returns_correct_value(self):
+        self.dataset.data.data = self.data
+        self.dataset.data.axes[0].values = np.linspace(
+            self.center_field-1, self.center_field+1, len(self.data)
+        )
+        self.dataset.metadata.bridge.mw_frequency.value = self.mw_frequency
+        self.analysis.parameters["standard"] = self.standard
+        analysis = self.dataset.analyse(self.analysis)
+        self.assertAlmostEqual(0, analysis.result, 4)
+
+    def test_result_has_correct_sign(self):
+        self.dataset.data.data = self.data
+        self.dataset.data.axes[0].values = np.linspace(
+            self.center_field-1, self.center_field+2, len(self.data)
+        )
+        self.dataset.metadata.bridge.mw_frequency.value = self.mw_frequency
+        self.analysis.parameters["standard"] = self.standard
+        analysis = self.dataset.analyse(self.analysis)
+        self.assertLess(analysis.result, 0)
 
 
 class TestAmplitude(unittest.TestCase):
@@ -153,11 +210,17 @@ class TestPolynomialFitOnData(unittest.TestCase):
 
 
 class TestPtpVsModAmp(TestCase):
+
     def setUp(self):
         self.analysator = cwepr.analysis.PtpVsModAmp()
         self.dataset = cwepr.dataset.ExperimentalDataset()
-        data = np.sin(np.linspace(0, 2*np.pi))
-        self.dataset.data.data = np.tile(data, (4, 1))
+        data = np.array([])
+        for sigma in np.linspace(5, 110):
+            data = np.append(data, np.gradient(scipy.signal.windows.gaussian(
+                1000, sigma)))
+        data = data.reshape(50, 1000).T
+        self.dataset.data.data = data
+        self.dataset.data.axes[1].values = np.linspace(0, 5, num=50)
 
     def test_instantiate_class(self):
         cwepr.analysis.PtpVsModAmp()
@@ -169,3 +232,15 @@ class TestPtpVsModAmp(TestCase):
         analysis = self.dataset.analyse(self.analysator)
         self.assertEqual(aspecd.dataset.CalculatedDataset,
                          type(analysis.result))
+
+    def test_result_has_no_values_in_last_axis(self):
+        analysis = self.dataset.analyse(self.analysator)
+        self.assertFalse(analysis.result.data.axes[1].values.size > 0)
+
+    def test_axis_zero_has_the_correct_length(self):
+        analysis = self.dataset.analyse(self.analysator)
+        self.assertTrue(len(analysis.result.data.axes[0].values) == 50)
+
+    def test_axis_zero_has_correct_values(self):
+        analysis = self.dataset.analyse(self.analysator)
+        self.assertTrue(analysis.result.data.axes[0].values[-1] == 5)

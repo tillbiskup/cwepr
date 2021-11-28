@@ -5,13 +5,13 @@ Data processing
 Data processing is a necessary prerequisite for :doc:`data analysis <analysis>`, and therefore separate from the latter. The main effort in spectroscopy is usually *not* recording the raw data, but processing and analysing those data in order to answer the questions that triggered the measurements in the first place.
 
 Processing steps can be categorised further. The following is an attempt to
-do that for cwEPR data and to summarise how to properly record and
-(post-)process cwEPR data. For more authoritative answers, you may as well have a look into the EPR literature, particularly the "EPR Primer" by Chechik/Carter/Murphy and the book on quantitative EPR by the Eatons.
+do that for cw-EPR data and to summarise how to properly record and
+(post-)process cw-EPR data. For more authoritative answers, you may as well have a look into the EPR literature, particularly the "EPR Primer" by Chechik/Carter/Murphy and the book on quantitative EPR by the Eatons.
 
 Corrections
 ===========
 
-When analysing cwEPR data, usually, a series of simple correction steps is
+When analysing cw-EPR data, usually, a series of simple correction steps is
 performed prior to any further analysis. This is particularly important if
 you plan to compare different datasets or if you would like to compare your
 spectra with those from the literature (always a good idea, though).
@@ -33,42 +33,39 @@ spectra with those from the literature (always a good idea, though).
 
     Comparing datasets is only possible in a meaningful manner if they are
     either corrected for same frequency, or their magnetic field axes
-    converted in a g axis.
+    converted into a *g* axis.
 
   * Microwave phase correction
 
-    Usually, cwEPR spectra are not recorded with quadrature detection,
+    Usually, cw-EPR spectra are not recorded with quadrature detection,
     *i.e.*, with both, absorptive and dispersive signal components. However,
-    using the Hilbert transform, one can reconstruct the dispersive signal (
-    imaginary component) and correct the phase of the microwave source this way.
+    using the Hilbert transform, one can reconstruct the dispersive signal
+    (imaginary component) and correct the phase of the microwave source this
+    way.
 
   * Baseline correction
 
     However careful measurements are performed, baselines are quite often
     encountered. There are two different kinds of baseline that need to be
-    corrected in different ways. Drifts of some kind can usually be handled
-    by fitting and afterwards subtracting a (low-order) polynomial to the data.
+    corrected in different ways. Drifts can usually be handled by fitting and
+    afterwards subtracting a (low-order) polynomial to the data.
 
     Particularly for low-temperature data, weak signals, and large magnetic
-    field sweep ranges, resonator background can become quite dramatic.
+    field sweep ranges, the signal originating from the resonator itself,
+    usually termed "resonator background", can become quite dramatic.
     Here, usually the only viable way is to record the empty resonator
+    (or alternatively or additionally the signal of an otherwise empty tube)
     independently under as much identical conditions as possible compared to
     recording the signal of the actual sample (but with slightly broader
-    field range to compensate for different microwave frequency) and
-    afterwards subtracting this dataset (empty resonator, *i.e.* resonator
-    background signal) from the signal of the actual sample.
+    field range to compensate for different microwave frequency).
+    Afterwards, you will subtract this dataset (empty resonator or empty tube,
+    *i.e.* resonator background signal) from the signal of the actual sample.
 
 
 Algebra
 =======
 
-Comparing datasets often involves adding, subtracting, multiplying or
-dividing the intensity values by a given fixed number. This is very simple
-algebra and should probably be implemented in the ASpecD framework eventually.
-
-Possible scenarios where one wants to multiply the intensity values of a
-cwEPR spectrum may be comparing spectra resulting from a single species from
-those of known two species, different (known) concentrations and alike.
+Comparing datasets often involves adding, subtracting, multiplying or dividing the intensity values by a given fixed number. Possible scenarios where one wants to multiply the intensity values of a cw-EPR spectrum may be comparing spectra resulting from a single species from those of known two species, different (known) concentrations and alike. Other possible situations are normalisation to same number of scans or same receiver gain, as necessary particularly for data recorded with older spectrometers. For details, see below (towards the end of the section on normalisation).
 
 Of course, dividing the intensity of the spectrum by the maximum intensity
 is another option, however, this would be normalisation to maximum (not
@@ -90,8 +87,7 @@ Normalising data to some common characteristic is a prerequisite for
 comparing datasets among each other.
 
 There is a number of normalisations that are common for nearly every kind of
-data, and as such, these normalisation steps should probably eventually be
-implemented within the ASpecD framework. As there are:
+data, as there are:
 
   * Normalisation to maximum
 
@@ -109,7 +105,7 @@ implemented within the ASpecD framework. As there are:
     The same as for the normalisation to maximum applies here. Furthermore,
     normalising to the minumum usually only makes sense in case of
     prominent negative signal components, as in first-derivative spectra in
-    cwEPR spectroscopy.
+    cw-EPR spectroscopy.
 
   * Normalisation to amplitude
 
@@ -124,13 +120,13 @@ implemented within the ASpecD framework. As there are:
 
     Divide the intensity values by the area under the curve of the spectrum
 
-    Not as easy as it looks like for first-derivative cwEPR spectra,
+    Not as easy as it looks like for first-derivative cw-EPR spectra,
     as here, you are usually interested in normalising to the same area (
     *i.e.*, integral of the curve) of the absorptive (zeroth-derivative or
     zeroth harmonic) spectrum.
 
     At least given appropriate measurement conditions (no saturation, no line
-    bradening due to overmodulation, proper phasing), the cwEPR signal
+    bradening due to overmodulation, proper phasing), the cw-EPR signal
     intensity should be proportional to the number of spins in the active
     volume of the resonator/probehead. Therefore, with all crucial
     experimental parameters directly affecting the signal strength being
@@ -138,14 +134,14 @@ implemented within the ASpecD framework. As there are:
     should be the most straight-forward way of comparing two spectra in a
     meaningful way.
 
-    Bare in mind, however, that spectra with strongly different overall line
+    Bear in mind, however, that spectra with strongly different overall line
     width will have dramatically different minima and maxima, making
     comparison of this kind sometimes less meaningful.
 
 
 Besides these rather general ways of normalising spectra (although described
-above particularly with cwEPR data in mind), there are some other
-normalisations more particular to cwEPR spectroscopy:
+above particularly with cw-EPR data in mind), there are some other
+normalisations more particular to cw-EPR spectroscopy:
 
   * Normalisation to same number of scans
 
@@ -160,7 +156,7 @@ normalisations more particular to cwEPR spectroscopy:
 
   * Normalisation to same receiver gain
 
-    The preamplifiers in the signal channel (as the digitising unit in cwEPR
+    The preamplifiers in the signal channel (as the digitising unit in cw-EPR
     spectrometers is usually called) have usually a gain that can be
     adjusted to the signal strength of the actual sample. Of course,
     this setting will have a direct impact on the intensity values recorded (
@@ -180,13 +176,13 @@ normalisations more particular to cwEPR spectroscopy:
 Handling 2D datasets
 ====================
 
-2D datasets in cwEPR spectroscopy, huh? Well, yes, more often than one might
+2D datasets in cw-EPR spectroscopy, huh? Well, yes, more often than one might
 expect in the beginning. There are the usual suspects such as power sweeps
 and modulation amplitude sweeps, each varying (automatically) one parameter
 in a given range and record spectra for each value.
 
 There are, however, other types of 2D datasets that are quite useful in
-cwEPR spectroscopy. Some vendors of EPR spectrometers offer no simple way of
+cw-EPR spectroscopy. Some vendors of EPR spectrometers offer no simple way of
 saving each individual scan in a series of accumulations. However, this may
 sometimes be of interest, particularly as a single "spike" due to some
 external event or other malfunctioning may otherwise ruin your entire
@@ -235,11 +231,9 @@ rather simple way of handling multiple datasets. However, usually, you would
 like to perform much more advanced operations on multiple datasets, such as
 adding and subtracting one from the other.
 
-May sound pretty simple at first, but is indeed pretty demanding in terms of
+May sound pretty simple at first, but is indeed rather demanding in terms of
 its implementation, as internally, you need to check for quite a number of
-things, such as commensurable axes and ranges. However, this is a rather
-general problem of all kinds of datasets, hence it may be that this
-functionality eventually gets incorporated in the ASpecD framework.
+things, such as commensurable axes and ranges. Furthermore, as soon as the axes do not share a common grid, you need to interpolate the data.
 
 Particularly in EPR spectroscopy, each measurement will have a unique
 microwave frequency for which the data were recorded. Therefore, to combine

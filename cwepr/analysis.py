@@ -16,15 +16,6 @@ function of some parameter, such as the microwave frequency for each of a
 series of recordings, allowing to visualise drifts that may or may not
 impact data analysis.
 
-.. note::
-    This module may be split into different modules and thus converted into
-    a subpackage at some point in the future, depending on the number of
-    classes for analysis steps to come (but rather likely to happen).
-
-.. todo::
-    Make methods dealing with both, 1D and 2D datasets or raising the
-    respective errors.
-
 
 Note to developers
 ==================
@@ -32,6 +23,7 @@ Note to developers
 Processing steps can be based on analysis steps, but not inverse! Otherwise,
 we get cyclic dependencies what should obviously be avoided in order to keep
 code working.
+
 """
 
 import copy
@@ -42,31 +34,68 @@ import scipy.constants
 import aspecd.analysis
 import aspecd.dataset
 
-from cwepr.exceptions import MissingInformationError
+
+class FieldCalibration(aspecd.analysis.SingleAnalysisStep):
+    # noinspection PyUnresolvedReferences
+    """Determine offset value for a magnetic field calibration.
+
+    While the microwave frequency of an EPR spectrometer can be measured with
+    high accuracy independent of the resonator (and cryostat) used,
+    the magnetic field values recorded are usually measured by a Hall probe
+    or NMR teslameter away from the actual sample position. Hence,
+    calibrating the recorded magnetic field value is necessary in case you
+    are interested in quantitative *g*-value measurements or accurate
+    comparisons between measurements.
+
+    While spectrometers without removable probeheads (typically benchtop
+    devices) come often calibrated by the manufacturer, in the typical research
+    setup with probeheads and cryostats changing more frequent,
+    field calibration is typically performed by the individual researcher
+    recording the EPR spectrum of a standard sample with known *g* value.
+
+    Correcting the magnetic field axis of a recorded EPR spectrum is in such
+    cases actually a two-step process:
+
+    #. Obtain the magnetic field offset value from the EPR spectrum of a
+       field standard with known *g* value.
+
+    #. Add the obtained value to the values of the magnetic field axis of the
+       EPR spectrum that should be field-corrected.
+
+    This class provides the first step, obtaining the magnetic field offset
+    value for a number of well-known standards. And in case you use another
+    field standard, you can simply provide the *g* value for this standard as
+    well. The second step, correcting the magnetic field axis of your
+    spectrum, is taken care of by the class
+    :class:`cwepr.processing.FieldCorrection`. See the examples section
+    below for further details.
 
 
-class FieldCorrectionValue(aspecd.analysis.SingleAnalysisStep):
-    """Determine correction value for a field correction.
+    .. note::
 
-    As g standard reference, it can be chosen from two substances, LiLiF and
-    DPPH using the parameter "standard".
+        The method currently relies on the recorded spectrum of the field
+        standard to consist of a single symmetric line accurately recorded
+        with sufficient resolution. The *g* value
 
-    .. todo::
-        Check for units and make them consistent for both points.
 
-    References for the constants:
+    Currently, the following field standards are supported:
 
-    g value of Li:LiF:
+    =========  =====  ===================  =========
+    Substance  Name   *g* Value            Reference
+    =========  =====  ===================  =========
+    Li:LiF     LiLiF  2.002293 ± 0.000002     [1]
+    DPPH       DPPH   2.0036 ± 0.0002         [2]
+    =========  =====  ===================  =========
 
-        g(LiLiF) = 2.002293 +- 0.000002
+    References
+    ----------
+    [1] Stesmans and Van Gorp, *Rev. Sci. Instrum.* 60(1989):2949--2952.
 
-    Reference: Rev. Sci. Instrum. 1989, 60, 2949-2952.
+    [2] Yordanov, *Appl. Magn. Reson.* 10(1996):339--350.
 
-    g value of DPPH:
+    The column "name" here refers to the value the parameter ``standard`` can
+    take (see below). These names are case-insensitive.
 
-        g(DPPH) = 2.0036 ± 0.0002
-
-    Reference: Appl. Magn. Reson. 10, 339-350 (1996)
 
     Attributes
     ----------
@@ -75,60 +104,172 @@ class FieldCorrectionValue(aspecd.analysis.SingleAnalysisStep):
 
         standard : :class:`str`
             Field standard that should be applied.
-            Valid values are "LiLiF" and "DPPH"
 
-            Default: LiLiF
+            For valid values, see the table above.
+
+        g_value : :class:`float`
+            *g* value of the standard sample.
+
+            If you provide a standard by name using the ``standard``
+            parameter above, this is not necessary. Providing a value here
+            overrides the value for the standard. Hence use with care not to
+            confuse you afterwards, when standard name and *g* value are
+            inconsistent.
 
         mw_frequency : :class:`float`
-            Microwave frequency to be corrected for. In general, is taken
-            from the dataset, what is recommended, but can also be given.
+            Microwave frequency to be corrected for.
+
+            In general, this value is taken from the dataset and should
+            therefore usually not be provided explicitly. Providing a value
+            overrides reading from the dataset.
 
     Raises
     ------
-    MissingInformationError
-        Raised if no microwave frequency is given neither in the dataset nor
-        as parameter.
+    ValueError
+        Raised if no microwave frequency or *g* value is available.
+
+
+    See Also
+    --------
+    cwepr.processing.FieldCorrection :
+        Correct magnetic field axis by a linear offset
+
 
     Examples
     --------
+    For convenience, a series of examples in recipe style (for details of
+    the recipe-driven data analysis, see :mod:`aspecd.tasks`) is given below
+    for how to make use of this class. The examples focus each on a single
+    aspect.
+
+    Suppose you have recorded the spectrum of a Li:LiF field standard and
+    now you would like to obtain the field offset to correct your other
+    spectra:
+
     .. code-block:: yaml
 
         - kind: singleanalysis
-          type: FieldCorrectionValue
+          type: FieldCalibration
           properties:
             parameters:
-                mw_frequency: 9.5
+              standard: LiLiF
+          result: deltaB0
+
+
+    This result can now be used within the same recipe to perform a field
+    correction of your other data. A more detailed example may look as follows:
+
+    .. code-block:: yaml
+
+        datasets:
+          - /path/to/LiLiF/dataset
+            label: lilif
+          - /path/to/my/first/dataset
+            label: first
+          - /path/to/my/second/dataset
+            label: second
+
+        tasks:
+          - kind: singleanalysis
+            type: FieldCalibration
+            properties:
+              parameters:
                 standard: LiLiF
+            result: deltaB0
+            apply_to: lilif
+
+          - kind: processing
+            type: FieldCorrection
+            properties:
+              parameters:
+                offset: deltaB0
+            apply_to:
+              - first
+              - second
+
+    Here, we start by loading three datasets, a standard (LiLiF in this
+    case) and two actual spectra. The first task is the analysis step to
+    obtain the field offset value, performed only on the LiLiF spectrum,
+    and the second is a processing step performed only on the two actual
+    spectra to correct their field axis.
+
+    Suppose you have used a standard that's currently not supported by name.
+    Therefore, you will want to provide both, name and *g* value of the
+    standard:
+
+    .. code-block:: yaml
+
+        - kind: singleanalysis
+          type: FieldCalibration
+          properties:
+            parameters:
+              standard: Strong pitch
+              g_value: 2.0028
           result: deltaB
+
+    Of course, providing the name of the standard does not change how the
+    field offset is calculated, but it serves as documentation for you. Note
+    that providing a *g* value overrides the value stored internally.
+    Therefore, if you provide both, standard and *g* value, it is your sole
+    responsibility to ensure consistency between those two parameters.
+
+    .. versionchanged:: 0.2
+        Renamed to FieldCalibration, added parameter ``g_value``
 
     """
 
-    G_LILIF = 2.002293
-    G_DPPH = 2.0036
-
     def __init__(self):
         super().__init__()
+        self.parameters['standard'] = ''
+        self.parameters['g_value'] = None
         self.parameters['mw_frequency'] = None
-        self.parameters['standard'] = 'LiLiF'
-        self.description = "Determination of a field correction value"
-        self._g_correct = None
+        self.description = "Determine magnetic field offset from standard"
+        # NOTE: keys need to be all-lowercase
+        self.g_values = {
+            'dpph': 2.0036,
+            'lilif': 2.002293,
+        }
 
-    def _perform_task(self):
-        """Wrapper around field correction value determination method."""
-        self._get_mw_frequency()
-        self._get_sample_g_value()
-        self.result = self._get_field_correction_value()
+    @staticmethod
+    def applicable(dataset):
+        """
+        Check whether analysis step is applicable to the given dataset.
 
-    def _get_mw_frequency(self):
+        Field calibration can only be applied to 1D datasets.
+
+        Parameters
+        ----------
+        dataset : :class:`aspecd.dataset.Dataset`
+            Dataset to check
+
+        Returns
+        -------
+        applicable : :class:`bool`
+            Whether dataset is applicable
+
+        """
+        return dataset.data.data.ndim == 1
+
+    def _sanitise_parameters(self):
         if not self.parameters['mw_frequency'] and not \
                 self.dataset.metadata.bridge.mw_frequency.value:
-            raise MissingInformationError(message='No microwave frequency '
-                                                  'provided, aborting.')
+            raise ValueError('No microwave frequency provided, aborting.')
+        if not self.parameters['standard'] and not self.parameters['g_value']:
+            raise ValueError('No standard or g value provided, aborting.')
+
+    def _perform_task(self):
+        self._assign_parameters()
+        self.result = self._get_field_offset()
+
+    def _assign_parameters(self):
         if not self.parameters['mw_frequency']:
             self.parameters['mw_frequency'] = \
                 self.dataset.metadata.bridge.mw_frequency.value
+        if not self.parameters['g_value']:
+            self.parameters['g_value'] = \
+                self.g_values[self.parameters['standard'].lower()]
 
-    def _get_field_correction_value(self):
+    def _get_field_offset(self):
         """Calculates a field correction value.
 
         Finds the zero-crossing of a (derivative) spectrum of a field
@@ -139,7 +280,7 @@ class FieldCorrectionValue(aspecd.analysis.SingleAnalysisStep):
         Returns
         -------
         delta_b0: :class:`float`
-            Field correction value
+            Field offset to be added to magnetic field axis of dataset(s)
 
         """
         i_max = np.argmax(self.dataset.data.data)
@@ -149,29 +290,20 @@ class FieldCorrectionValue(aspecd.analysis.SingleAnalysisStep):
         calculated_field = \
             scipy.constants.value('Planck constant') \
             * self.parameters['mw_frequency'] * 1e9 * 1e3 / \
-            (self._g_correct * scipy.constants.value('Bohr magneton'))
+            (self.parameters['g_value']
+             * scipy.constants.value('Bohr magneton'))
         delta_b0 = calculated_field - zero_crossing_exp
         return delta_b0
-
-    def _get_sample_g_value(self):
-        if 'standard' in self.parameters.keys():
-            if self.parameters['standard'].lower() == 'dpph':
-                self._g_correct = self.G_DPPH
-            elif self.parameters['standard'].lower() == 'lilif':
-                self._g_correct = self.G_LILIF
-            else:
-                print('This g-standard sample is not listed, LiLiF is chosen '
-                      'automatically.')
 
 
 class LinewidthPeakToPeak(aspecd.analysis.SingleAnalysisStep):
     """Peak to peak linewidth in derivative spectrum.
 
-    The linewidth is given in a dirst derivative spectrum as difference
+    The linewidth is given in a first derivative spectrum as difference
     between the two extreme points. However, this is valid only for simple
     spectra with just one line or signal. This analysis step simply takes the
     difference on the magnetic field axis which is then stored in the result.
-    The task can be used as following:
+    The task can be used as follows:
 
     .. code-block:: yaml
 
@@ -189,8 +321,24 @@ class LinewidthPeakToPeak(aspecd.analysis.SingleAnalysisStep):
         self.result = self.get_peak_to_peak_linewidth()
 
     @staticmethod
-    def applicable(dataset):  # noqa: D102
-        return isinstance(dataset.data.data.size, int)
+    def applicable(dataset):
+        """
+        Check whether analysis step is applicable to the given dataset.
+
+        Line width detection can only be applied to 1D datasets.
+
+        Parameters
+        ----------
+        dataset : :class:`aspecd.dataset.Dataset`
+            Dataset to check
+
+        Returns
+        -------
+        applicable : :class:`bool`
+            Whether dataset is applicable
+
+        """
+        return dataset.data.data.ndim == 1
 
     def get_peak_to_peak_linewidth(self):
         """Calculates the peak-to-peak linewidth.
@@ -238,6 +386,26 @@ class LinewidthFWHM(aspecd.analysis.SingleAnalysisStep):
     def __init__(self):
         super().__init__()
         self.description = "Determine linewidth (full width at half max; FWHM)"
+
+    @staticmethod
+    def applicable(dataset):
+        """
+        Check whether analysis step is applicable to the given dataset.
+
+        Line width detection can only be applied to 1D datasets.
+
+        Parameters
+        ----------
+        dataset : :class:`aspecd.dataset.Dataset`
+            Dataset to check
+
+        Returns
+        -------
+        applicable : :class:`bool`
+            Whether dataset is applicable
+
+        """
+        return dataset.data.data.ndim == 1
 
     def _perform_task(self):
         self.result = self._get_fwhm_linewidth()
@@ -364,7 +532,7 @@ class Amplitude(aspecd.analysis.SingleAnalysisStep):
 
 
 class AmplitudeVsPower(aspecd.analysis.SingleAnalysisStep):
-    """Return a calculated dataset to further analyse a power-sweep experiment.
+    r"""Return a calculated dataset to further analyse a power-sweep experiment.
 
     The analysis of a power sweep results in a plot of the peak amplitude
     vs. the square root of the microwave power of the bridge. Both values
@@ -388,7 +556,53 @@ class AmplitudeVsPower(aspecd.analysis.SingleAnalysisStep):
 
         - kind: singleanalysis
           type: AmplitudeVsPower
-          result: calc_dataset
+          result: power_sweep_analysis
+
+    A more complete example of a power sweep analysis including linear fit
+    of the first *n* points and a graphical representation of the results may
+    look as follows:
+
+    .. code-block:: yaml
+
+        datasets:
+          - PowerSweep
+        tasks:
+          - kind: singleanalysis
+            type: AmplitudeVsPower
+            apply_to:
+              - PowerSweep
+            result: power_sweep_analysis
+          - kind: singleanalysis
+            type: PolynomialFitOnData
+            properties:
+              parameters:
+                order: 1
+                points: 5
+                return_type: dataset
+            apply_to:
+              - power_sweep_analysis
+            result: fit
+          - kind: multiplot
+            type: PowerSweepAnalysisPlotter
+            properties:
+              properties:
+                drawings:
+                  - marker: '*'
+                  - color: red
+                grid:
+                  show: true
+                  axis: both
+                axes:
+                  ylabel: '$EPR\\ amplitude$'
+              filename: powersweepanalysis.pdf
+            apply_to:
+              - power_sweep_analysis
+              - fit
+
+
+    This would result in a power saturation curve (EPR signal amplitude as a
+    function of the square root of the microwave power, the latter usually
+    in mW), and a linear fit covering in this case the first five data points.
 
     """
 
@@ -397,12 +611,29 @@ class AmplitudeVsPower(aspecd.analysis.SingleAnalysisStep):
         self.description = "Return calculated dataset for power sweep analysis."
         self.result = aspecd.dataset.CalculatedDataset()
         # private properties
-        self._analysis = Amplitude()
+        self._analysis = None
         self._roots_of_mw_power = np.ndarray([])
 
     @staticmethod
-    def applicable(dataset):  # noqa: D102
-        return len(dataset.data.axes) > 2
+    def applicable(dataset):
+        """
+        Check whether analysis step is applicable to the given dataset.
+
+        Extracting the EPR signal amplitude as function of the microwave
+        power can only be applied to 2D datasets.
+
+        Parameters
+        ----------
+        dataset : :class:`aspecd.dataset.Dataset`
+            Dataset to check
+
+        Returns
+        -------
+        applicable : :class:`bool`
+            Whether dataset is applicable
+
+        """
+        return len(dataset.data.axes) == 3
 
     def _perform_task(self):
         self._calculate_data_and_axis()
@@ -433,7 +664,8 @@ class AmplitudeVsPower(aspecd.analysis.SingleAnalysisStep):
             self.result.data.axes[0].unit = 'sqrt(mW)'
         elif self.dataset.data.axes[1].unit == 'W':
             self.result.data.axes[0].unit = 'sqrt(W)'
-        self.result.data.axes[0].quantity = 'root of mw power'
+        self.result.data.axes[0].quantity = 'square root of mw power'
+        self.result.data.axes[1].quantity = 'EPR amplitude'
 
 
 class PolynomialFitOnData(aspecd.analysis.SingleAnalysisStep):
@@ -501,6 +733,26 @@ class PolynomialFitOnData(aspecd.analysis.SingleAnalysisStep):
         # private properties
         self._curve = None
 
+    @staticmethod
+    def applicable(dataset):
+        """
+        Check whether analysis step is applicable to the given dataset.
+
+        Polynomial fitting can only be applied to 1D datasets.
+
+        Parameters
+        ----------
+        dataset : :class:`aspecd.dataset.Dataset`
+            Dataset to check
+
+        Returns
+        -------
+        applicable : :class:`bool`
+            Whether dataset is applicable
+
+        """
+        return dataset.data.data.ndim == 1
+
     def _perform_task(self):
         if self.parameters['add_origin']:
             self._add_origin()
@@ -558,31 +810,45 @@ class PtpVsModAmp(aspecd.analysis.SingleAnalysisStep):
         super().__init__()
         self.description = 'Create dataset with ptp-linewidth vs modulation ' \
                            'Amplitude.'
-        self.new_dataset = aspecd.dataset.CalculatedDataset()
-        self.linewidths = np.ndarray([0])
+        self.result = aspecd.dataset.CalculatedDataset()
+        self.linewidths = np.ndarray([])
 
     def _perform_task(self):
         self._get_linewidths()
         self._fill_dataset()
-        self.result = self.new_dataset
 
     @staticmethod
-    def applicable(dataset):  # noqa: D102
-        return len(dataset.data.axes) > 2
+    def applicable(dataset):
+        """
+        Check whether analysis step is applicable to the given dataset.
+
+        Extracting the peak-to-peak linewidth as function of the modulation
+        amplitude can only be applied to 2D datasets.
+
+        Parameters
+        ----------
+        dataset : :class:`aspecd.dataset.Dataset`
+            Dataset to check
+
+        Returns
+        -------
+        applicable : :class:`bool`
+            Whether dataset is applicable
+
+        """
+        return len(dataset.data.axes) == 3
 
     def _get_linewidths(self):
-        for line in self.dataset.data.data:
-            index_max = np.argmax(line)
-            index_min = np.argmin(line)
-            linewidth = abs(self.dataset.data.axes[1].values[index_min] -
-                            self.dataset.data.axes[1].values[index_max])
-            self.linewidths = np.append(self.linewidths, linewidth)
+        index_max = np.argmax(self.dataset.data.data, axis=0)
+        index_min = np.argmin(self.dataset.data.data, axis=0)
+        self.linewidths = self.dataset.data.axes[0].values[index_min] \
+            - self.dataset.data.axes[0].values[index_max]
 
     def _fill_dataset(self):
-        self.new_dataset.data.data = self.linewidths
-        self.new_dataset.data.axes[0] = self.dataset.data.axes[1]
-        self.new_dataset.data.axes[1].unit = self.dataset.data.axes[0].unit
-        self.new_dataset.data.axes[1].quantity = 'peak to peak linewidth'
+        self.result.data.data = self.linewidths
+        self.result.data.axes[0] = self.dataset.data.axes[1]
+        self.result.data.axes[1].unit = self.dataset.data.axes[0].unit
+        self.result.data.axes[1].quantity = 'peak to peak linewidth'
 
 
 class AreaUnderCurve(aspecd.analysis.SingleAnalysisStep):
@@ -606,11 +872,27 @@ class AreaUnderCurve(aspecd.analysis.SingleAnalysisStep):
         super().__init__()
         self.description = "Definite integration / area und the curve"
 
-    def _perform_task(self):
-        """Perform the actual integration.
-
-        The x values from the dataset are used.
+    @staticmethod
+    def applicable(dataset):
         """
+        Check whether analysis step is applicable to the given dataset.
+
+        Calculating the area can only be applied to 1D datasets.
+
+        Parameters
+        ----------
+        dataset : :class:`aspecd.dataset.Dataset`
+            Dataset to check
+
+        Returns
+        -------
+        applicable : :class:`bool`
+            Whether dataset is applicable
+
+        """
+        return dataset.data.data.ndim == 1
+
+    def _perform_task(self):
         x_values = self.dataset.data.axes[0].values
         y_values = self.dataset.data.data
 

@@ -4,7 +4,7 @@ Data analysis
 
 In nearly all cases, data analysis needs to be preceded with :doc:`data processing <processing>`. While processing steps can usually be automated to a large extend and are rather generally applicable, data analysis is usually much more focussed on individual types of measurements and the actual questions at hand.
 
-Eventually, fitting spectral simulations to the recorded data can be regarded as analysis steps as well. Usually, they are the only way to extract parameters from cw-EPR data with sufficient accuracy.
+Eventually, fitting spectral simulations to the recorded data can be regarded as analysis steps as well. Usually, they are the only way to extract parameters from cw-EPR data with sufficient accuracy. However, this is not and will never be the realm of the cwepr package, but that of dedicated packages.
 
 Nevertheless, there are a number of analysis steps that are rather generic, particularly regarding routine measurements necessary to find the appropriate experimental settings for :doc:`recording accurate cw-EPR spectra <recording>`, namely power and modulation sweeps.
 
@@ -40,13 +40,13 @@ Rotation pattern analysis
 
 Analysing rotation patterns, *i.e.* angular-dependent recording of cw-EPR spectra, can become quite complex and involved. However, there are a few things that can always be checked for, helping to determine accurate data recording.
 
-Due to general physical considerations, the EPR spectra recorded for 0 and 180° of a sample should always be identical within experimental error. Therefore, a standard analysis of rotation patterns is to plot those two traces on top of each other. Ideally, they should be identical both in terms of their spectral shape and intensity. Differences in spectral shape are usually a good hint for the rotation not being accurate. From own experience, even if the sample tube was turned accurately, that does not necessarily guarantee the sample to have followed this rotation equally well. In particular, flat substrates that are not physically locked within the tube tend to move during rotating the tube.
+Due to general physical considerations, the EPR spectra recorded for 0 and 180° of a sample should always be identical within experimental error. To be exact, any two positions with 180° (or *n* pi) angular difference between should result in identical EPR spectra. Therefore, a standard analysis of rotation patterns is to plot those two traces on top of each other. Ideally, they should be identical both in terms of their spectral shape and intensity. Differences in spectral shape are usually a good hint for the rotation not being accurate. From own experience, even if the sample tube was turned accurately, that does not necessarily guarantee the sample to have followed this rotation equally well. In particular, flat substrates that are not physically locked within the tube tend to move during rotating the tube.
 
 
 Comparing cw-EPR spectra
 ========================
 
-What is normally considered a simple task, comparing two or more recorded cw-EPR spectra, is much more tricky than one might think in the beginning. Of course, the procedure taken depends dramatically on the ultimate goal of comparing as well. If you would like to do a semi-quantitative comparison of a series of spectra, you need to take different things into account as commpared to comparing spectral shapes.
+What is normally considered a simple task, comparing two or more recorded cw-EPR spectra, is much more tricky than one might think at first. Of course, the procedure taken depends dramatically on the ultimate goal of comparing as well. If you would like to do a semi-quantitative comparison of a series of spectra, you need to take different things into account as if you are interested in comparing spectral shapes.
 
 
 Semi-quantiative analysis
@@ -86,7 +86,7 @@ The first baseline correction is necessary to have begin and end of your spectru
 Comparing spectral shapes
 -------------------------
 
-When starting to compare spectral shapes, the first thing you should always do is to correct the spectra for the same microwave frequency. As long as you have recorded all spectra with the identical setup and *not* changed the resonator in between, you may be safe with simply applying the resonance condition of magnetic resonance for this purpose. If, however, you would like to compare spectra recorded with different setups, either you can be reasonably confident that each setup has a calibrated magnetic field, or you have recorded a field standard straight before or after recording your actual data. In the latter case, additionally to the frequency correction, you would need to perform a magnetic field correction as well using the spectrum recorded for the field standard, usually a sample with a very narrow line and an accurately known g value.
+When starting to compare spectral shapes, the first thing you should always do is to correct the spectra for the same microwave frequency. As long as you have recorded all spectra with the identical setup and *not* changed the resonator in between, you may be safe with simply applying the resonance condition of magnetic resonance for this purpose. If, however, you would like to compare spectra recorded with different setups, either you can be reasonably confident that each setup has a calibrated magnetic field, or you have recorded a field standard straight before or after recording your actual data. In the latter case, additionally to the frequency correction, you would need to perform a magnetic field correction as well using the spectrum recorded for the field standard, usually a sample with a very narrow (and isotropic, *i.e.* symmetric) line and an accurately known *g* value.
 
 But now for comparing spectral shapes. Probably there is no one "true" or "correct" solution for displaying spectra to compare their shape. Rather, your representation of choice may depend on what you would like to highlight. Usually, if you are interested in different spectral shapes, you would like to normalise the spectra in some way or other. Possibilities for normalisation would be:
 
@@ -103,7 +103,7 @@ You should, however, never simply plot the spectra "as is" and start interpretin
 Spin quantification
 ===================
 
-Quantitative EPR is a field on its own. There is an excellent book on the topic authored by the Eatons that is highly recommended for everybody interested in performing quantitative EPR of any kind (not only spin quantification, but as well accurate measurements of g values).
+Quantitative EPR is a field on its own. There is an excellent book on the topic authored by the Eatons that is highly recommended for everybody interested in performing quantitative EPR of any kind (not only spin quantification, but as well accurate measurements of *g* values).
 
 If you happen to have access to a calibrated commercial spectrometer, spin counting of samples at room temperature that consist of only one species may be quite straight-forward, given that you managed to record your data accurately, with minimum phase error and baseline. The latter points are highly important, as spin counting involves integrating the spectra. If all these conditions are met, it may be as simple as running some built-in routine of the measurement control software.
 

@@ -20,17 +20,21 @@ setuptools.setup(
     project_urls={
         "Documentation": "https://docs.cwepr.de/",
         "Source": "https://github.com/tillbiskup/cwepr",
+        'Bug Tracker': 'https://github.com/tillbiskup/cwepr/issues',
     },
     packages=setuptools.find_packages(exclude=('tests', 'docs')),
     include_package_data=True,
     license='BSD',
     keywords=[
-        'EPR spectroscopy',
+        "EPR spectroscopy",
+        "data processing and analysis",
+        "reproducible science",
+        "reproducible research",
+        "good scientific practice",
+        "recipe-driven data analysis",
     ],
     classifiers=[
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.5",
-        "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
@@ -41,10 +45,14 @@ setuptools.setup(
         "Topic :: Scientific/Engineering",
     ],
     install_requires=[
-        'aspecd>=0.2.1',
+        'aspecd>=0.6.3',
         'numpy',
         'scipy',
         'matplotlib',
     ],
-    python_requires='>=3.5',
+    extras_require={
+        'dev': ['prospector'],
+        'docs': ['sphinx', 'sphinx-rtd-theme', 'sphinxcontrib-bibtex'],
+    },
+    python_requires='>=3.7',
 )

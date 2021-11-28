@@ -18,7 +18,12 @@ To give you a first example, here is a short recipe, followed by the command you
 .. code-block:: yaml
     :linenos:
 
-    default_package: cwepr
+    format:
+      type: ASpecD recipe
+      version: '0.2'
+
+    settings:
+      default_package: cwepr
 
     datasets:
       - /path/to/first/dataset
@@ -56,7 +61,7 @@ Anatomy of a recipe
 
 Recipes always consist of two major parts: A list of datasets to operate on, and a list of tasks to be performed on the datasets. Of course, you can specify for each task on which datasets it should be performed, and if possible, whether it should be performed on each dataset separately or combined. The latter is particularly interesting for representations (e.g., plots) consisting of multiple datasets, or analysis steps spanning multiple datasets.
 
-Therefore, in a recipe that is basically a YAML file, you will always find three keys on the highest level: ``datasets``, ``tasks``, and at the very top, the statement ``default_package: cwepr`` telling that you are using the cwepr package. There are, however, a few additional (optional) keys that may appear on the highest level, setting such things as the default source directory for datasets and the default output directory for figures and reports. A recipe written as history from cooking another recipe will additionally automatically contain information on the system and versions of the software packages used.
+Therefore, in a recipe that is basically a YAML file, you will always find a list of keys on the highest level: ``datasets``, ``tasks``, and at the very top, ``format`` and ``settings``, with the statement ``default_package: cwepr`` within the latter telling that you are using the cwepr package. There are, however, a few additional (optional) keys that may appear on the highest level, setting such things as the default source directory for datasets and the default output directory for figures and reports. A recipe written as history from cooking another recipe will additionally automatically contain information on the system and versions of the software packages used.
 
 For more details and a `more thorough introduction to recipe-driven analysis <https://docs.aspecd.de/usecases.html>`_, have a look at the documentation of the underlying `ASpecD framework <https://docs.aspecd.de/usecases.html>`_. Here, we will focus on the most basic aspects of processing and analysing cw-EPR data.
 
@@ -134,4 +139,4 @@ Of course, there is a lot more to plotting (actually, plotting is probably one o
 
 As always, all this and more can be found in the `documentation of the ASpecD framework <https://docs.aspecd.de/usecases.html>`_ and in the documentation of the individual plotter classes in the :mod:`cwepr.plotting` module. Even better, thanks to the modular nature of the ASpecD framework and the packages building upon it, such as the cwepr package, you can use all the functionality provided by the ASpecD framework.
 
-Of course, the examples shown above only scratch on the very surface of what is possible, but they should give you an idea how working with the cwepr package looks like -- and why it is fun. Always remember: The cwepr package is there to make processing and analysing trEPR data as easy, simple, and convenient as possible, while bringing **reproducibility** to a complete new level. It is up to you to use the tools at your hand in new and creative ways for the best of science.
+Of course, the examples shown above only scratch on the very surface of what is possible, but they should give you an idea how working with the cwepr package looks like -- and why it is fun. Always remember: The cwepr package is there to make processing and analysing cw-EPR data as easy, simple, and convenient as possible, while bringing **reproducibility** to a complete new level. It is up to you to use the tools at your hand in new and creative ways for the best of science.
