@@ -17,13 +17,16 @@ import os.path
 import aspecd.io
 from aspecd.utils import object_from_class_name
 
-from cwepr.exceptions import UnsupportedDataFormatError
-
 
 class DatasetImporterFactory(aspecd.io.DatasetImporterFactory):
     """Factory for creating importer objects based on the source provided.
 
     Currently, the data formats are distinguished by their file extensions.
+
+    If the source string does not match any of the importers handled by this
+    module, the standard importers from the ASpecD framework are checked.
+    See the documentation of the :class:`aspecd.io.DatasetImporterFactory`
+    base class for details.
 
     Attributes
     ----------
@@ -34,12 +37,6 @@ class DatasetImporterFactory(aspecd.io.DatasetImporterFactory):
 
     data_format : :class:`str`
         Name of the format that has been detected.
-
-    Raises
-    ------
-    UnsupportedDataFormatError
-        Raised if a format is set but does not match any of the supported
-        formats
 
     """
 
@@ -80,10 +77,11 @@ class DatasetImporterFactory(aspecd.io.DatasetImporterFactory):
             importer.source = self.source
             return importer
         self.data_format = self._find_format()
-        importer = \
-            object_from_class_name(".".join(["cwepr", "io", self.data_format
-                                             + "Importer"]))
-        importer.source = self.source
+        importer = None
+        if self.data_format:
+            importer = object_from_class_name(
+                ".".join(["cwepr", "io", self.data_format + "Importer"]))
+            importer.source = self.source
         return importer
 
     def _cut_file_extension_if_necessary(self):
@@ -100,21 +98,15 @@ class DatasetImporterFactory(aspecd.io.DatasetImporterFactory):
 
         Determination is performed by checking if files with the correct name
         and extension are present.
-
-        Raises
-        ------
-        NoMatchingFilePairError
-            Raised if no source format doesn't match a supported format
-
         """
+        detected_format = None
         for file_format, extensions in self.supported_formats.items():
             file_exists = []
             for extension in extensions:
                 file_exists.append(os.path.isfile(self.source + extension))
             if all(file_exists):
-                return file_format
-        msg = "No file format was found for path: " + self.source
-        raise UnsupportedDataFormatError(message=msg)
+                detected_format = file_format
+        return detected_format
 
     def _directory_contains_gon_data(self):
         check_gon_filenames = []

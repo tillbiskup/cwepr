@@ -37,6 +37,7 @@ Fixes
 
 * :class:`cwepr.processing.GAxisCreation` returns correct *g* axis values
 * Reporters do not contain dataset in their dict representation
+* :class:`cwepr.io.factory.DatasetImporterFactory` falls back to ASpecD-supported formats if no matching format is found.
 
 
 Version 0.1.2
