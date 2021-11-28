@@ -8,7 +8,7 @@ This page contains a summary of changes between the official cwepr releases. Onl
 Version 0.2.0
 =============
 
-Not yet released
+Released 2021-11-28
 
 **Note:** Starting with this version, cwepr requires **Python >=3.7**
 
@@ -16,7 +16,7 @@ Not yet released
 New features
 ------------
 
-* Importer for Bruker EMX file format (.par/.spc)
+* Importer for Bruker EMX/ESP file format (.par/.spc)
 * *g* value can be provided for :class:`cwepr.analysis.FieldCalibration`
 * New module :mod:`utils` for general-purpose functions regarding cw-EPR spectroscopy
 * Functions :func:`cwepr.utils.convert_g2mT` and :func:`cwepr.utils.convert_mT2g` to convert between magnetic field values (in mT) and g values
