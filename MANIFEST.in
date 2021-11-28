@@ -8,8 +8,9 @@ include VERSION
 include LICENSE*
 
 # Include metadata mappers
-include cwepr/io/dsc_keys.yaml
 include cwepr/metadata_mapper_cwepr.yaml
+include cwepr/io/*.yaml
+
 
 # Include templates
 recursive-include cwepr/templates *

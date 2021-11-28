@@ -11,8 +11,8 @@ ROOTPATH = os.path.split(os.path.abspath(__file__))[0]
 class TestESPWinEPRImporter(unittest.TestCase):
     def setUp(self):
         self.dataset = cwepr.dataset.ExperimentalDataset()
-        self.sources = ('testdata/ESP', 'testdata/EMX-winEPR.par',
-                        'testdata/winepr.par')
+        self.sources = [os.path.join(ROOTPATH, path) for path in [
+            'testdata/ESP', 'testdata/EMX-winEPR.par', 'testdata/winepr.par']]
         self.source = os.path.join(ROOTPATH, 'testdata/winepr.par')
 
     def test_imports_esp_data_correctly(self):

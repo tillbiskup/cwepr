@@ -82,8 +82,8 @@ class ESPWinEPRImporter(aspecd.io.DatasetImporter):
 
     def _set_defaults(self):
         default_file = aspecd.utils.Yaml()
-        rootpath = os.path.split(os.path.abspath(__file__))[0]
-        default_file.read_from(os.path.join(rootpath, 'par_defaults.yaml'))
+        default_file.read_stream(aspecd.utils.get_package_data(
+            'cwepr@io/par_defaults.yaml').encode())
         self._metadata_dict = default_file.dict
 
     def _read_parameter_file(self):
@@ -158,8 +158,8 @@ class ESPWinEPRImporter(aspecd.io.DatasetImporter):
 
     def _map_par_file(self):
         yaml_file = aspecd.utils.Yaml()
-        rootpath = os.path.split(os.path.abspath(__file__))[0]
-        yaml_file.read_from(os.path.join(rootpath, self._mapper_filename))
+        yaml_file.read_stream(aspecd.utils.get_package_data(
+            'cwepr@io/' + self._mapper_filename).encode())
         metadata_dict = {}
         metadata_dict = self._traverse(yaml_file.dict, metadata_dict)
         aspecd.utils.copy_keys_between_dicts(metadata_dict, self._metadata_dict)
