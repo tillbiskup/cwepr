@@ -22,6 +22,11 @@ For version 0.3
 
 * Reorganise templates for reports, according to the directory layout proposed by aspecd (see :mod:`aspecd.report` for details).
 
+* Bugfixes
+
+  * Check units of BEST-Importer (esp. values from Bruker-files)
+  * Keep step parameter of magnetic field or not?
+
 
 For later versions
 ==================
