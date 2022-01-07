@@ -11,6 +11,7 @@ preferred-citation:
   title: "cwepr - a Python package for analysing cw-EPR data focussing on reproducibility and simple usage"
   doi: 10.1016/j.jmr.2021.107140
   journal: "Journal of Magnetic Resonance"
+  pages: 107140
   volume: 335
   year: 2022
   type: article
