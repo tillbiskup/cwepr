@@ -98,5 +98,7 @@ class TestBES3TImporter(unittest.TestCase):
         source = os.path.join(ROOTPATH, 'testdata/BDPA-1DFieldSweep')
         importer = cwepr.io.bes3t.BES3TImporter(source=source)
         self.dataset.import_from(importer)
-        self.assertEqual(self.dataset.metadata.signal_channel.conversion_time
-                         .unit, 's')
+        self.assertEqual(self.dataset.metadata.signal_channel.time_constant
+                         .value, 2.56)
+        self.assertEqual(self.dataset.metadata.signal_channel.time_constant
+                         .unit,  'ms')

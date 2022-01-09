@@ -223,6 +223,16 @@ class BES3TImporter(aspecd.io.DatasetImporter):
         if self.dataset.metadata.bridge.power.unit == 'W':
             self.dataset.metadata.bridge.power.value *= 1e3
             self.dataset.metadata.bridge.power.unit = 'mW'
+        # time objects
+        objects_ = ('conversion_time', 'time_constant')
+        for object_ in objects_:
+            time_object = getattr(
+                self.dataset.metadata.signal_channel, object_)
+            if time_object.unit == 's':
+                time_object.value *= 1e3
+                time_object.unit = 'ms'
+            setattr(self.dataset.metadata.magnetic_field, object_,
+                    time_object)
         # magnetic field objects
         objects_ = ('start', 'stop', 'sweep_width')
         for object_ in objects_:
@@ -231,8 +241,7 @@ class BES3TImporter(aspecd.io.DatasetImporter):
             if magnetic_field_object.unit == 'G':
                 magnetic_field_object.value /= 10
                 magnetic_field_object.unit = 'mT'
-            setattr(
-                self.dataset.metadata.magnetic_field, object_,
+            setattr(self.dataset.metadata.magnetic_field, object_,
                 magnetic_field_object)
         # axes
         if self.dataset.data.axes[0].unit == 'G':
@@ -250,7 +259,7 @@ class BES3TImporter(aspecd.io.DatasetImporter):
             self.dataset.metadata.signal_channel.modulation_amplitude.value \
                 *= 1e3
             self.dataset.metadata.signal_channel.modulation_amplitude.unit = \
-                'mT' 
+                'mT'
 
     def _check_experiment(self):
         if self._dsc_dict['EXPT'] != 'CW':
