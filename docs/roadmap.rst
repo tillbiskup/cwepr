@@ -24,7 +24,6 @@ For version 0.3
 
 * Bugfixes
 
-  * Check units of BEST-Importer (esp. values from Bruker-files)
   * Keep step parameter of magnetic field or not?
 
 
