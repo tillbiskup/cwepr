@@ -35,7 +35,6 @@ class TestBES3TImporter(unittest.TestCase):
                          self.dataset.metadata.bridge.power.value)
         self.assertEqual('mW',
                          self.dataset.metadata.bridge.power.unit)
-
         self.assertEqual('mT', self.dataset.metadata.magnetic_field.start.unit)
         self.assertEqual('mT',
                          self.dataset.metadata.magnetic_field.sweep_width.unit)
@@ -77,3 +76,27 @@ class TestBES3TImporter(unittest.TestCase):
             importer = cwepr.io.bes3t.BES3TImporter(
                 source=new_source)
             dataset.import_from(importer)
+
+    def test_import_sets_correct_units_for_infofile(self):
+        source = os.path.join(ROOTPATH, 'testdata/BDPA-1DFieldSweep')
+        importer = cwepr.io.bes3t.BES3TImporter(source=source)
+        importer.dataset = cwepr.dataset.ExperimentalDataset()
+        importer._clean_filenames()
+        importer._extract_metadata_from_dsc()  # To get dimension information
+        importer._check_experiment()
+        importer._set_dataset_dimension()
+        importer._get_file_encoding()
+
+        if importer.load_infofile and importer._infofile_exists():
+            importer._load_infofile()
+            importer._map_infofile()
+
+        self.assertIn('ms', importer._metadata_dict['signal_channel'][
+                            'time_constant'])
+
+    def test_import_sets_correct_units_for_dsc_file(self):
+        source = os.path.join(ROOTPATH, 'testdata/BDPA-1DFieldSweep')
+        importer = cwepr.io.bes3t.BES3TImporter(source=source)
+        self.dataset.import_from(importer)
+        self.assertEqual(self.dataset.metadata.signal_channel.conversion_time
+                         .unit, 's')
