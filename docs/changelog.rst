@@ -7,9 +7,12 @@ This page contains a summary of changes between the official cwepr releases. Onl
 Version 0.2.1
 =============
 
+Not yet released
+
 The following bugs have been fixed:
 
 * Import units correctly using the BES3T importer.
+* Magnettech goniometer sweep importer handles situation without info file
 
 
 Version 0.2.0
