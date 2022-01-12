@@ -202,7 +202,7 @@ class BES3TImporter(aspecd.io.DatasetImporter):
         mapper.map()
         self._metadata_dict = aspecd.utils.convert_keys_to_variable_names(
             mapper.metadata)
-        
+
     def _map_infofile(self):
         """Bring the metadata to a given format."""
         infofile_version = self._infofile.infofile_info['version']
@@ -242,7 +242,7 @@ class BES3TImporter(aspecd.io.DatasetImporter):
                 magnetic_field_object.value /= 10
                 magnetic_field_object.unit = 'mT'
             setattr(self.dataset.metadata.magnetic_field, object_,
-                magnetic_field_object)
+                    magnetic_field_object)
         # axes
         if self.dataset.data.axes[0].unit == 'G':
             self.dataset.data.axes[0].values /= 10
