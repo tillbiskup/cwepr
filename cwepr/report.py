@@ -7,6 +7,44 @@ datasets and workflows, besides presenting the results of the research.
 This module provides functionality to create reports based on templates
 provided either by the user or by the package as such.
 
+
+"Batteries included": Templates contained in the package
+========================================================
+
+The "batteries included" approach of Python itself is probably responsible
+to a great deal for the success of Python as a language. Similarly,
+the cwepr package tries to provide you with a sensible set of tools you need
+for your routine data analysis. Reports are no exception to that rule.
+
+Thanks to being based on the ASpecD framework, the cwepr package comes bundled
+with a (growing) series of templates allowing you to create reports of
+datasets and alike. Thus, getting access to all information stored in a
+single dataset is as simple as calling a single reporter, and in context of
+recipe-driven data analysis, it is even simpler:
+
+.. code-block:: yaml
+
+    - kind: report
+      type: LaTeXReporter
+      properties:
+        template: dataset.tex
+        filename: report.tex
+      compile: true
+
+This would create a report of a dataset that is then stored in the file
+``report.tex``, using the template ``dataset.tex`` bundled with the cwepr
+(and ASpecD) package. As you even set ``compile`` to true, it would even
+compile the LaTeX report, including all figures generated during cooking the
+recipe and referenced from within the report. Hence, you end up in your current
+directory with both, a LaTeX file ``report.tex`` and a PDF file ``report.pdf``.
+
+For more details, including how to customise reports, have a look at the
+documentation of the :mod:`aspecd.report` module of the ASpecD framework.
+
+
+Notes for developers
+====================
+
 .. note::
     The dataset can be given either as dataset in the properties of a recipe, or
     via the apply_to parameter. In the first case, the dataset can be accessed
@@ -19,6 +57,10 @@ provided either by the user or by the package as such.
 
 .. note::
     Still in active development and not fail-safe and easy to use.
+
+
+Module documentation
+====================
 
 """
 
@@ -267,13 +309,21 @@ class DokuwikiCaptionsReporter(aspecd.report.Reporter):
 
 
 class InfofileReporter(DokuwikiCaptionsReporter):
-    """Write infofile with metadata od the dataset.
+    """Write infofile with metadata of the dataset.
 
-    Because of it is humans who write the infofile, there may be incorrect data
-    especially in the spectrometer's parameters. As they usually get also
-    reported in the respective data file, they are also read from it and
-    stored in the dataset's metadata. A corrected infofile can be written
-    herewith.
+    As infofiles are written manually by humans, they are inherently
+    sensitive to wrong content and incorrect data especially in the
+    spectrometer's parameters. As these parameters usually get also
+    reported in the respective data file, they are also read from there and
+    take precedence in the dataset's metadata.
+
+    Therefore, to correct an infofile, it can be recreated after the dataset
+    has been loaded and the metadata sanitised, using this very reporter.
+
+    **Please note:** In order to not write wrong parameters to the infofile
+    this way, the :class:`InfofileReporter` needs to be called *immediately*
+    after the datasets have been imported, and before any other processing
+    takes place that may alter the datasets' metadata.
 
     Examples
     --------
