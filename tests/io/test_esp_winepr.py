@@ -78,3 +78,6 @@ class TestESPWinEPRImporter(unittest.TestCase):
         importer = cwepr.io.esp_winepr.ESPWinEPRImporter(source=self.sources[2])
         self.dataset.import_from(importer)
         self.assertTrue(self.dataset.metadata.bridge.mw_frequency.value)
+
+    def test_operator_is_written_from_infofile(self):
+        pass
