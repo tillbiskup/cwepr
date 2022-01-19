@@ -14,6 +14,7 @@ The following bugs have been fixed:
 * Import units correctly using the BES3T importer.
 * Magnettech goniometer sweep importer handles situation without info file.
 * Fix for import and gathering of metadata of both sources in WinEPR Importer.
+* Units are imported correctly from par file in WinEPR importer.
 
 
 Version 0.2.0
