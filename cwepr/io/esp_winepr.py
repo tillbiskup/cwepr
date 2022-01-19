@@ -169,7 +169,8 @@ class ESPWinEPRImporter(aspecd.io.DatasetImporter):
 
     def _extract_datetime(self):
         start_date = self._try_parsing_date()
-        self._metadata_dict['measurement'] = {}
+        if 'measurement' not in self._metadata_dict.keys():
+            self._metadata_dict['measurement'] = {}
         self._metadata_dict['measurement']['start'] = str(start_date)
         if 'end' not in self._metadata_dict['measurement'].keys():
             self._metadata_dict['measurement']['end'] = \
