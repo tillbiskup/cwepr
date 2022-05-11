@@ -38,6 +38,23 @@ class ASCIIExporter(aspecd.io.DatasetExporter):
     provided by aspecd. Metadata residing there as an object of the class
     :class:`numpy.ndarray` are converted into lists.
 
+    A simple example for its usage looks like this:
+
+    .. code-block:: yaml
+
+    datasets:
+      - /path/to/first/dataset
+      - /path/to/second/dataset
+
+    tasks:
+      - kind: export
+        type: ASCIIExporter
+        properties:
+          target:
+            - dataset1
+            - dataset2
+
+
     .. note::
         Not tested.
     """
