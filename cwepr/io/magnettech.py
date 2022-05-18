@@ -126,6 +126,7 @@ class MagnettechXMLImporter(aspecd.io.DatasetImporter):
     def _get_raw_data(self):
         self._xvalues = \
             self._convert_base64string_to_np_array(self.root[0][0][1][0].text)
+        # TODO: Not take last element but first harmonic (or so)
         self._yvalues = \
             self._convert_base64string_to_np_array(self.root[0][0][1][-1].text)
 
