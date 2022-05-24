@@ -10,7 +10,7 @@ tasks:
     result: calcAmplitudePower
     
   - kind: singleanalysis
-    type: PolynomialFitOnData
+    type: FitOnData
     properties:
         parameters:
             points: 10

@@ -33,6 +33,7 @@ import scipy.constants
 
 import aspecd.analysis
 import aspecd.dataset
+import aspecd.utils
 
 
 class FieldCalibration(aspecd.analysis.SingleAnalysisStep):
@@ -573,7 +574,7 @@ class AmplitudeVsPower(aspecd.analysis.SingleAnalysisStep):
               - PowerSweep
             result: power_sweep_analysis
           - kind: singleanalysis
-            type: PolynomialFitOnData
+            type: FitOnData
             properties:
               parameters:
                 order: 1
@@ -668,7 +669,7 @@ class AmplitudeVsPower(aspecd.analysis.SingleAnalysisStep):
         self.result.data.axes[1].quantity = 'EPR amplitude'
 
 
-class PolynomialFitOnData(aspecd.analysis.SingleAnalysisStep):
+class FitOnData(aspecd.analysis.SingleAnalysisStep):
     """Perform polynomial fit on data and return its parameters or a dataset.
 
     Developed tests first.
@@ -689,8 +690,9 @@ class PolynomialFitOnData(aspecd.analysis.SingleAnalysisStep):
             Default: 1
 
         return_type : :class: `str`
-            Choose to returning the coefficients of the fit or a calculated
-            dataset containing the curve to plot.
+            Choose to returning the coefficients of the fit in order
+            of increasing degree or a calculated dataset containing the curve to
+            plot.
 
             Default: coefficients.
 
@@ -710,7 +712,7 @@ class PolynomialFitOnData(aspecd.analysis.SingleAnalysisStep):
     .. code-block:: yaml
 
         - kind: singleanalysis
-          type: PolynomialFitOnData
+          type: FitOnData
           properties:
             parameters:
                 points: 5
@@ -719,16 +721,21 @@ class PolynomialFitOnData(aspecd.analysis.SingleAnalysisStep):
                 add_origin: True
           result: fit
 
+    .. versionchanged:: 0.3
+        Rewrite to perform fits with fixed intercept, remove parameter
+        "add_origin", introduced "fixed_intercerpt".
+        Return coefficients in order of increasing degree
     """
 
     def __init__(self):
         super().__init__()
-        self.description = "Perform polynomial fit and return parameters."
+        self.description = "Perform fit and return parameters."
         self.result = None
         self.parameters['points'] = 3
         self.parameters['order'] = 1
         self.parameters['return_type'] = 'coefficients'
-        self.parameters['add_origin'] = False
+        self.parameters['fixed_intercept'] = False
+        self.parameters['offset'] = 0
         self.parameters['coefficients'] = []
         # private properties
         self._curve = None
@@ -754,10 +761,12 @@ class PolynomialFitOnData(aspecd.analysis.SingleAnalysisStep):
         return dataset.data.data.ndim == 1
 
     def _perform_task(self):
-        if self.parameters['add_origin']:
-            self._add_origin()
-        self._get_coefficients()
-        self._get_curve()
+        if self.parameters['fixed_intercept']:
+            self._linear_regression_with_fixed_intercept()
+            self._get_curve()
+        else:
+            self._get_coefficients()
+            self._get_curve()
         self._assign_result()
 
     def _get_coefficients(self):
@@ -770,10 +779,9 @@ class PolynomialFitOnData(aspecd.analysis.SingleAnalysisStep):
 
     def _get_curve(self):
         self._curve = self.create_dataset()
+        slope = np.polynomial.Polynomial(self.parameters['coefficients'])
+        self._curve.data.data = slope(self.dataset.data.axes[0].values)
         self._curve.data.axes[0] = self.dataset.data.axes[0]
-        self._curve.data.data = np.polyval(self.parameters['coefficients'],
-                                           self.dataset.data.axes[0].values)
-        self._curve.data.axes[0].values = self.dataset.data.axes[0].values
 
     def _assign_result(self):
         if self.parameters['return_type'].lower() == 'dataset':
@@ -781,10 +789,14 @@ class PolynomialFitOnData(aspecd.analysis.SingleAnalysisStep):
         else:
             self.result = self.parameters['coefficients']
 
-    def _add_origin(self):
-        self.dataset.data.axes[0].values = \
-            np.insert(self.dataset.data.axes[0].values, 0, 0)
-        self.dataset.data.data = np.insert(self.dataset.data.data, 0, 0)
+    def _linear_regression_with_fixed_intercept(self):
+        analysis = aspecd.analysis.LinearRegressionWithFixedIntercept()
+        aspecd.utils.copy_values_between_dicts(source=self.parameters,
+                                               target=analysis.parameters)
+        analysis.parameters['polynomial_coefficients'] = True
+        analysis.dataset = self.dataset
+        result = self.dataset.analyse(analysis)
+        self.parameters['coefficients'] = result.result
 
 
 class PtpVsModAmp(aspecd.analysis.SingleAnalysisStep):
@@ -842,7 +854,7 @@ class PtpVsModAmp(aspecd.analysis.SingleAnalysisStep):
         index_max = np.argmax(self.dataset.data.data, axis=0)
         index_min = np.argmin(self.dataset.data.data, axis=0)
         self.linewidths = self.dataset.data.axes[0].values[index_min] \
-            - self.dataset.data.axes[0].values[index_max]
+                          - self.dataset.data.axes[0].values[index_max]
 
     def _fill_dataset(self):
         self.result.data.data = self.linewidths
