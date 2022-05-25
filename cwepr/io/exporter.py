@@ -1,6 +1,5 @@
 """Exporters for both, whole datasets as well as data alone.
 
-
 Exporters
 =========
 
@@ -16,11 +15,11 @@ only.
         your own risk and only if you *really* know what you are doing (and
         why).
 
-For further details and a comprehensive summary of data export, the reader is referred to the aspecd-documentation (:mod:`aspecd.io`).
+For further details and a comprehensive summary of data export, the reader is
+referred to the aspecd-documentation (:mod:`aspecd.io`).
 
 If you want to export data to a txt-file, you might want to use the
 :class:`aspecd.io.TxtExporter`.
-
 """
 import collections
 import datetime

@@ -54,7 +54,7 @@ class ESPWinEPRImporter(aspecd.io.DatasetImporter):
         self.load_infofile = True
         # private properties
         self._infofile = aspecd.infofile.Infofile()
-        self._par_dict = dict()
+        self._par_dict = {}
         self._mapper_filename = 'par_keys.yaml'
         self._metadata_dict = OrderedDict()
         self._file_encoding = ''
@@ -118,7 +118,7 @@ class ESPWinEPRImporter(aspecd.io.DatasetImporter):
         if self._get_infofile_name() and os.path.exists(
                 self._get_infofile_name()[0]):
             return True
-        print('No infofile found for dataset %s, import continued without '
+        print(f'No infofile found for dataset %s, import continued without '
               'infofile.' % os.path.split(self.source)[1])
         return False
 
@@ -173,7 +173,7 @@ class ESPWinEPRImporter(aspecd.io.DatasetImporter):
         print(metadata_dict['temperature_control'])
         if 'value'not in metadata_dict['temperature_control'][
             'temperature'].keys() or metadata_dict['temperature_control'][
-            'temperature']['value'] == 0:
+                                     'temperature']['value'] == 0:
             metadata_dict.pop('temperature_control')
         return metadata_dict
 
@@ -270,4 +270,3 @@ class ESPWinEPRImporter(aspecd.io.DatasetImporter):
     def _get_number_of_points(self):
         self.dataset.metadata.magnetic_field.points = len(
             self.dataset.data.data)
-

@@ -87,7 +87,7 @@ class TestFieldCalibration(unittest.TestCase):
     def test_perform_returns_correct_value(self):
         self.dataset.data.data = self.data
         self.dataset.data.axes[0].values = np.linspace(
-            self.center_field-1, self.center_field+1, len(self.data)
+            self.center_field - 1, self.center_field + 1, len(self.data)
         )
         self.dataset.metadata.bridge.mw_frequency.value = self.mw_frequency
         self.analysis.parameters["standard"] = self.standard
@@ -97,7 +97,7 @@ class TestFieldCalibration(unittest.TestCase):
     def test_result_has_correct_sign(self):
         self.dataset.data.data = self.data
         self.dataset.data.axes[0].values = np.linspace(
-            self.center_field-1, self.center_field+2, len(self.data)
+            self.center_field - 1, self.center_field + 2, len(self.data)
         )
         self.dataset.metadata.bridge.mw_frequency.value = self.mw_frequency
         self.analysis.parameters["standard"] = self.standard
