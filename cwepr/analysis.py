@@ -725,6 +725,7 @@ class FitOnData(aspecd.analysis.SingleAnalysisStep):
         Rewrite to perform fits with fixed intercept, remove parameter
         "add_origin", introduced "fixed_intercerpt".
         Return coefficients in order of increasing degree
+
     """
 
     def __init__(self):
@@ -853,8 +854,8 @@ class PtpVsModAmp(aspecd.analysis.SingleAnalysisStep):
     def _get_linewidths(self):
         index_max = np.argmax(self.dataset.data.data, axis=0)
         index_min = np.argmin(self.dataset.data.data, axis=0)
-        self.linewidths = self.dataset.data.axes[0].values[index_min] \
-                          - self.dataset.data.axes[0].values[index_max]
+        self.linewidths = self.dataset.data.axes[0].values[index_min] - \
+                          self.dataset.data.axes[0].values[index_max]
 
     def _fill_dataset(self):
         self.result.data.data = self.linewidths

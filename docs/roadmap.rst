@@ -18,6 +18,8 @@ For version 0.3
 
 * Handling of file extensions during import: Currently, they are cut in the init and again appended afterwards. The factory only gives source names without extension.
 
+* Implement handling of "RT" as temperature value in the infofile.
+
 * Logging
 
 * Reorganise templates for reports, according to the directory layout proposed by aspecd (see :mod:`aspecd.report` for details).

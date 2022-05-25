@@ -4,6 +4,17 @@ Changelog
 
 This page contains a summary of changes between the official cwepr releases. Only the biggest changes are listed here. A complete and detailed log of all changes is available through the `GitHub Repository Browser <https://github.com/tillbiskup/cwepr/commits/master>`_.
 
+Version 0.3
+=============
+
+Not yet released
+
+New features
+------------
+
+* Add linear fit with fixed intercept to FitOnData, renamed function accordingly. (0719809a22)
+
+
 Version 0.2.1
 =============
 

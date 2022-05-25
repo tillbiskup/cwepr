@@ -87,7 +87,7 @@ class TestFieldCalibration(unittest.TestCase):
     def test_perform_returns_correct_value(self):
         self.dataset.data.data = self.data
         self.dataset.data.axes[0].values = np.linspace(
-            self.center_field-1, self.center_field+1, len(self.data)
+            self.center_field - 1, self.center_field + 1, len(self.data)
         )
         self.dataset.metadata.bridge.mw_frequency.value = self.mw_frequency
         self.analysis.parameters["standard"] = self.standard
@@ -97,7 +97,7 @@ class TestFieldCalibration(unittest.TestCase):
     def test_result_has_correct_sign(self):
         self.dataset.data.data = self.data
         self.dataset.data.axes[0].values = np.linspace(
-            self.center_field-1, self.center_field+2, len(self.data)
+            self.center_field - 1, self.center_field + 2, len(self.data)
         )
         self.dataset.metadata.bridge.mw_frequency.value = self.mw_frequency
         self.analysis.parameters["standard"] = self.standard
@@ -191,8 +191,8 @@ class TestFitOnData(unittest.TestCase):
         self.assertAlmostEqual(4, analysis.result[0])
 
     def test_fixed_offset_with_offset_zero(self):
-        self.dataset.data.data = np.asarray([0.45,1,2,3,4,5])
-        self.dataset.data.axes[0].values = np.asarray([0.5,1,2,3,4,5])
+        self.dataset.data.data = np.asarray([0.45, 1, 2, 3, 4, 5])
+        self.dataset.data.axes[0].values = np.asarray([0.5, 1, 2, 3, 4, 5])
         self.analysator.parameters['fixed_intercept'] = True
         res = self.dataset.analyse(self.analysator)
         self.assertAlmostEqual(res.result[1], 1, 2)
@@ -200,30 +200,30 @@ class TestFitOnData(unittest.TestCase):
         self.assertEqual(res.result[0], 0)
 
     def test_fixed_offset_with_offset_non_zero(self):
-        self.dataset.data.data = np.asarray([1.4,2,3,4,5,6])
-        self.dataset.data.axes[0].values = np.asarray([0.5,1,2,3,4,5])
+        self.dataset.data.data = np.asarray([1.4, 2, 3, 4, 5, 6])
+        self.dataset.data.axes[0].values = np.asarray([0.5, 1, 2, 3, 4, 5])
         self.analysator.parameters['fixed_intercept'] = True
         self.analysator.parameters['offset'] = 1
         res = self.dataset.analyse(self.analysator)
-        self.assertAlmostEqual(res.result[1], 1,2)
+        self.assertAlmostEqual(res.result[1], 1, 2)
         self.assertEqual(res.result[0], 1)
 
     def test_fixed_offset_with_offset_zero_return_pol_coeffs(self):
-        self.dataset.data.data = np.asarray([0.45,1,2,3,4,5])
-        self.dataset.data.axes[0].values = np.asarray([0.5,1,2,3,4,5])
+        self.dataset.data.data = np.asarray([0.45, 1, 2, 3, 4, 5])
+        self.dataset.data.axes[0].values = np.asarray([0.5, 1, 2, 3, 4, 5])
         self.analysator.parameters['fixed_intercept'] = True
         self.analysator.parameters['polynomial_coefficients'] = True
         res = self.dataset.analyse(self.analysator)
         self.assertIsInstance(res.result, list)
 
     def test_fit_returns_calculated_dataset_of_linear_slope(self):
-        self.dataset.data.data = np.asarray([0.45,1,2,3,4,5])
-        self.dataset.data.axes[0].values = np.asarray([0.5,1,2,3,4,5])
+        self.dataset.data.data = np.asarray([0.45, 1, 2, 3, 4, 5])
+        self.dataset.data.axes[0].values = np.asarray([0.5, 1, 2, 3, 4, 5])
         self.analysator.parameters['fixed_intercept'] = True
         self.analysator.parameters['return_type'] = 'dataset'
         analysis = self.dataset.analyse(self.analysator)
         self.assertEqual(aspecd.dataset.CalculatedDataset,
-                        type(analysis.result))
+                         type(analysis.result))
         self.assertEqual(len(self.dataset.data.axes[0].values),
                          analysis.result.data.data.shape[0])
 
