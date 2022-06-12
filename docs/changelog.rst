@@ -42,7 +42,7 @@ New features
 * Importer for Bruker EMX/ESP file format (.par/.spc)
 * *g* value can be provided for :class:`cwepr.analysis.FieldCalibration`
 * New module :mod:`utils` for general-purpose functions regarding cw-EPR spectroscopy
-* Functions :func:`cwepr.utils.convert_g2mT` and :func:`cwepr.utils.convert_mT2g` to convert between magnetic field values (in mT) and g values
+* Functions :func:`cwepr.utils.convert_g2mT` and :func:`cwepr.utils.convert_mT2g` to convert between magnetic field values (in mT) and *g* values
 * Plotters can add *g* axis as second axis opposite the magnetic field axis.
 * :class:`cwepr.plotting.PowerSweepAnalysisPlotter` for graphical representation of power saturation curves including a second axis with the actual microwave power.
 * List of example recipes, available both in the source repository and from the documentation.
