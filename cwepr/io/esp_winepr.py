@@ -162,14 +162,25 @@ class ESPWinEPRImporter(aspecd.io.DatasetImporter):
             'cwepr@io/' + self._mapper_filename).encode())
         metadata_dict = {}
         metadata_dict = self._traverse(yaml_file.dict, metadata_dict)
+        #metadata_dict = self._check_if_temperature_empty(metadata_dict)
         aspecd.utils.copy_keys_between_dicts(metadata_dict, self._metadata_dict)
         aspecd.utils.copy_values_between_dicts(metadata_dict,
                                                self._metadata_dict)
         self._extract_datetime()
 
+    # TODO: Implement handling of "RT" in temperature value
+    def _check_if_temperature_empty(self, metadata_dict):
+        print(metadata_dict['temperature_control'])
+        if 'value'not in metadata_dict['temperature_control'][
+            'temperature'].keys() or metadata_dict['temperature_control'][
+            'temperature']['value'] == 0:
+            metadata_dict.pop('temperature_control')
+        return metadata_dict
+
     def _extract_datetime(self):
         start_date = self._try_parsing_date()
-        self._metadata_dict['measurement'] = {}
+        if 'measurement' not in self._metadata_dict.keys():
+            self._metadata_dict['measurement'] = {}
         self._metadata_dict['measurement']['start'] = str(start_date)
         if 'end' not in self._metadata_dict['measurement'].keys():
             self._metadata_dict['measurement']['end'] = \
@@ -194,6 +205,8 @@ class ESPWinEPRImporter(aspecd.io.DatasetImporter):
                 self._traverse(value, metadata_dict[key])
             elif value in self._par_dict.keys():
                 metadata_dict[key] = self._par_dict[value]
+            elif key == 'specified_unit':
+                metadata_dict['unit'] = value
         return metadata_dict
 
     def _ensure_common_units(self):
@@ -257,3 +270,4 @@ class ESPWinEPRImporter(aspecd.io.DatasetImporter):
     def _get_number_of_points(self):
         self.dataset.metadata.magnetic_field.points = len(
             self.dataset.data.data)
+

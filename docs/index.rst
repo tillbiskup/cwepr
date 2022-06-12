@@ -80,9 +80,11 @@ And to make it even more convenient for users and future-proof:
 How to cite
 ===========
 
-cwepr is free software. However, if you use cwepr for your own research, please cite it appropriately:
+cwepr is free software. However, if you use cwepr for your own research, please cite both, the article describing it and the software itself:
 
-Mirjam Schröder, Till Biskup. cwepr (2021). `doi:10.5281/zenodo.4896687 <https://doi.org/10.5281/zenodo.4896687>`_
+  * Mirjam Schröder, Till Biskup. cwepr -- a Python package for analysing cw-EPR data focussing on reproducibility and simple usage. *Journal of Magnetic Resonance* **335**:107140, 2022. `doi:10.1016/j.jmr.2021.107140 <https://doi.org/10.1016/j.jmr.2021.107140>`_
+
+  * Mirjam Schröder, Till Biskup. cwepr (2021). `doi:10.5281/zenodo.4896687 <https://doi.org/10.5281/zenodo.4896687>`_
 
 To make things easier, cwepr has a `DOI <https://doi.org/10.5281/zenodo.4896687>`_ provided by `Zenodo <https://zenodo.org/>`_, and you may click on the badge below to directly access the record associated with it. Note that this DOI refers to the package as such and always forwards to the most current version.
 
@@ -124,6 +126,10 @@ There is a number of related packages users of the cwepr package may well be int
 * `trepr <https://docs.trepr.de/>`_
 
   Package for processing and analysing time-resolved electron paramagnetic resonance (TREPR) data, originally developed by J. Popp, currently developed and maintained by M. Schröder and T. Biskup.
+
+* `FitPy <https://docs.fitpy.de/>`_
+
+  Framework for the advanced fitting of models to spectroscopic data focussing on reproducibility, developed by T. Biskup.
 
 You may as well be interested in the `LabInform project <https://www.labinform.de/>`_ focussing on the necessary more global infrastructure in a laboratory/scientific workgroup interested in more `reproducible research <https://www.reproducible-research.de/>`_. In short, LabInform is "The Open-Source Laboratory Information System".
 

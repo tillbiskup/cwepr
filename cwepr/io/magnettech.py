@@ -126,6 +126,7 @@ class MagnettechXMLImporter(aspecd.io.DatasetImporter):
     def _get_raw_data(self):
         self._xvalues = \
             self._convert_base64string_to_np_array(self.root[0][0][1][0].text)
+        # TODO: Not take last element but first harmonic (or so)
         self._yvalues = \
             self._convert_base64string_to_np_array(self.root[0][0][1][-1].text)
 
@@ -288,13 +289,19 @@ class GoniometerSweepImporter(aspecd.io.DatasetImporter):
         Metadata are only taken from the infofile, ignoring the (much likely
         more accurate) xml-file metadata.
 
+    Attributes
+    ----------
+    load_infofile: :class:`bool`
+        Skips import of infofile if set to False.
+
     """
 
     def __init__(self, source=''):
         super().__init__(source=source)
-        self._infofile = aspecd.infofile.Infofile()
         self.dataset = cwepr.dataset.ExperimentalDataset()
         self.filenames = None
+        self.load_infofile = True
+        self._infofile = aspecd.infofile.Infofile()
         self._data = None
         self._angles = []
 
@@ -374,8 +381,19 @@ class GoniometerSweepImporter(aspecd.io.DatasetImporter):
             All information from the xml-file are completely ignored.
 
         """
-        self._load_infofile()
-        self._map_infofile()
+        # First import metadata from infofile, then override hand-written
+        # information by metadata from xml-file. The order matters.
+        if self.load_infofile and self._infofile_exists():
+            self._load_infofile()
+            self._map_infofile()
+
+    def _infofile_exists(self):
+        if self._get_infofile_name() and os.path.exists(
+                self._get_infofile_name()[0]):
+            return True
+        print('No infofile found for dataset %s, import continued without '
+              'infofile.' % os.path.split(self.source)[1])
+        return False
 
     def _load_infofile(self):
         """Import infofile and parse it."""

@@ -16,6 +16,7 @@ similarly versioned as the basic format.
 import glob
 import os
 import re
+from collections import OrderedDict
 
 import numpy as np
 
@@ -45,6 +46,7 @@ class BES3TImporter(aspecd.io.DatasetImporter):
 
     def __init__(self, source=None):
         super().__init__(source=source)
+        self._metadata_dict = OrderedDict()
         self.load_infofile = True
         # private properties
         self._infofile = aspecd.infofile.Infofile()
@@ -129,9 +131,13 @@ class BES3TImporter(aspecd.io.DatasetImporter):
         yaml_file = aspecd.utils.Yaml()
         rootpath = os.path.split(os.path.abspath(__file__))[0]
         yaml_file.read_from(os.path.join(rootpath, self._mapper_filename))
-        metadata_dict = {}
-        metadata_dict = self._traverse(yaml_file.dict, metadata_dict)
-        self.dataset.metadata.from_dict(metadata_dict)
+        dsc_metadata_dict = {}
+        dsc_metadata_dict = self._traverse(yaml_file.dict, dsc_metadata_dict)
+        aspecd.utils.copy_keys_between_dicts(dsc_metadata_dict,
+                                             self._metadata_dict)
+        aspecd.utils.copy_values_between_dicts(dsc_metadata_dict,
+                                               self._metadata_dict)
+        self.dataset.metadata.from_dict(self._metadata_dict)
 
     def _traverse(self, dict_, metadata_dict):
         for key, value in dict_.items():
@@ -140,6 +146,8 @@ class BES3TImporter(aspecd.io.DatasetImporter):
                 self._traverse(value, metadata_dict[key])
             elif value in self._dsc_dict.keys():
                 metadata_dict[key] = self._dsc_dict[value]
+            elif key == 'specified_unit':
+                metadata_dict['unit'] = value
         return metadata_dict
 
     def _fill_axes(self):
@@ -192,7 +200,8 @@ class BES3TImporter(aspecd.io.DatasetImporter):
         mapper.metadata = self._infofile.parameters
         mapper.recipe_filename = 'cwepr@metadata_mapper_cwepr.yaml'
         mapper.map()
-        self.dataset.metadata.from_dict(mapper.metadata)
+        self._metadata_dict = aspecd.utils.convert_keys_to_variable_names(
+            mapper.metadata)
 
     def _map_infofile(self):
         """Bring the metadata to a given format."""
@@ -207,13 +216,23 @@ class BES3TImporter(aspecd.io.DatasetImporter):
         DSC-file, some units are wrong and are corrected manually here.
         """
         # microwave frequency
-        if self.dataset.metadata.bridge.mw_frequency.value > 50:
+        if self.dataset.metadata.bridge.mw_frequency.unit == 'Hz':
             self.dataset.metadata.bridge.mw_frequency.value /= 1e9
             self.dataset.metadata.bridge.mw_frequency.unit = 'GHz'
         # microwave power
-        if self.dataset.metadata.bridge.power.value < 0.001:
+        if self.dataset.metadata.bridge.power.unit == 'W':
             self.dataset.metadata.bridge.power.value *= 1e3
             self.dataset.metadata.bridge.power.unit = 'mW'
+        # time objects
+        objects_ = ('conversion_time', 'time_constant')
+        for object_ in objects_:
+            time_object = getattr(
+                self.dataset.metadata.signal_channel, object_)
+            if time_object.unit == 's':
+                time_object.value *= 1e3
+                time_object.unit = 'ms'
+            setattr(self.dataset.metadata.magnetic_field, object_,
+                    time_object)
         # magnetic field objects
         objects_ = ('start', 'stop', 'sweep_width')
         for object_ in objects_:
@@ -222,21 +241,25 @@ class BES3TImporter(aspecd.io.DatasetImporter):
             if magnetic_field_object.unit == 'G':
                 magnetic_field_object.value /= 10
                 magnetic_field_object.unit = 'mT'
-            setattr(
-                self.dataset.metadata.magnetic_field, object_,
-                magnetic_field_object)
+            setattr(self.dataset.metadata.magnetic_field, object_,
+                    magnetic_field_object)
         # axes
-        self.dataset.data.axes[0].values /= 10
-        self.dataset.data.axes[0].unit = 'mT'
+        if self.dataset.data.axes[0].unit == 'G':
+            self.dataset.data.axes[0].values /= 10
+            self.dataset.data.axes[0].unit = 'mT'
         # modulation frequency
-        if self.dataset.metadata.signal_channel.modulation_frequency.value > \
-                100:
+        if self.dataset.metadata.signal_channel.modulation_frequency.unit ==\
+                'Hz':
             self.dataset.metadata.signal_channel.modulation_frequency.value \
                 /= 1e3
             self.dataset.metadata.signal_channel.modulation_frequency.unit = \
                 'kHz'
-        self.dataset.metadata.signal_channel.modulation_amplitude.value *= 1e3
-        self.dataset.metadata.signal_channel.modulation_amplitude.unit = 'mT'
+        if self.dataset.metadata.signal_channel.modulation_amplitude.unit == \
+                'T':
+            self.dataset.metadata.signal_channel.modulation_amplitude.value \
+                *= 1e3
+            self.dataset.metadata.signal_channel.modulation_amplitude.unit = \
+                'mT'
 
     def _check_experiment(self):
         if self._dsc_dict['EXPT'] != 'CW':

@@ -1,16 +1,25 @@
-"""
-Exporters for datasets.
+"""Exporters for both, whole datasets as well as data alone.
 
-Similarly to the need for importers supporting text and CSV files
-(:mod:`cwepr.io.txt_file`), exporting to text files allows for exchanging
-data with other software.
 
-The exporters provided in this module not only export the data, but the
-metadata contained in a dataset as well, using the YAML file format for the
-metadata.
+Exporters
+=========
 
-.. note::
-    Not tested.
+There are two different general types of exporters provided: Exporters for
+whole datasets i.e. data with their according metadata and exporters for data
+only.
+
+    .. warning::
+        All metadata contained within a dataset (including the full history)
+        are lost when exporting to plain text. Therefore, using this
+        exporter will usually result in you loosing reproducibility. Hence,
+        better think twice before using this exporter and use entirely on
+        your own risk and only if you *really* know what you are doing (and
+        why).
+
+For further details and a comprehensive summary of data export, the reader is referred to the aspecd-documentation (:mod:`aspecd.io`).
+
+If you want to export data to a txt-file, you might want to use the
+:class:`aspecd.io.TxtExporter`.
 
 """
 import collections
@@ -28,6 +37,26 @@ class ASCIIExporter(aspecd.io.DatasetExporter):
     respective metadata is exported into a YAML file using the functionality
     provided by aspecd. Metadata residing there as an object of the class
     :class:`numpy.ndarray` are converted into lists.
+
+    A simple example for its usage looks like this:
+
+    .. code-block:: yaml
+
+    datasets:
+      - /path/to/first/dataset
+      - /path/to/second/dataset
+
+    tasks:
+      - kind: export
+        type: ASCIIExporter
+        properties:
+          target:
+            - dataset1
+            - dataset2
+
+
+    .. note::
+        Not tested.
     """
 
     def __init__(self):

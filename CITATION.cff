@@ -1,5 +1,20 @@
 cff-version: 1.2.0
-message: If you use this software, please cite it using these metadata.
+message: "If you use this software, please cite both the article from preferred-citation and the software itself."
+preferred-citation:
+  authors:
+    - family-names: Schröder
+      given-names: Mirjam
+      orcid: "https://orcid.org/0000-0002-8940-3185"
+    - family-names: Biskup
+      given-names: Till
+      orcid: "https://orcid.org/0000-0003-2913-0004"
+  title: "cwepr - a Python package for analysing cw-EPR data focussing on reproducibility and simple usage"
+  doi: 10.1016/j.jmr.2021.107140
+  journal: "Journal of Magnetic Resonance"
+  pages: 107140
+  volume: 335
+  year: 2022
+  type: article
 title: cwepr
 abstract: >
     cwepr is a Python package for processing and analysis of continuous-wave electron paramagnetic resonance (cw-EPR) spectra based on the ASpecD framework and focussing on reproducibility. In short: Each and every processing step applied to your data will be recorded and can be traced back, and additionally, for each representation of your data (e.g., figures, tables) you can easily follow how the data shown have been processed and where they originate from.

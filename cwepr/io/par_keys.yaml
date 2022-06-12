@@ -14,19 +14,25 @@ magnetic_field:
 bridge:
   power:
     value: MP
+    specified_unit: mW
   mw_frequency:
     value: MF
+    specified_unit: GHz
 signal_channel:
   accumulations: JSD
   receiver_gain:
     value: RRG
   conversion_time:
     value: RCT
+    specified_unit: ms
   time_constant:
     value: RTC
+    specified_unit: ms
   modulation_amplitude:
     value: RMA
+    specified_unit: G
 temperature_control:
   temperature:
     value: TE
+    specified_unit: K
 

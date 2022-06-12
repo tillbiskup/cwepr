@@ -145,3 +145,12 @@ class TestGoniometerSweepImporter(unittest.TestCase):
         self.dataset.import_from(self.goniometer_importer)
         q_value = self.dataset.metadata.bridge.q_value
         self.assertIsInstance(q_value, float)
+
+    def test_import_with_no_infofile_continues(self):
+        source = os.path.join(ROOTPATH, 'testdata/magnettech-goniometer')
+        with tempfile.TemporaryDirectory() as testdir:
+            new_source = os.path.join(testdir, 'test-wo-infofile')
+            shutil.copytree(source, new_source)
+            importer = cwepr.io.magnettech.GoniometerSweepImporter(
+                source=new_source)
+            self.dataset.import_from(importer)

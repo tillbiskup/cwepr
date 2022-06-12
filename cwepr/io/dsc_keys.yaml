@@ -17,20 +17,27 @@ bridge:
   attenuation: PowerAtten
   power:
     value: MWPW
+    specified_unit: W
   mw_frequency:
     value: MWFQ
+    specified_unit: Hz
   q_value: QValue
 signal_channel:
   accumulations: AVGS
   modulation_frequency:
     value: B0MF
+    specified_unit: Hz
   modulation_amplitude:
     value: B0MA
+    specified_unit: T
   receiver_gain:
     value: RCAG
+    specified_unit: dB
   conversion_time:
     value: SPTP
+    specified_unit: s
   time_constant:
     value: RCTC
+    specified_unit: s
   phase:
     value: RCPH

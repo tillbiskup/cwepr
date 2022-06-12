@@ -78,3 +78,19 @@ class TestESPWinEPRImporter(unittest.TestCase):
         importer = cwepr.io.esp_winepr.ESPWinEPRImporter(source=self.sources[2])
         self.dataset.import_from(importer)
         self.assertTrue(self.dataset.metadata.bridge.mw_frequency.value)
+
+    def test_operator_is_written_from_infofile(self):
+        importer = cwepr.io.esp_winepr.ESPWinEPRImporter(source=self.sources[1])
+        self.dataset.import_from(importer)
+        self.assertTrue(self.dataset.metadata.measurement.operator)
+        self.assertTrue(self.dataset.metadata.measurement.purpose)
+        self.assertTrue(self.dataset.metadata.experiment.type)
+        self.assertTrue(self.dataset.metadata.probehead.type)
+        self.assertTrue(self.dataset.metadata.temperature_control.temperature
+                        .value)
+
+    def test_mod_amp_has_unit(self):
+        importer = cwepr.io.esp_winepr.ESPWinEPRImporter(source=self.sources[1])
+        self.dataset.import_from(importer)
+        self.assertEqual(
+            self.dataset.metadata.signal_channel.modulation_amplitude.unit, 'G')
