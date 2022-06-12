@@ -118,8 +118,8 @@ class ESPWinEPRImporter(aspecd.io.DatasetImporter):
         if self._get_infofile_name() and os.path.exists(
                 self._get_infofile_name()[0]):
             return True
-        print(f'No infofile found for dataset %s, import continued without '
-              'infofile.' % os.path.split(self.source)[1])
+        print(f'No infofile found for dataset {os.path.split(self.source)[1]}, '
+              f'import continued without infofile.')
         return False
 
     def _load_infofile(self):
@@ -169,7 +169,8 @@ class ESPWinEPRImporter(aspecd.io.DatasetImporter):
         self._extract_datetime()
 
     # TODO: Implement handling of "RT" in temperature value
-    def _check_if_temperature_empty(self, metadata_dict):
+    @staticmethod
+    def _check_if_temperature_empty(metadata_dict):
         print(metadata_dict['temperature_control'])
         if 'value'not in metadata_dict['temperature_control'][
             'temperature'].keys() or metadata_dict['temperature_control'][
