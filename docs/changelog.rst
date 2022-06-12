@@ -18,9 +18,16 @@ New features
 Version 0.2.1
 =============
 
-Not yet released
+Released 2022-06-12
 
-The following bugs have been fixed:
+New features
+------------
+
+* Reference to publication in documentation and colophon of reports.
+
+
+Fixes
+-----
 
 * Import units correctly using the BES3T importer.
 * Magnettech goniometer sweep importer handles situation without info file.
