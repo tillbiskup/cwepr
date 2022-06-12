@@ -41,17 +41,17 @@ class ASCIIExporter(aspecd.io.DatasetExporter):
 
     .. code-block:: yaml
 
-    datasets:
-      - /path/to/first/dataset
-      - /path/to/second/dataset
+        datasets:
+          - /path/to/first/dataset
+          - /path/to/second/dataset
 
-    tasks:
-      - kind: export
-        type: ASCIIExporter
-        properties:
-          target:
-            - dataset1
-            - dataset2
+        tasks:
+          - kind: export
+            type: ASCIIExporter
+            properties:
+              target:
+                - dataset1
+                - dataset2
 
 
     .. note::
