@@ -54,7 +54,7 @@ class MagnettechXMLImporter(aspecd.io.DatasetImporter):
     """Import cw-EPR raw data from the Magnettech benchtop spectrometer.
 
     Magnettech provides a XML-file with the results. Specialities of this
-    format are existing and will be briefly explained: The data is coded in
+    format are existing and will be briefly explained: The data is encoded in
     hex numbers, and the *y* axis consists of 10 times more points than the
     *y* axis. Therefore, an interpolation is needed to expand the axis to the
     necessary amount of points.

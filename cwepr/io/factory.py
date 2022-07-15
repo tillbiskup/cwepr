@@ -46,7 +46,7 @@ class DatasetImporterFactory(aspecd.io.DatasetImporterFactory):
                                   "ESPWinEPR": [".spc", ".par"],
                                   "MagnettechXML": [".xml"],
                                   "Txt": [".txt"],
-                                  "Csv": [".csv"]}
+                                  }
         self.data_format = None
 
     def _get_importer(self):
