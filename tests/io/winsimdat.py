@@ -1,18 +1,18 @@
 import unittest
 import os
 
-import cwepr.io.american_format
+import cwepr.io.winsimdat
 import cwepr.dataset
 
 
 ROOTPATH = os.path.split(os.path.abspath(__file__))[0]
 
 
-class MyTestCase(unittest.TestCase):
+class WinSimDatImporter(unittest.TestCase):
 
     def setUp(self):
         source = os.path.join(ROOTPATH, 'testdata/Pyrene')
-        self.importer = cwepr.io.american_format.AmericanImporter(source=source)
+        self.importer = cwepr.io.winsimdat.WinSimDatImporter(source=source)
         self.dataset = cwepr.dataset.ExperimentalDataset()
 
     def test_class_exists(self):
@@ -37,8 +37,17 @@ class MyTestCase(unittest.TestCase):
                          len(self.dataset.data.axes[0].values))
         self.assertNotEqual(0, self.dataset.data.axes[0].values[0])
 
+    def test_axis_has_unit(self):
+        self.dataset.import_from(self.importer)
+        self.assertEqual('mT', self.dataset.data.axes[0].unit)
 
-        import matplotlib.pyplot as plt
-        plt.plot(self.dataset.data.axes[0].values,
-                 self.dataset.data.data)
-        plt.show()
+    def test_metadata_points(self):
+        self.dataset.import_from(self.importer)
+        self.assertEqual(int, type(self.dataset.metadata.magnetic_field.points))
+        self.assertNotEqual(0, self.dataset.metadata.magnetic_field.points)
+
+    def test_metadata_magnetic_field(self):
+        self.dataset.import_from(self.importer)
+        self.assertEqual('mT',
+                         self.dataset.metadata.magnetic_field.start.unit)
+        self.assertNotEqual(0, self.dataset.metadata.magnetic_field.start.value)
