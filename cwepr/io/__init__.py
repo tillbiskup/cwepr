@@ -25,4 +25,5 @@ from .magnettech import MagnettechXMLImporter, GoniometerSweepImporter
 from .txt_file import TxtImporter
 from .bes3t import BES3TImporter
 from .esp_winepr import ESPWinEPRImporter
+from .winsimdat import WinSimDatImporter
 from .exporter import ASCIIExporter, MetadataExporter

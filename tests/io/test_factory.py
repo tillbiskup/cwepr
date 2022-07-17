@@ -50,3 +50,8 @@ class TestDatasetImporterFactory(unittest.TestCase):
         source = 'test.adf'
         importer = self.factory.get_importer(source=source)
         self.assertIsInstance(importer, aspecd.io.AdfImporter)
+
+    def test_winsimdat_file_returns_correct_importer(self):
+        source = os.path.join(ROOTPATH, 'testdata', 'Pyrene.dat')
+        importer = self.factory.get_importer(source=source)
+        self.assertIsInstance(importer, cwepr.io.WinSimDatImporter)
