@@ -13,6 +13,6 @@ cwepr.io package
    cwepr.io.bes3t
    cwepr.io.esp_winepr
    cwepr.io.magnettech
-   cwepr.io.winsimdat
+   cwepr.io.niehs
    cwepr.io.txt_file
    cwepr.io.exporter

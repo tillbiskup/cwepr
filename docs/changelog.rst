@@ -13,7 +13,7 @@ New features
 ------------
 
 * Add linear fit with fixed intercept to FitOnData, renamed function accordingly. (0719809a22)
-* Importer for WinSim 2002 dat files
+* Importer for NIEHS dat files
 
 
 Version 0.2.1

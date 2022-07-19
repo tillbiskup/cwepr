@@ -1,18 +1,18 @@
 import unittest
 import os
 
-import cwepr.io.winsimdat
+import cwepr.io.niehs
 import cwepr.dataset
 
 
 ROOTPATH = os.path.split(os.path.abspath(__file__))[0]
 
 
-class WinSimDatImporter(unittest.TestCase):
+class TestNIEHSDatImporter(unittest.TestCase):
 
     def setUp(self):
         source = os.path.join(ROOTPATH, 'testdata/Pyrene')
-        self.importer = cwepr.io.winsimdat.WinSimDatImporter(source=source)
+        self.importer = cwepr.io.niehs.NIEHSDatImporter(source=source)
         self.dataset = cwepr.dataset.ExperimentalDataset()
 
     def test_class_exists(self):

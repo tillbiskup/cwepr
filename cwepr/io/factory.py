@@ -45,7 +45,7 @@ class DatasetImporterFactory(aspecd.io.DatasetImporterFactory):
         self.supported_formats = {"BES3T": [".DTA", ".DSC"],
                                   "ESPWinEPR": [".spc", ".par"],
                                   "MagnettechXML": [".xml"],
-                                  "WinSimDat": [".dat"],
+                                  "NIEHSDat": [".dat"],
                                   "Txt": [".txt"],
                                   }
         self.data_format = None
