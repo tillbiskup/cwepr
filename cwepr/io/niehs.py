@@ -1,4 +1,12 @@
-r"""
+r"""Importers for the NIEHS PEST file formats.
+
+.. sidebar:: Contents
+
+    .. contents::
+        :local:
+        :depth: 1
+
+
 The US National Institute of Environmental Health Sciences (NIEHS) provides
 a collection of public epr software tools, abbreviated PEST. With those
 software tools comes a collection of file formats used internally,
@@ -277,6 +285,51 @@ authors, namely Dave Duling (duling@niehs.nih.gov).
 To import files in this format, use the :class:`NIEHSLmbImporter`. Within
 a recipe, the :class:`cwepr.io.factory.DatasetImporterFactory` should
 automatically select the correct importer for you.
+
+
+.. _exp_format:
+
+NIEHS ASCII text format (.exp)
+==============================
+
+This text file format is actually a series of different formats, just to
+make life easier. The most basic format simply contains (usually two)
+columns with numerical data, but there are other versions as well with
+additional parameters on top.
+
+Two examples available from the NIEHS PEST website are given below,
+representing at least two different variants of this format.
+
+
+.. code-block::
+    :caption: Plain text format containing only columns of data. This
+        format is obviously trivial to read. The only tricky part for the
+        importer is to distinguish it from the more detailed format shown
+        below.
+
+    3290.000	-1.5689E+01
+    3290.945	1.5251E+01
+    3291.890	2.8689E+00
+
+.. code-block::
+    :caption: Text format with additional parameters at the top.
+        Presumably the first block contains some description of the data,
+        *e.g.* related to a simulation. However, the NIEHS PEST website
+        does not provide too much details.
+
+    [EPR]
+    N1: DMPO_OOH_OH spectrum S/N=5 with J.Bolton parameters
+    N2: DMPO_OH:  aN= 15.3, aH= 15.3, 0.61, 0.25
+    N3: DMPO_OOH: aN= 14.9, aH= 14.9
+
+    [DATA]
+    3295.10	-0.283
+    3295.16	1.523
+    3295.22	-0.964
+
+
+.. todo::
+    Implement importer for this format series
 
 
 .. _dat_format:
