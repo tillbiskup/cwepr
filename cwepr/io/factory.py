@@ -46,6 +46,7 @@ class DatasetImporterFactory(aspecd.io.DatasetImporterFactory):
                                   "ESPWinEPR": [".spc", ".par"],
                                   "MagnettechXML": [".xml"],
                                   "NIEHSDat": [".dat"],
+                                  "NIEHSLmb": [".lmb"],
                                   "Txt": [".txt"],
                                   }
         self.data_format = None

@@ -55,3 +55,8 @@ class TestDatasetImporterFactory(unittest.TestCase):
         source = os.path.join(ROOTPATH, 'testdata', 'Pyrene.dat')
         importer = self.factory.get_importer(source=source)
         self.assertIsInstance(importer, cwepr.io.NIEHSDatImporter)
+
+    def test_niehslmb_file_returns_correct_importer(self):
+        source = os.path.join(ROOTPATH, 'testdata', 'dmpo.lmb')
+        importer = self.factory.get_importer(source=source)
+        self.assertIsInstance(importer, cwepr.io.NIEHSLmbImporter)

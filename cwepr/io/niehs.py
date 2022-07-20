@@ -1,4 +1,4 @@
-"""
+r"""
 The US National Institute of Environmental Health Sciences (NIEHS) provides
 a collection of public epr software tools, abbreviated PEST. With those
 software tools comes a collection of file formats used internally,
@@ -43,6 +43,288 @@ magnetic field (in Gauss), time (in seconds), or g value. Interestingly
 enough, though, the accepted input format is always two columns with
 first column interpreted as magnetic field values.
 
+Details of the individual file formats are given below. Eventually,
+it is planned to support all three mentioned file formats.
+
+
+.. _lmb_format:
+
+NIEHS exclusive binary format (.lmb)
+====================================
+
+This file format is a binary format exclusively implemented to be used
+with the NIEHS PEST suite. While it is somewhat documented, the best
+documentation is still the C source code of the importer used to read the
+format. Therefore, below a few more details will be given, together with
+the C code used to implement the respective importer.
+
+For authoritative details, the reader is referred to the following online
+sources:
+
+* https://www.niehs.nih.gov/research/resources/assets/docs/files.txt
+* https://www.niehs.nih.gov/research/resources/assets/docs/files.c
+* https://www.niehs.nih.gov/research/resources/assets/docs/constant.h
+* https://www.niehs.nih.gov/research/resources/assets/docs/filename.h
+
+
+General file architecture
+-------------------------
+
+The sequence of contents of a file in this format is as follows:
+
+==========  =============  ===================================================
+Type        Length         Description
+==========  =============  ===================================================
+identifier  4 byte         either ``ESRS`` or ``ESR2``
+parameters  20x 4 byte     parameters, *e.g.*, for constructing field axis
+data        *N*\ x 4 byte  actual data, number of points in parameters[2]
+comment     60 byte        comment (in case of ``ESR2`` format, see below)
+metadata    20x 12 byte    metadata, *e.g.*, microwave frequency
+comments    2x 60 byte     additional comments in case of ``ESR2`` format
+==========  =============  ===================================================
+
+
+Parameter values
+----------------
+
+The parameters are not all used. The table below is extracted from the
+documentation available at the NIEHS website. Note: Due to a slightly
+strange way of using the loops in the original C source code (see below
+for details), the number of the parameters in the table below is offset by
+one. Furthermore, only those parameters with relevance for the import are
+described.
+
+=====  ====================================================================
+#      Description
+=====  ====================================================================
+0      sweep width (in Gauss)
+1      center field (in Gauss)
+2      number of points
+3-8    *unused here*
+9      scan time in seconds
+10-20  *unused here*
+=====  ====================================================================
+
+
+Metadata
+--------
+The metadata entries are not all used. The table below is extracted from the
+documentation available at the NIEHS website. Note: Due to a slightly
+strange way of using the loops in the original C source code (see below
+for details), the number of the metadata entries in the table below is
+offset by one. Furthermore, only those metadata with relevance for the
+import are described.
+
+=====  ====================================================================
+#      Description
+=====  ====================================================================
+0-1    *unused here*
+2      modulation amplitude
+3      modulation frequency
+4      time constant
+5      receiver gain
+6-7    *unused here*
+8      microwave power
+9      microwave frequency
+10     date (unclear which one: start, end, saving of data)
+11     time (unclear which one: start, end, saving of data)
+12     scan time in seconds
+13     sample temperature
+14-20  *unused here*
+=====  ====================================================================
+
+.. note::
+    Parameters 0-9 are typed in *manually*, therefore, never trust
+    these values. Furthermore, due to their human origin, sometimes, value and
+    unit are inconsistently separated (no separation, space, ...). Parameters
+    10-20 are read from the spectrometer control software. Nevertheless,
+    at least for the temperature, this does not mean that the field
+    necessarily contains sensible values.
+
+
+C code of NIEHS lmb importer (reference implementation)
+--------------------------------------------------------
+
+The C code shown below is abbreviated (only the important parts of the
+files are shown), and it is only for reference. For details, see the
+original sources available online from the NIEHS PEST website:
+
+* https://www.niehs.nih.gov/research/resources/assets/docs/files.c
+* https://www.niehs.nih.gov/research/resources/assets/docs/constant.h
+* https://www.niehs.nih.gov/research/resources/assets/docs/filename.h
+
+Furthermore, the copyright of the source code remains with its original
+authors, namely Dave Duling (duling@niehs.nih.gov).
+
+
+.. code-block:: c
+    :caption: Abbreviated contents of the ``files.c`` file containing the
+        PEST importer for lmb files. The source code of the two header files
+        used is given below.
+
+    /*
+       files.c
+       basic routines for reading and writing binary epr data files
+
+       updated to use the new binary file format with expanded comments
+    */
+
+    #include <stdio.h>
+    #include <string.h>
+    #include <math.h>
+
+    #include "constant.h"
+    #include "filename.h"
+
+    /**************************** READ FILE *****************************
+
+     Read data for an import.  Deals with fpar, fstring, fnote0, and data
+
+     return:   1 if error,   0 if no error.
+
+    */
+    int read_file( char *fname, double *ddata, float *fpar,
+                   char fstring[][STRSIZE], char *fnote0,
+                   char *fnote1, char *fnote2 )
+    {
+
+      FILE  *fp;
+      int   i, ip;
+      float fvalue;
+      char  gstring[13];
+
+      /* file not able to be read from */
+      if ((fp = fopen(fname, "rb")) == NULL)  return(1);
+
+      fread(gstring, 4, 1, fp);
+      gstring[4] = '\\0';
+
+      if( strcmp(gstring, FILE_1)!=0 && strcmp(gstring, FILE_2 )!=0 ) {
+         fclose(fp);
+         return(1);			/* Not correct info. so exit */
+      }
+
+      for(i = 1; i <= MAX_PAR; ++i) 	/* read data parameters */
+        fread(&fpar[i], 4, 1, fp);
+
+      if( (int) fpar[3] > MAX_PTS ) {	/* check # data points	*/
+        fclose(fp);
+        return(1);
+      }
+
+      for(i = 1; i <= (int)fpar[3]; ++i) {	/* read data values     */
+         fread(&fvalue, 4, 1, fp);
+         ddata[i] = (double) fvalue;
+      }
+
+      fread(fnote0, 60, 1, fp);		/* read comment         */
+
+      for(i = 1; i < STR_NUM ; ++i )	/* read strings         */
+        fread( fstring[i], 12, 1, fp );
+
+      if( strcmp(gstring, FILE_2)==0 ) {	/* read extra comments  */
+        fread( fnote1, 60, 1, fp );
+        fread( fnote2, 60, 1, fp );
+      }
+
+      fclose(fp);           /* close file           */
+      return(0);            /* return success flag  */
+
+    }  /* end of OPEN FILE */
+
+
+.. code-block:: c
+    :caption: Abbreviated contents of the ``constant.h`` file used in
+        ``files.c`` shown above.
+
+    /* constant.h
+
+    */
+
+    /* Define the number of datapoints based on the DOS restriction
+       of 64KB of memory in one allocation unit.  Otherwise, use
+       many more data points !
+    */
+    #ifdef DOS_LIMITED
+      #define MAX_PTS     4096
+      #define MAX_PTS2    2048
+    #else
+      #define MAX_PTS     16384
+      #define MAX_PTS2    8192
+    #endif
+
+    /* this data not platform dependent */
+
+    #define MAX_PAR     20
+    #define STR_NUM     20
+    #define STRSIZE     13
+    #define COMMENTSIZE 61
+
+
+.. code-block:: c
+    :caption: Abbreviated contents of the ``filename.h`` file used in
+        ``files.c`` shown above.
+
+    /* filename.h
+
+     Filename(s) & info constants
+    */
+
+    #define  FILE_1         "ESRS"
+    #define  FILE_2         "ESR2"
+
+
+To import files in this format, use the :class:`NIEHSLmbImporter`. Within
+a recipe, the :class:`cwepr.io.factory.DatasetImporterFactory` should
+automatically select the correct importer for you.
+
+
+.. _dat_format:
+
+ASCII HP-PC interchange format (.dat)
+=====================================
+
+This text file format is a rather simple file format with four header
+lines and only the intensities stored, but actually no metadata at all. An
+example is given below:
+
+.. code-block:: text
+
+    ESRFILE
+    50
+    3359.27
+    8192
+    -12.234
+       -5.48376
+       -2.22887
+       0.284066
+       -0.698693
+
+
+The first four lines have special meanings and are referred to as
+"header", the following lines (up to the end of the file) are the actual
+intensity values of the stored EPR spectrum.
+
+=======  ==============================================================
+Content  Description
+=======  ==============================================================
+ESRFILE  Identifier of the file type
+50       scan range in Gauss (here: 50 G)
+3359.27  center field in Gauss (here: 3359.27 G)
+8192     number of data points (here: 8192) - usually a power of two
+=======  ==============================================================
+
+As mentioned above, all following lines contain just the intensity
+values. Therefore, the importer needs to reconstruct the field axis
+from the center field and scan range values provided. No further
+metadata (such as microwave frequency) are available, therefore,
+the spectra usually cannot be analysed appropriately unless the
+missing information is provided by other means.
+
+To import files in this format, use the :class:`NIEHSDatImporter`. Within
+a recipe, the :class:`cwepr.io.factory.DatasetImporterFactory` should
+automatically select the correct importer for you.
+
 
 Module documentation
 ====================
@@ -62,41 +344,9 @@ class NIEHSDatImporter(aspecd.io.DatasetImporter):
 
     The text file format dealt with here is a rather simple file format
     with four header lines and only the intensities stored, but actually
-    no metadata at all. An example is given below:
+    no metadata at all.
 
-    .. code-block:: text
-
-        ESRFILE
-        50
-        3359.27
-        8192
-        -12.234
-           -5.48376
-           -2.22887
-           0.284066
-           -0.698693
-
-
-    The first four lines have special meanings and are referred to as
-    "header", the following lines (up to the end of the file) are the actual
-    intensity values of the stored EPR spectrum.
-
-    =======  ==============================================================
-    Content  Description
-    =======  ==============================================================
-    ESRFILE  Identifier of the file type
-    50       scan range in Gauss (here: 50 G)
-    3359.27  center field in Gauss (here: 3359.27 G)
-    8192     number of data points (here: 8192) - usually a power of two
-    =======  ==============================================================
-
-    As mentioned above, all following lines contain just the intensity
-    values. Therefore, the importer needs to reconstruct the field axis
-    from the center field and scan range values provided. No further
-    metadata (such as microwave frequency) are available, therefore,
-    the spectra usually cannot be analysed appropriately unless the
-    missing information is provided by other means.
-
+    For details of the file format, see the section :ref:`dat_format`.
 
     .. note::
         Due to the lack of any metadata of this format, the resulting
@@ -135,30 +385,30 @@ class NIEHSDatImporter(aspecd.io.DatasetImporter):
         self.dataset.data.data = self._raw_data[3:]
 
     def _create_axis(self):
-        self._raw_metadata['center_field_mT'] = center_field_mT =  \
-            self._raw_data[1]/10
-        self._raw_metadata['number_points'] = number_points = int(
-            self._raw_data[2])
-        self._raw_metadata['sweep_width_mT'] = sweep_width_mT = \
-            self._raw_data[0]/10
-        self._raw_metadata['start'] = center_field_mT-sweep_width_mT/2
-        self._raw_metadata['stop'] = center_field_mT+sweep_width_mT/2
-        axis = np.linspace(center_field_mT-sweep_width_mT/2,
-                           center_field_mT+sweep_width_mT/2,
+        self._raw_metadata['center_field_mT'] = center_field = \
+            self._raw_data[1] / 10
+        self._raw_metadata['number_points'] = number_points = \
+            int(self._raw_data[2])
+        self._raw_metadata['sweep_width_mT'] = sweep_width = \
+            self._raw_data[0] / 10
+        self._raw_metadata['start'] = center_field - sweep_width / 2
+        self._raw_metadata['stop'] = center_field + sweep_width / 2
+        axis = np.linspace(center_field - sweep_width / 2,
+                           center_field + sweep_width / 2,
                            num=number_points)
-        assert(axis[0] == center_field_mT-sweep_width_mT/2)
+        assert (axis[0] == center_field - sweep_width / 2)
         self.dataset.data.axes[0].values = axis
 
     def _assign_units(self):
         self.dataset.data.axes[0].unit = 'mT'
 
     def _assign_some_metadata(self):
-        self.dataset.metadata.magnetic_field.start.value = self._raw_metadata[
-            'start']
-        self.dataset.metadata.magnetic_field.stop.value = self._raw_metadata[
-            'stop']
-        self.dataset.metadata.magnetic_field.points = self._raw_metadata[
-            'number_points']
+        self.dataset.metadata.magnetic_field.start.value = \
+            self._raw_metadata['start']
+        self.dataset.metadata.magnetic_field.stop.value = \
+            self._raw_metadata['stop']
+        self.dataset.metadata.magnetic_field.points = \
+            self._raw_metadata['number_points']
         self.dataset.metadata.magnetic_field.sweep_width.value = \
             self._raw_metadata['sweep_width_mT']
         self.dataset.metadata.magnetic_field.sweep_width.unit = \
@@ -169,6 +419,11 @@ class NIEHSDatImporter(aspecd.io.DatasetImporter):
 class NIEHSLmbImporter(aspecd.io.DatasetImporter):
     """
     Importer for NIEHS PEST lmb (binary) files.
+
+    This file format is a binary format exclusively implemented to be used
+    with the NIEHS PEST suite.
+
+    For details of the file format, see the section :ref:`lmb_format`.
 
     .. todo::
         Assign further metadata. Note that some metadata are entered
@@ -216,54 +471,57 @@ class NIEHSLmbImporter(aspecd.io.DatasetImporter):
     def _read_and_assign_parameters(self):
         parameters = []
         self._position = 4
-        MAX_PAR = 20
-        for idx in range(MAX_PAR):
+        max_par = 20
+        for _ in range(max_par):
             parameters.append(
-                struct.unpack('f', self._raw_data[
-                                   self._position:self._position + 4])[0])
-            # print(parameters[idx])
+                struct.unpack(
+                    'f',
+                    self._raw_data[self._position:self._position + 4])[0])
             self._position += 4
         # Note: Only assign those parameters necessary in the given context
         self._parameters = {
             "sweep_width": parameters[0] / 10,
             "center_field": parameters[1] / 10,
-            "npoints": int(parameters[2]),
+            "n_points": int(parameters[2]),
             "scan_time": parameters[9],
         }
 
     def _read_data(self):
         data = []
-        for idx in range(int(self._parameters["npoints"])):
+        for _ in range(int(self._parameters["n_points"])):
             data.append(
-                struct.unpack('f', self._raw_data[
-                                   self._position:self._position + 4])[0])
+                struct.unpack(
+                    'f',
+                    self._raw_data[self._position:self._position + 4])[0])
             self._position += 4
         self.dataset.data.data = np.asarray(data)
 
     # noinspection GrazieInspection
     def _read_comments_and_metadata(self):
-        COMMENT_SIZE = 60
-        self._comment = [self._raw_data[
-                   self._position:self._position + COMMENT_SIZE].decode(
-            'utf-8').replace('\x00', '').strip()]
-        self._position += COMMENT_SIZE
+        comment_size = 60
+        self._comment = [
+            self._raw_data[self._position:
+                           self._position + comment_size
+                           ].decode('utf-8').replace('\x00', '').strip()]
+        self._position += comment_size
 
-        STR_NUM = 20
-        STR_SIZE = 12
+        str_num = 20
+        str_size = 12
         strings = []
-        for idx in range(STR_NUM):
+        for _ in range(str_num):
             strings.append(self._raw_data[
-                           self._position:self._position + STR_SIZE].decode(
+                           self._position:self._position + str_size].decode(
                 'utf-8').replace('\x00', '').strip())
-            self._position += STR_SIZE
+            self._position += str_size
 
         if self._file_format == 'ESR2':
-            for idx in range(2):
+            for _ in range(2):
                 self._comment.append(
-                    self._raw_data[
-                    self._position:self._position + COMMENT_SIZE].decode(
-                        'utf-8').replace('\x00', '').strip())
-                self._position += COMMENT_SIZE
+                    self._raw_data[self._position:
+                                   self._position + comment_size
+                                   ].decode('utf-8').replace('\x00',
+                                                             '').strip())
+                self._position += comment_size
 
         # Only those metadata of interest are mapped
         # Note: The first nine parameters are input MANUALLY, never trust em.
@@ -289,7 +547,7 @@ class NIEHSLmbImporter(aspecd.io.DatasetImporter):
             + self._parameters['sweep_width'] / 2
         axis = np.linspace(self._parameters['start'],
                            self._parameters['stop'],
-                           num=self._parameters['npoints'])
+                           num=self._parameters['n_points'])
         self.dataset.data.axes[0].values = axis
         self.dataset.data.axes[0].unit = 'mT'
 
