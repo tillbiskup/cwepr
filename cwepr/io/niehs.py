@@ -48,9 +48,12 @@ Module documentation
 ====================
 
 """
+import struct
+
+import numpy as np
 
 import aspecd.io
-import numpy as np
+import aspecd.annotation
 
 
 class NIEHSDatImporter(aspecd.io.DatasetImporter):
@@ -116,8 +119,8 @@ class NIEHSDatImporter(aspecd.io.DatasetImporter):
         self._get_raw_data()
         self._import_data()
         self._create_axis()
-        self._assert_units()
-        self._assert_some_metadata()
+        self._assign_units()
+        self._assign_some_metadata()
 
     def _clean_filenames(self):
         # Dirty fix: Cut file extension
@@ -146,10 +149,10 @@ class NIEHSDatImporter(aspecd.io.DatasetImporter):
         assert(axis[0] == center_field_mT-sweep_width_mT/2)
         self.dataset.data.axes[0].values = axis
 
-    def _assert_units(self):
+    def _assign_units(self):
         self.dataset.data.axes[0].unit = 'mT'
 
-    def _assert_some_metadata(self):
+    def _assign_some_metadata(self):
         self.dataset.metadata.magnetic_field.start.value = self._raw_metadata[
             'start']
         self.dataset.metadata.magnetic_field.stop.value = self._raw_metadata[
@@ -163,3 +166,147 @@ class NIEHSDatImporter(aspecd.io.DatasetImporter):
             self.dataset.metadata.magnetic_field.stop.unit = 'mT'
 
 
+class NIEHSLmbImporter(aspecd.io.DatasetImporter):
+    """
+    Importer for NIEHS PEST lmb (binary) files.
+
+    .. todo::
+        Assign further metadata. Note that some metadata are entered
+        manually, and therefore, parsing values with units with or without
+        space between value and unit can be quite tricky.
+
+
+    .. versionadded:: 0.3
+
+    """
+
+    def __init__(self, source=None):
+        super().__init__(source=source)
+        self._raw_data = None
+        self._file_format = None
+        self._parameters = {}
+        self._metadata = {}
+        self._position = 0
+        self._comment = []
+
+    def _import(self):
+        self._clean_filenames()
+        self._get_raw_data()
+        self._detect_file_format()
+        self._read_and_assign_parameters()
+        self._read_data()
+        self._read_comments_and_metadata()
+        self._create_axis()
+        self._assign_comment()
+        self._assign_metadata()
+
+    def _clean_filenames(self):
+        # Dirty fix: Cut file extension
+        if self.source.endswith((".lmb", ".sim")):
+            self.source = self.source[:-4]
+
+    def _get_raw_data(self):
+        filename = self.source + ".lmb"
+        with open(filename, 'rb') as file:
+            self._raw_data = file.read()
+
+    def _detect_file_format(self):
+        self._file_format = self._raw_data[:4].decode('utf-8')
+
+    def _read_and_assign_parameters(self):
+        parameters = []
+        self._position = 4
+        MAX_PAR = 20
+        for idx in range(MAX_PAR):
+            parameters.append(
+                struct.unpack('f', self._raw_data[
+                                   self._position:self._position + 4])[0])
+            # print(parameters[idx])
+            self._position += 4
+        # Note: Only assign those parameters necessary in the given context
+        self._parameters = {
+            "sweep_width": parameters[0] / 10,
+            "center_field": parameters[1] / 10,
+            "npoints": int(parameters[2]),
+            "scan_time": parameters[9],
+        }
+
+    def _read_data(self):
+        data = []
+        for idx in range(int(self._parameters["npoints"])):
+            data.append(
+                struct.unpack('f', self._raw_data[
+                                   self._position:self._position + 4])[0])
+            self._position += 4
+        self.dataset.data.data = np.asarray(data)
+
+    # noinspection GrazieInspection
+    def _read_comments_and_metadata(self):
+        COMMENT_SIZE = 60
+        self._comment = [self._raw_data[
+                   self._position:self._position + COMMENT_SIZE].decode(
+            'utf-8').replace('\x00', '').strip()]
+        self._position += COMMENT_SIZE
+
+        STR_NUM = 20
+        STR_SIZE = 12
+        strings = []
+        for idx in range(STR_NUM):
+            strings.append(self._raw_data[
+                           self._position:self._position + STR_SIZE].decode(
+                'utf-8').replace('\x00', '').strip())
+            self._position += STR_SIZE
+
+        if self._file_format == 'ESR2':
+            for idx in range(2):
+                self._comment.append(
+                    self._raw_data[
+                    self._position:self._position + COMMENT_SIZE].decode(
+                        'utf-8').replace('\x00', '').strip())
+                self._position += COMMENT_SIZE
+
+        # Only those metadata of interest are mapped
+        # Note: The first nine parameters are input MANUALLY, never trust em.
+        self._metadata = {
+            "modulation_amplitude": strings[1],
+            "modulation_frequency": strings[2],
+            "time_constant": strings[3],
+            "receiver_gain": float(strings[4]),
+            "mw_power": strings[7],
+            "mw_frequency": strings[8],
+            "date": strings[9],
+            "time": strings[10],
+            "n_scans": int(strings[12]),
+            "temperature": strings[13],
+        }
+
+    def _create_axis(self):
+        self._parameters['start'] = \
+            self._parameters['center_field'] \
+            - self._parameters['sweep_width'] / 2
+        self._parameters['stop'] = \
+            self._parameters['center_field'] \
+            + self._parameters['sweep_width'] / 2
+        axis = np.linspace(self._parameters['start'],
+                           self._parameters['stop'],
+                           num=self._parameters['npoints'])
+        self.dataset.data.axes[0].values = axis
+        self.dataset.data.axes[0].unit = 'mT'
+
+    def _assign_comment(self):
+        comment_annotation = aspecd.annotation.Comment()
+        comment_annotation.comment = self._comment
+        self.dataset.annotate(comment_annotation)
+
+    def _assign_metadata(self):
+        self.dataset.metadata.magnetic_field.start.value = \
+            self.dataset.data.axes[0].values[0]
+        self.dataset.metadata.magnetic_field.stop.value = \
+            self.dataset.data.axes[0].values[-1]
+        self.dataset.metadata.magnetic_field.sweep_width.value = \
+            self._parameters["sweep_width"]
+        self.dataset.metadata.magnetic_field.start.unit = \
+            self.dataset.metadata.magnetic_field.stop.unit = \
+            self.dataset.metadata.magnetic_field.sweep_width.unit = "mT"
+        self.dataset.metadata.signal_channel.accumulations = \
+            self._metadata["n_scans"]

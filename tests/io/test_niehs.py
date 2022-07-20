@@ -51,3 +51,48 @@ class TestNIEHSDatImporter(unittest.TestCase):
         self.assertEqual('mT',
                          self.dataset.metadata.magnetic_field.start.unit)
         self.assertNotEqual(0, self.dataset.metadata.magnetic_field.start.value)
+
+
+class TestNIEHSLmbImporter(unittest.TestCase):
+
+    def setUp(self):
+        source = os.path.join(ROOTPATH, 'testdata/dmpo')
+        self.importer = cwepr.io.niehs.NIEHSLmbImporter(source=source)
+        self.dataset = cwepr.dataset.ExperimentalDataset()
+
+    def test_class_exists(self):
+        pass
+
+    def test_extract_data(self):
+        self.dataset.import_from(self.importer)
+        self.assertTrue(self.dataset.data.data.all())
+        self.assertGreater(len(self.dataset.data.data), 0)
+
+        # import matplotlib.pyplot as plt
+        # plt.plot(self.dataset.data.data)
+        # plt.show()
+
+    def test_axis_exists_with_meaningful_values(self):
+        self.dataset.import_from(self.importer)
+        self.assertEqual(len(self.dataset.data.data),
+                         len(self.dataset.data.axes[0].values))
+        self.assertTrue(self.dataset.data.axes[0].values.all())
+
+    def test_axis_has_unit(self):
+        self.dataset.import_from(self.importer)
+        self.assertEqual('mT', self.dataset.data.axes[0].unit)
+
+    def test_assign_comment(self):
+        self.dataset.import_from(self.importer)
+        self.assertTrue(self.dataset.annotations[0].annotation.content["comment"])
+
+    def test_assign_basic_metadata(self):
+        self.dataset.import_from(self.importer)
+        metadata = self.dataset.metadata
+        self.assertTrue(metadata.magnetic_field.start.value)
+        self.assertTrue(metadata.magnetic_field.start.unit)
+        self.assertTrue(metadata.magnetic_field.stop.value)
+        self.assertTrue(metadata.magnetic_field.stop.unit)
+        self.assertTrue(metadata.magnetic_field.sweep_width.value)
+        self.assertTrue(metadata.magnetic_field.sweep_width.unit)
+        self.assertGreater(metadata.signal_channel.accumulations, 0)
