@@ -197,7 +197,7 @@ authors, namely Dave Duling (duling@niehs.nih.gov).
       if ((fp = fopen(fname, "rb")) == NULL)  return(1);
 
       fread(gstring, 4, 1, fp);
-      gstring[4] = '\\0';
+      gstring[4] = '\0';
 
       if( strcmp(gstring, FILE_1)!=0 && strcmp(gstring, FILE_2 )!=0 ) {
          fclose(fp);
