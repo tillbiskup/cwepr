@@ -96,3 +96,52 @@ class TestNIEHSLmbImporter(unittest.TestCase):
         self.assertTrue(metadata.magnetic_field.sweep_width.value)
         self.assertTrue(metadata.magnetic_field.sweep_width.unit)
         self.assertGreater(metadata.signal_channel.accumulations, 0)
+
+
+class TestNIEHSExpImporter(unittest.TestCase):
+
+    def setUp(self):
+        self.dsv_source = os.path.join(ROOTPATH, 'testdata/pow128')
+        self.block_source = os.path.join(ROOTPATH, 'testdata/e1-05')
+        self.importer = cwepr.io.niehs.NIEHSExpImporter()
+        self.dataset = cwepr.dataset.ExperimentalDataset()
+
+    def test_class_exists(self):
+        pass
+
+    def test_extract_data_with_pure_dsv_file(self):
+        self.importer.source = self.dsv_source
+        self.dataset.import_from(self.importer)
+        self.assertTrue(self.dataset.data.data.all())
+        self.assertGreater(len(self.dataset.data.data), 0)
+
+        # import matplotlib.pyplot as plt
+        # plt.plot(self.dataset.data.data)
+        # plt.show()
+
+    def test_extract_data_with_block_file(self):
+        self.importer.source = self.block_source
+        self.dataset.import_from(self.importer)
+        self.assertTrue(self.dataset.data.data.all())
+        self.assertGreater(len(self.dataset.data.data), 0)
+
+        # import matplotlib.pyplot as plt
+        # plt.plot(self.dataset.data.data)
+        # plt.show()
+
+    def test_axis_exists_with_meaningful_values(self):
+        self.importer.source = self.block_source
+        self.dataset.import_from(self.importer)
+        self.assertEqual(len(self.dataset.data.data),
+                         len(self.dataset.data.axes[0].values))
+        self.assertTrue(self.dataset.data.axes[0].values.all())
+
+    def test_axis_has_unit(self):
+        self.importer.source = self.block_source
+        self.dataset.import_from(self.importer)
+        self.assertEqual('mT', self.dataset.data.axes[0].unit)
+
+    def test_assign_comment(self):
+        self.importer.source = self.block_source
+        self.dataset.import_from(self.importer)
+        self.assertTrue(self.dataset.annotations[0].annotation.content["comment"])

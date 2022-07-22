@@ -295,10 +295,11 @@ NIEHS ASCII text format (.exp)
 This text file format is actually a series of different formats, just to
 make life easier. The most basic format simply contains (usually two)
 columns with numerical data, but there are other versions as well with
-additional parameters on top.
+additional information on top.
 
-Two examples available from the NIEHS PEST website are given below,
-representing at least two different variants of this format.
+Two example files available from the NIEHS PEST website are documented below,
+representing at least two different variants of this format (and currently
+the only two variants supported by the respective importer class).
 
 
 .. code-block::
@@ -328,8 +329,9 @@ representing at least two different variants of this format.
     3295.22	-0.964
 
 
-.. todo::
-    Implement importer for this format series
+To import files in this format, use the :class:`NIEHSExpImporter`. Within
+a recipe, the :class:`cwepr.io.factory.DatasetImporterFactory` should
+automatically select the correct importer for you.
 
 
 .. _dat_format:
@@ -383,6 +385,7 @@ Module documentation
 ====================
 
 """
+import io
 import struct
 
 import numpy as np
@@ -490,7 +493,7 @@ class NIEHSLmbImporter(aspecd.io.DatasetImporter):
 
     def __init__(self, source=None):
         super().__init__(source=source)
-        self._raw_data = None
+        self._file_contents = None
         self._file_format = None
         self._parameters = {}
         self._metadata = {}
@@ -516,10 +519,10 @@ class NIEHSLmbImporter(aspecd.io.DatasetImporter):
     def _get_raw_data(self):
         filename = self.source + ".lmb"
         with open(filename, 'rb') as file:
-            self._raw_data = file.read()
+            self._file_contents = file.read()
 
     def _detect_file_format(self):
-        self._file_format = self._raw_data[:4].decode('utf-8')
+        self._file_format = self._file_contents[:4].decode('utf-8')
 
     def _read_and_assign_parameters(self):
         parameters = []
@@ -529,7 +532,8 @@ class NIEHSLmbImporter(aspecd.io.DatasetImporter):
             parameters.append(
                 struct.unpack(
                     'f',
-                    self._raw_data[self._position:self._position + 4])[0])
+                    self._file_contents[self._position:
+                                        self._position + 4])[0])
             self._position += 4
         # Note: Only assign those parameters necessary in the given context
         self._parameters = {
@@ -545,7 +549,8 @@ class NIEHSLmbImporter(aspecd.io.DatasetImporter):
             data.append(
                 struct.unpack(
                     'f',
-                    self._raw_data[self._position:self._position + 4])[0])
+                    self._file_contents[self._position:
+                                        self._position + 4])[0])
             self._position += 4
         self.dataset.data.data = np.asarray(data)
 
@@ -553,27 +558,28 @@ class NIEHSLmbImporter(aspecd.io.DatasetImporter):
     def _read_comments_and_metadata(self):
         comment_size = 60
         self._comment = [
-            self._raw_data[self._position:
-                           self._position + comment_size
-                           ].decode('utf-8').replace('\x00', '').strip()]
+            self._file_contents[self._position:
+                                self._position + comment_size
+                                ].decode('utf-8').replace('\x00', '').strip()]
         self._position += comment_size
 
         str_num = 20
         str_size = 12
         strings = []
         for _ in range(str_num):
-            strings.append(self._raw_data[
-                           self._position:self._position + str_size].decode(
+            strings.append(self._file_contents[
+                           self._position:
+                           self._position + str_size].decode(
                 'utf-8').replace('\x00', '').strip())
             self._position += str_size
 
         if self._file_format == 'ESR2':
             for _ in range(2):
                 self._comment.append(
-                    self._raw_data[self._position:
-                                   self._position + comment_size
-                                   ].decode('utf-8').replace('\x00',
-                                                             '').strip())
+                    self._file_contents[self._position:
+                                        self._position + comment_size
+                                        ].decode('utf-8').replace('\x00',
+                                                                  '').strip())
                 self._position += comment_size
 
         # Only those metadata of interest are mapped
@@ -621,3 +627,87 @@ class NIEHSLmbImporter(aspecd.io.DatasetImporter):
             self.dataset.metadata.magnetic_field.sweep_width.unit = "mT"
         self.dataset.metadata.signal_channel.accumulations = \
             self._metadata["n_scans"]
+
+
+class NIEHSExpImporter(aspecd.io.DatasetImporter):
+    """
+    Importer for NIEHS PEST exp (text) files.
+
+    The text file format dealt with here is actually a series of different
+    formats, just to make life easier. The most basic format simply
+    contains (usually two) columns with numerical data, but there are
+    other versions as well with additional information on top.
+
+    In case of the latter format with additional information on top of the
+    file, this information is added as comment annotation to the dataset.
+
+    For details of the file format, see the section :ref:`exp_format`.
+
+    .. note::
+        Due to the lack of any metadata of this format, the resulting
+        dataset is quite limited in its metadata. Only the axes measures
+        and units are added (by informed guessing). Therefore, you are
+        highly encouraged to provide the lacking metadata by other means.
+
+
+    .. versionadded:: 0.3
+
+    """
+
+    def __init__(self, source=None):
+        super().__init__(source=source)
+        self._file_contents = None
+        self._lines = None
+        self._file_format = None
+        self._raw_data = None
+        self._header = None
+
+    def _import(self):
+        self._clean_filenames()
+        self._read_file_contents()
+        self._detect_file_format()
+        self._import_data()
+        self._assign_data_and_axis()
+        self._assign_comment()
+
+    def _clean_filenames(self):
+        # Dirty fix: Cut file extension
+        if self.source.endswith(".exp"):
+            self.source = self.source[:-4]
+
+    def _read_file_contents(self):
+        filename = self.source + ".exp"
+        with open(filename, 'r') as file:
+            self._file_contents = file.read()
+        self._lines = self._file_contents.splitlines()
+
+    def _detect_file_format(self):
+        if self._lines[0].startswith('['):
+            self._file_format = 'with_blocks'
+        else:
+            self._file_format = 'DSV'
+
+    def _import_data(self):
+        if self._file_format == 'with_blocks':
+            # noinspection PyTypeChecker
+            self._raw_data = np.loadtxt(
+                io.StringIO(self._file_contents),
+                skiprows=self._lines.index('[DATA]') + 1)
+            self._header = self._lines[:self._lines.index('[DATA]')]
+        else:
+            # noinspection PyTypeChecker
+            self._raw_data = np.loadtxt(io.StringIO(self._file_contents))
+
+    def _assign_data_and_axis(self):
+        self.dataset.data.axes[0].values = self._raw_data[:, 0] / 10
+        self.dataset.data.axes[0].unit = 'mT'
+        self.dataset.data.data = self._raw_data[:, 1]
+
+    def _assign_comment(self):
+        if self._header:
+            # Remove empty lines and trailing spaces
+            self._header = [element.rstrip() for element in self._header
+                            if element != '']
+            comment_annotation = aspecd.annotation.Comment()
+            comment_annotation.comment = self._header
+            self.dataset.annotate(comment_annotation)

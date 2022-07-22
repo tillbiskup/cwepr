@@ -25,5 +25,5 @@ from .magnettech import MagnettechXMLImporter, GoniometerSweepImporter
 from .txt_file import TxtImporter
 from .bes3t import BES3TImporter
 from .esp_winepr import ESPWinEPRImporter
-from .niehs import NIEHSDatImporter, NIEHSLmbImporter
+from .niehs import NIEHSDatImporter, NIEHSLmbImporter, NIEHSExpImporter
 from .exporter import ASCIIExporter, MetadataExporter

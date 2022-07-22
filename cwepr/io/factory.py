@@ -47,6 +47,7 @@ class DatasetImporterFactory(aspecd.io.DatasetImporterFactory):
                                   "MagnettechXML": [".xml"],
                                   "NIEHSDat": [".dat"],
                                   "NIEHSLmb": [".lmb"],
+                                  "NIEHSExp": [".exp"],
                                   "Txt": [".txt"],
                                   }
         self.data_format = None
