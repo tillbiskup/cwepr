@@ -78,6 +78,8 @@ The first step in analysing data is to import them. In terms of recipe-driven da
       - /path/to/my/second/dataset
 
 
+So how does the cwepr package knows which format the data are in? The "trick" is to internally use a factory class that detects the format and returns the appropriate importer class. But how do you know whether your particular file format your EPR data are stored in is currently supported by the cwepr package? Have a look at the :mod:`cwepr.io` module documentation for an overview. And what if your favourite format is not yet supported? Either implement an importer yourself, or reach out to the :doc:`people` behind the cwepr package for help. You could open an issue on the `cwepr GitHub repository <https://github.com/tillbiskup/cwepr>`_ as well.
+
 At the same time, the paths are used to refer to the datasets internally within the recipe. Such references are frequently used if you want to perform a task not for all datasets, but only a subset of the datasets specified on top of a recipe. If you say now that always having to provide the full path to a dataset is error-prone and not user-friendly, stay tuned and continue reading: we got you covered.
 
 A few comments on the syntax: ``datasets:`` is the key on the highest level, and the trailing colon ``:`` marks it as key (for a dictionary or associative array). The datasets are given as a list, using the leading minus ``-``. Whether you use tabs or spaces for indentation does not matter, as long as the indentation within one block is consistent. If you're not familiar with the YAML syntax, it is highly recommended to have a look on one of the many resources available online.
