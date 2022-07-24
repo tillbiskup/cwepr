@@ -7,6 +7,16 @@ Roadmap
 A few ideas how to develop the project further, currently a list as a reminder for the main developers themselves, in no particular order, though with a tendency to list more important aspects first:
 
 
+For version 0.3.x
+=================
+
+* Documentation
+
+  * Metadata for data acquisition: document cwepr info file and alternative methods (and implement importers for alternative methods!)
+  * Add "Best Practices" section showing data publications using the package (currently only one: Järsvall et al., Chem. Mater. 2022)
+  * Add "prerequisites" section to the index page (and probably more details on a separate page) -- Python, command-line access, metadata, EPR data in readable formats
+
+
 For version 0.4
 ===============
 
