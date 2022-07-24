@@ -159,13 +159,13 @@ class TestAmplitudeVsPower(unittest.TestCase):
                            analysis.result.data.axes[0].values[0], 0)
 
 
-class TestPolynomialFitOnData(unittest.TestCase):
+class TestFitOnData(unittest.TestCase):
     def setUp(self):
-        self.analysator = cwepr.analysis.PolynomialFitOnData()
+        self.analysator = cwepr.analysis.FitOnData()
         self.dataset = cwepr.dataset.ExperimentalDataset()
 
     def test_instantiate_class(self):
-        cwepr.analysis.PolynomialFitOnData()
+        cwepr.analysis.FitOnData()
 
     def test_has_description(self):
         self.assertNotIn('abstract', self.analysator.description.lower())
@@ -190,7 +190,44 @@ class TestPolynomialFitOnData(unittest.TestCase):
         analysis = self.dataset.analyse(self.analysator)
         self.assertAlmostEqual(4, analysis.result[0])
 
-    def test_fit_can_return_calculated_dataset(self):
+    def test_fixed_offset_with_offset_zero(self):
+        self.dataset.data.data = np.asarray([0.45, 1, 2, 3, 4, 5])
+        self.dataset.data.axes[0].values = np.asarray([0.5, 1, 2, 3, 4, 5])
+        self.analysator.parameters['fixed_intercept'] = True
+        res = self.dataset.analyse(self.analysator)
+        self.assertAlmostEqual(res.result[1], 1, 2)
+        self.assertIsInstance(res.result, list)
+        self.assertEqual(res.result[0], 0)
+
+    def test_fixed_offset_with_offset_non_zero(self):
+        self.dataset.data.data = np.asarray([1.4, 2, 3, 4, 5, 6])
+        self.dataset.data.axes[0].values = np.asarray([0.5, 1, 2, 3, 4, 5])
+        self.analysator.parameters['fixed_intercept'] = True
+        self.analysator.parameters['offset'] = 1
+        res = self.dataset.analyse(self.analysator)
+        self.assertAlmostEqual(res.result[1], 1, 2)
+        self.assertEqual(res.result[0], 1)
+
+    def test_fixed_offset_with_offset_zero_return_pol_coeffs(self):
+        self.dataset.data.data = np.asarray([0.45, 1, 2, 3, 4, 5])
+        self.dataset.data.axes[0].values = np.asarray([0.5, 1, 2, 3, 4, 5])
+        self.analysator.parameters['fixed_intercept'] = True
+        self.analysator.parameters['polynomial_coefficients'] = True
+        res = self.dataset.analyse(self.analysator)
+        self.assertIsInstance(res.result, list)
+
+    def test_fit_returns_calculated_dataset_of_linear_slope(self):
+        self.dataset.data.data = np.asarray([0.45, 1, 2, 3, 4, 5])
+        self.dataset.data.axes[0].values = np.asarray([0.5, 1, 2, 3, 4, 5])
+        self.analysator.parameters['fixed_intercept'] = True
+        self.analysator.parameters['return_type'] = 'dataset'
+        analysis = self.dataset.analyse(self.analysator)
+        self.assertEqual(aspecd.dataset.CalculatedDataset,
+                         type(analysis.result))
+        self.assertEqual(len(self.dataset.data.axes[0].values),
+                         analysis.result.data.data.shape[0])
+
+    def test_fit_returns_calculated_dataset_higher_order(self):
         self.dataset.data.data = np.concatenate([np.linspace(1, 5, num=5),
                                                  np.linspace(5.1, 6.1, num=5)])
         self.dataset.data.axes[0].values = np.linspace(1, 10, num=10)
@@ -198,15 +235,8 @@ class TestPolynomialFitOnData(unittest.TestCase):
         analysis = self.dataset.analyse(self.analysator)
         self.assertEqual(aspecd.dataset.CalculatedDataset,
                          type(analysis.result))
-        self.assertEqual(self.dataset.data.data.shape[0],
-                         len(self.dataset.data.axes[0].values))
-
-    def test_adds_origin_point(self):
-        self.dataset.data.data = np.linspace(2, 21)
-        self.dataset.data.axes[0].values = np.linspace(2, 11)
-        self.analysator.parameters['add_origin'] = True
-        self.dataset.analyse(self.analysator)
-        self.assertIn(0, self.dataset.data.data)
+        self.assertEqual(len(self.dataset.data.axes[0].values),
+                         analysis.result.data.data.shape[0])
 
 
 class TestPtpVsModAmp(TestCase):

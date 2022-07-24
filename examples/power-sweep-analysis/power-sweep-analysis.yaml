@@ -21,7 +21,7 @@ tasks:
   - BDPA-2DFieldPower
   result: power_sweep_analysis
 - kind: singleanalysis
-  type: PolynomialFitOnData
+  type: FitOnData
   properties:
     parameters:
       order: 1

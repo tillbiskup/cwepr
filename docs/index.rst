@@ -53,9 +53,15 @@ Features
 
 A list of features:
 
-* Fully reproducible processing of cw-EPR data
+* Fully reproducible processing and analysis of cw-EPR data.
 
-* Import of EPR data from diverse sources (Bruker ESP, EMX, Elexsys; Magnettech)
+* Gap-less record of each processing/analysis step, including explicit and implicit parameters.
+
+* Import of EPR data from diverse sources (Bruker ESP, EMX, Elexsys; Magnettech; NIEHS PEST)
+
+* Generic representation of EPR data, independent of the original format.
+
+* Datasets contain both, numerical data and all crucial metadata, a prerequisite for FAIR data.
 
 * Generic plotting capabilities, easily extendable
 

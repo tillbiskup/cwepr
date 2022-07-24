@@ -334,7 +334,7 @@ class PowerSweepAnalysisPlotter(aspecd.plotting.MultiPlotter1D):
               - PowerSweep
             result: power_sweep_analysis
           - kind: singleanalysis
-            type: PolynomialFitOnData
+            type: FitOnData
             properties:
               parameters:
                 order: 1

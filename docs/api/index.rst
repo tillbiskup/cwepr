@@ -12,7 +12,7 @@ Subpackages
 An alphabetic list of the subpackages available within the cwepr package. The actual documentation is split in pages for each submodule of each subpackage, respectively.
 
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 2
 
    cwepr.io
 
