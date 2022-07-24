@@ -7,7 +7,7 @@ This page contains a summary of changes between the official cwepr releases. Onl
 Version 0.3
 =============
 
-Not yet released
+Released 2022-07-24
 
 New features
 ------------
