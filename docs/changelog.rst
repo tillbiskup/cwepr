@@ -12,7 +12,7 @@ Released 2022-07-24
 New features
 ------------
 
-* Add linear fit with fixed intercept to FitOnData, renamed function accordingly. (0719809a22)
+* Add linear fit with fixed intercept to FitOnData, renamed function accordingly.
 * Importer for NIEHS dat, lmb, and exp files
 
 
