@@ -16,6 +16,10 @@ For version 0.3.x
   * Add "Best Practices" section showing data publications using the package (currently only one: Järsvall et al., Chem. Mater. 2022)
   * Add "prerequisites" section to the index page (and probably more details on a separate page) -- Python, command-line access, metadata, EPR data in readable formats
 
+* Usability
+
+  * Frequency correction should issue a warning (rather than throwing an exception) if no MW frequency value is contained in dataset (yes, such datasets do exist unfortunately).
+
 
 For version 0.4
 ===============
