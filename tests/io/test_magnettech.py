@@ -1,3 +1,4 @@
+import datetime
 import os
 import shutil
 import tempfile
@@ -61,6 +62,19 @@ class TestMagnettechXmlImporter(unittest.TestCase):
             importer = cwepr.io.magnettech.MagnettechXMLImporter(
                 source=new_source)
             self.dataset.import_from(importer)
+
+    def test_import_with_incorrect_iso_datetime_writes_correct_datetime(self):
+        source = os.path.join(ROOTPATH, 'testdata/test-magnettech.xml')
+        mytime = datetime.datetime.fromisoformat(
+            '2020-11-18T16:56:04.771146+01:00')
+        with tempfile.TemporaryDirectory() as testdir:
+            new_source = os.path.join(testdir, 'test-wo-infofile')
+            shutil.copyfile(source, new_source + '.xml')
+            importer = cwepr.io.magnettech.MagnettechXMLImporter(
+                source=new_source)
+            self.dataset.import_from(importer)
+        imported_start_time = self.dataset.metadata.measurement.start
+        self.assertAlmostEqual(mytime, imported_start_time)
 
     def test_with_file_extension(self):
         source = os.path.join(ROOTPATH, 'testdata/test-magnettech.xml')

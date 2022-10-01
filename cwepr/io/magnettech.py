@@ -37,6 +37,8 @@ import os
 import re
 import struct
 import xml.etree.ElementTree as et
+
+import dateutil.parser
 import numpy as np
 
 import aspecd.annotation
@@ -110,6 +112,7 @@ class MagnettechXMLImporter(aspecd.io.DatasetImporter):
             self._load_infofile()
             self._map_infofile()
         self._map_metadata_from_xml()
+        self._map_dates()
 
     def _get_full_filename(self):
         if self.source:
@@ -276,6 +279,14 @@ class MagnettechXMLImporter(aspecd.io.DatasetImporter):
             float(self.xml_metadata['Phase'])
         self.dataset.metadata.probehead.model = 'builtin'
         self.dataset.metadata.probehead.coupling = 'critical'
+
+    def _map_dates(self):
+        self.dataset.metadata.measurement.start = dateutil.parser.parse(
+            self.xml_metadata['Timestamp'])
+        self.dataset.metadata.measurement.end = dateutil.parser.parse(
+            self.root.attrib['Timestamp'])
+        assert(self.dataset.metadata.measurement.start <
+               self.dataset.metadata.measurement.end)
 
     @staticmethod
     def _dict_to_string(dict_):
