@@ -791,12 +791,16 @@ class FitOnData(aspecd.analysis.SingleAnalysisStep):
             self.result = self.parameters['coefficients']
 
     def _linear_regression_with_fixed_intercept(self):
+        _help = self.create_dataset()
+        _help.data.axes[0].values = \
+            self.dataset.data.axes[0].values[:self.parameters['points']]
+        _help.data.data = self.dataset.data.data[:self.parameters['points']]
         analysis = aspecd.analysis.LinearRegressionWithFixedIntercept()
         aspecd.utils.copy_values_between_dicts(source=self.parameters,
                                                target=analysis.parameters)
         analysis.parameters['polynomial_coefficients'] = True
-        analysis.dataset = self.dataset
-        result = self.dataset.analyse(analysis)
+        analysis.dataset = _help
+        result = _help.analyse(analysis)
         self.parameters['coefficients'] = result.result
 
 

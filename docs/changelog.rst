@@ -18,7 +18,7 @@ New features
 Fixes
 -----
 
-* ...
+* Fix bug in analysis.FitOnData by using a helper dataset.
 
 
 Version 0.3.0
