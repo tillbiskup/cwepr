@@ -205,7 +205,7 @@ class TestFitOnData(unittest.TestCase):
         self.analysator.parameters['fixed_intercept'] = True
         self.analysator.parameters['offset'] = 1
         res = self.dataset.analyse(self.analysator)
-        self.assertAlmostEqual(res.result[1], 1, 2)
+        self.assertAlmostEqual(res.result[1], 1, 1)
         self.assertEqual(res.result[0], 1)
 
     def test_fixed_offset_with_offset_zero_return_pol_coeffs(self):
