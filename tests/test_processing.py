@@ -68,6 +68,15 @@ class TestFrequencyCorrection(unittest.TestCase):
         conditions = (diff == 0 for diff in diffs)
         self.assertFalse(all(conditions))
 
+    def test_magnetic_field_points_have_non_constant_offset(self):
+        old_field_axis = copy.deepcopy(
+            self.dataset.data.axes[0].values)
+        self.corrector.parameters['frequency'] = 8.
+        self.dataset.process(self.corrector)
+        new_field_axis = self.dataset.data.axes[0].values
+        diffs = old_field_axis - new_field_axis
+        self.assertTrue(diffs[0] != diffs[-1])
+
     def test_correct_with_offset_writes_new_magnetic_field_values(self):
         old_field_axis = copy.deepcopy(
             self.dataset.data.axes[0].values)
@@ -86,11 +95,10 @@ class TestFrequencyCorrection(unittest.TestCase):
         self.corrector.parameters['kind'] = 'offset'
         self.dataset.process(self.corrector)
         new_field_axis = self.dataset.data.axes[0].values
-        idx = round(len(old_field_axis)/2)
+        idx = round(len(old_field_axis) / 2)
         old_point = old_field_axis[idx]
         new_point = new_field_axis[idx]
         self.assertTrue(old_point < new_point)
-
 
     def test_correct_with_offset_writes_new_frequency(self):
         old_freq = copy.deepcopy(self.dataset.metadata.bridge.mw_frequency)
@@ -100,6 +108,15 @@ class TestFrequencyCorrection(unittest.TestCase):
         new_freq = self.dataset.metadata.bridge.mw_frequency
         self.assertNotEqual(new_freq.value, old_freq.value)
 
+    def test_correct_with_offset_field_points_have_constant_offset(self):
+        old_field_axis = copy.deepcopy(
+            self.dataset.data.axes[0].values)
+        self.corrector.parameters['kind'] = 'offset'
+        self.corrector.parameters['frequency'] = 8.5
+        self.dataset.process(self.corrector)
+        new_field_axis = self.dataset.data.axes[0].values
+        diffs = old_field_axis - new_field_axis
+        self.assertTrue(diffs[0] == diffs[-1])
 
 
 
@@ -190,10 +207,11 @@ class TestNormalisation(unittest.TestCase):
         correction = cwepr.processing.Normalisation()
         correction.parameters['kind'] = 'receiver_gain'
         before = max(self.dataset.data.data)
-        rg = 10**(self.dataset.metadata.signal_channel.receiver_gain.value /20)
+        rg = 10 ** (
+                    self.dataset.metadata.signal_channel.receiver_gain.value / 20)
         self.dataset.process(correction)
         after = max(self.dataset.data.data)
-        self.assertEqual(before/rg, after)
+        self.assertEqual(before / rg, after)
 
     def test_normalisation_to_scan_number(self):
         correction = cwepr.processing.Normalisation()
@@ -202,7 +220,7 @@ class TestNormalisation(unittest.TestCase):
         scans = self.dataset.metadata.signal_channel.accumulations
         self.dataset.process(correction)
         after = max(self.dataset.data.data)
-        self.assertEqual(before/scans, after)
+        self.assertEqual(before / scans, after)
 
     def test_normalisation_to_maximum(self):
         correction = cwepr.processing.Normalisation()
@@ -211,7 +229,7 @@ class TestNormalisation(unittest.TestCase):
         max_ = max(self.dataset.data.data)
         self.dataset.process(correction)
         after = max(self.dataset.data.data)
-        self.assertEqual(before/max_, after)
+        self.assertEqual(before / max_, after)
 
     def test_normalisation_to_minimum(self):
         correction = cwepr.processing.Normalisation()
@@ -220,4 +238,4 @@ class TestNormalisation(unittest.TestCase):
         min_ = min(self.dataset.data.data)
         self.dataset.process(correction)
         after = min(self.dataset.data.data)
-        self.assertEqual(before/abs(min_), after)
+        self.assertEqual(before / abs(min_), after)

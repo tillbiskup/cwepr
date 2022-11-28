@@ -509,7 +509,6 @@ class FrequencyCorrection(aspecd.processing.SingleProcessingStep):
              frequency: 9.63
 
 
-
     Attributes
     ----------
     self.parameters['frequency']
