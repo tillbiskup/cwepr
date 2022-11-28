@@ -116,8 +116,7 @@ class TestFrequencyCorrection(unittest.TestCase):
         self.dataset.process(self.corrector)
         new_field_axis = self.dataset.data.axes[0].values
         diffs = old_field_axis - new_field_axis
-        self.assertTrue(diffs[0] == diffs[-1])
-
+        self.assertTrue(len(np.unique(diffs)) == 1)
 
 
 class GAxisCreation(unittest.TestCase):
