@@ -2,7 +2,6 @@ import copy
 import os
 import unittest
 
-import aspecd.exceptions
 import numpy as np
 
 import cwepr.exceptions
@@ -68,6 +67,40 @@ class TestFrequencyCorrection(unittest.TestCase):
         diffs = old_field_axis - new_field_axis
         conditions = (diff == 0 for diff in diffs)
         self.assertFalse(all(conditions))
+
+    def test_correct_with_offset_writes_new_magnetic_field_values(self):
+        old_field_axis = copy.deepcopy(
+            self.dataset.data.axes[0].values)
+        self.corrector.parameters['frequency'] = 8.5
+        self.corrector.parameters['kind'] = 'offset'
+        self.dataset.process(self.corrector)
+        new_field_axis = self.dataset.data.axes[0].values
+        diffs = old_field_axis - new_field_axis
+        conditions = (diff == 0 for diff in diffs)
+        self.assertFalse(all(conditions))
+
+    def test_correct_with_offset_center_point_is_lower_than_before(self):
+        old_field_axis = copy.deepcopy(
+            self.dataset.data.axes[0].values)
+        self.corrector.parameters['frequency'] = 8.5
+        self.corrector.parameters['kind'] = 'offset'
+        self.dataset.process(self.corrector)
+        new_field_axis = self.dataset.data.axes[0].values
+        idx = round(len(old_field_axis)/2)
+        old_point = old_field_axis[idx]
+        new_point = new_field_axis[idx]
+        self.assertTrue(old_point < new_point)
+
+
+    def test_correct_with_offset_writes_new_frequency(self):
+        old_freq = copy.deepcopy(self.dataset.metadata.bridge.mw_frequency)
+        self.corrector.parameters['kind'] = 'offset'
+        self.corrector.parameters['frequency'] = 8.5
+        self.dataset.process(self.corrector)
+        new_freq = self.dataset.metadata.bridge.mw_frequency
+        self.assertNotEqual(new_freq.value, old_freq.value)
+
+
 
 
 class GAxisCreation(unittest.TestCase):
