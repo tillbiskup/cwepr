@@ -487,14 +487,22 @@ class FrequencyCorrection(aspecd.processing.SingleProcessingStep):
     in the parameter section.
 
     * calculation via the Zeeman splitting (proportional)
+
       All magnetic field points will be recalculated to keep their g-value.
+      This preserves field-dependent interactions such as *g* anisotropy,
+      but artificially scales all field-independent shifts. HFI or ZFS
+      constants are not preserved.
 
     * Addition of an offset value (offset)
+
       As the EPR spectrum should be somewhat centered to the signal of
       interest, the central point will be corrected for the new frequency.
       The difference between the old and the new magnetic field will be added
-      onto all other magnetic field points. This is particularly useful to keep
-      the hyperfine splitting. (Thanks to B. Corzilius for the input)
+      onto all other magnetic field points. Preserves constant energy shifts
+      such as (first order) HFI or ZFS, but artificially scales
+      field-dependent interactions such as *g* anisotropy. *g* factors besides
+      the reference point are not preserved. (Thanks to B. Corzilius for the
+      input)
 
     Examples
     --------
