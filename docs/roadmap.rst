@@ -34,6 +34,8 @@ For version 0.4
 
 * Implement handling of "RT" as temperature value in the infofile.
 
+* Handling of Magnettech-Files containing the second derivative spectrum i.e. not taking the first spectrum of the xml-file list.
+
 * Logging
 
 * Reorganise templates for reports, according to the directory layout proposed by aspecd (see :mod:`aspecd.report` for details).
