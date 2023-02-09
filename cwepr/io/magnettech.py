@@ -349,9 +349,6 @@ class GoniometerSweepImporter(aspecd.io.DatasetImporter):
             self._data.append(cwepr.dataset.ExperimentalDataset())
             self._data[num].import_from(importer)
             self._angles.append(float(importer.xml_metadata['GonAngle']))
-            for idx, angle in enumerate(self._angles):
-                if angle > 359:
-                    self._angles[idx] = 0
             # bring all measurements to the frequency of the first
             if num > 0:
                 freq_correction = cwepr.processing.FrequencyCorrection()
@@ -361,6 +358,9 @@ class GoniometerSweepImporter(aspecd.io.DatasetImporter):
 
             interpolate = cwepr.processing.AxisInterpolation()
             self._interpolation_to_same_number_of_points(interpolate, num)
+        for idx, angle in enumerate(self._angles):
+            if angle > 359:
+                self._angles[idx] = 0
 
     def _interpolation_to_same_number_of_points(self, interpolate, num):
         interpolate.parameters['points'] = len(self._data[0].data.data)
@@ -454,3 +454,95 @@ class GoniometerSweepImporter(aspecd.io.DatasetImporter):
             _convert_(self.dataset.metadata.signal_channel.accumulations)
         self.dataset.metadata.bridge.q_value = \
             _convert_(self.dataset.metadata.bridge.q_value)
+
+
+class AmplitudeSweepImporter(aspecd.io.DatasetImporter):
+    """Import modulation amplitude sweep data from a Magnettech Benchtop
+    Spectrometer. """
+
+    def __init__(self, source=''):
+        super().__init__(source=source)
+        self._amplitude_list = []
+        self._amplitudes = []
+        self.dataset = cwepr.dataset.ExperimentalDataset()
+        self.filenames = None
+
+    def _import(self):
+        self._get_filenames()
+        self._sort_filenames()
+        self._import_all_spectra_to_list()
+        self._check_amplitudes_for_units()
+        self._put_amplitudes_in_list()
+        self._hand_data_to_dataset()
+
+        self._fill_axes()
+        #self._get_metadata()
+
+    def _get_filenames(self):
+        if not os.path.exists(self.source):
+            raise FileNotFoundError
+        self.filenames = glob.glob(os.path.join(self.source, '*mod*.xml'))
+
+    def _sort_filenames(self):
+
+        def sort_key(string=''):
+            num = string.split('mod_')[1]
+            num = num.split('mT')[0]
+            return int(num)
+
+        self.filenames = sorted(self.filenames, key=sort_key)
+
+    def _import_all_spectra_to_list(self):
+        self._data = []
+        # import all files without infofile
+        for num, filename in enumerate(self.filenames):
+            filename = filename[:-4]  # remove extension
+            importer = cwepr.io.MagnettechXMLImporter(source=filename)
+            importer.load_infofile = False
+            self._data.append(cwepr.dataset.ExperimentalDataset())
+            self._data[num].import_from(importer)
+            self._amplitudes.append(importer.xml_metadata['Modulation'])
+
+           # bring all measurements to the frequency of the first
+            if num > 0:
+                freq_correction = cwepr.processing.FrequencyCorrection()
+                freq_correction.parameters['frequency'] = \
+                    self._data[0].metadata.bridge.mw_frequency.value
+                self._data[num].process(freq_correction)
+
+            interpolate = cwepr.processing.AxisInterpolation()
+            self._interpolation_to_same_number_of_points(interpolate, num)
+
+    def _interpolation_to_same_number_of_points(self, interpolate, num):
+        interpolate.parameters['points'] = len(self._data[0].data.data)
+        self._data[num].process(interpolate)
+
+    def _check_amplitudes_for_units(self):
+        for item in self._amplitudes:
+            if item['unit'] == 'G':
+                item['value'] /= 10
+                item['unit'] = 'mT'
+
+    def _put_amplitudes_in_list(self):
+        for amplitude in self._amplitudes:
+            self._amplitude_list.append(float(amplitude['value']))
+
+    def _hand_data_to_dataset(self):
+        my_array = np.ndarray((len(self._data[0].data.data), len(self._data)))
+        self.dataset.data.data = my_array
+        for num, set_ in enumerate(self._data):
+            self.dataset.data.data[:, num] = set_.data.data
+
+    def _fill_axes(self):
+        self._fill_field_axis()
+        self._fill_amplitude_axis()
+
+    def _fill_field_axis(self):
+        self.dataset.data.axes[0] = self._data[0].data.axes[0]
+
+    def _fill_amplitude_axis(self):
+        self.dataset.data.axes[1].values = np.asarray(self._amplitude_list)
+        self.dataset.data.axes[1].unit = 'mT'
+        self.dataset.data.axes[1].quantity = 'modulation amplitude'
+
+# .. todo:: Import metadata from xml-files.

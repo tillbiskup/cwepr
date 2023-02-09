@@ -168,3 +168,87 @@ class TestGoniometerSweepImporter(unittest.TestCase):
             importer = cwepr.io.magnettech.GoniometerSweepImporter(
                 source=new_source)
             self.dataset.import_from(importer)
+
+
+class TestAmplitudeSweepImporter(unittest.TestCase):
+    def setUp(self):
+        source = os.path.join(ROOTPATH, 'testdata/magnettech-amplitude')
+        self.amplitude_importer = \
+            cwepr.io.magnettech.AmplitudeSweepImporter(source=source)
+        self.dataset = cwepr.dataset.ExperimentalDataset()
+
+    def instantiate_class(self):
+        pass
+
+    def test_has_import_method(self):
+        self.assertTrue(hasattr(self.amplitude_importer, '_import'))
+        self.assertTrue(callable(self.amplitude_importer._import))
+
+    def test_source_path_doesnt_exist_raises(self):
+        source = 'foo/'
+        importer = cwepr.io.magnettech.AmplitudeSweepImporter(source=source)
+        with self.assertRaises(FileNotFoundError):
+            self.dataset.import_from(importer)
+
+    def test_sort_filenames_returns_sorted_list(self):
+        self.amplitude_importer._get_filenames()
+        self.amplitude_importer._sort_filenames()
+        sorted_list = self.amplitude_importer.filenames
+        nums = []
+        for filename in sorted_list:
+            num = filename.split('mod_')[1]
+            nums.append(num.split('mT')[0])
+        for x in range(len(nums)-1):
+            self.assertGreater(int(nums[x+1])-int(nums[x]), 0)
+
+    def test_has_import_all_data_to_list_method(self):
+        self.assertTrue(hasattr(self.amplitude_importer,
+                                '_import_all_spectra_to_list'))
+        self.assertTrue(callable(
+            self.amplitude_importer._import_all_spectra_to_list))
+
+    def test_amplitudes_all_in_mT(self):
+        self.dataset.import_from(self.amplitude_importer)
+        for item in self.amplitude_importer._amplitudes:
+            self.assertTrue(item['unit'] == 'mT')
+
+    def test_amplitude_list_exists_of_floats(self):
+        self.dataset.import_from(self.amplitude_importer)
+        self.assertTrue(all([type(x) == float for x in
+                             self.amplitude_importer._amplitude_list]))
+
+    def test_import_data_fills_dataset(self):
+        self.dataset.import_from(self.amplitude_importer)
+        self.assertNotEqual(0, self.dataset.data.data.size)
+
+    def test_data_and_filenames_have_same_lengths(self):
+        # Check whether all data has been imported correctly and was moved
+        # entirely to the final self.dataset.
+        self.dataset.import_from(self.amplitude_importer)
+        self.assertEqual(len(self.amplitude_importer.filenames),
+                         self.amplitude_importer.dataset.data.data.shape[1])
+
+    def test_second_axis_has_correct_values(self):
+        self.dataset.import_from(self.amplitude_importer)
+        self.assertListEqual(
+            list(self.amplitude_importer.dataset.data.axes[1].values),
+            self.amplitude_importer._amplitude_list)
+
+    def test_all_datasets_have_same_frequency(self):
+        self.dataset.import_from(self.amplitude_importer)
+        frequencies = np.array([])
+        for set_ in self.amplitude_importer._data:
+            frequencies = np.append(frequencies,
+                                    set_.metadata.bridge.mw_frequency.value)
+        self.assertAlmostEqual(max(frequencies), min(frequencies))
+
+    def test_goniometer_imports_with_slash_at_source(self):
+        source = os.path.join(ROOTPATH, 'testdata/magnettech-amplitude/')
+        importer = cwepr.io.magnettech.AmplitudeSweepImporter(
+            source=source)
+        self.dataset.import_from(importer)
+
+    def test_q_value_is_float(self):
+        self.dataset.import_from(self.amplitude_importer)
+        q_value = self.dataset.metadata.bridge.q_value
+        self.assertIsInstance(q_value, float)

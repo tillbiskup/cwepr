@@ -579,9 +579,9 @@ class FrequencyCorrection(aspecd.processing.SingleProcessingStep):
         return b_target
 
     def _correct_with_offset(self, nu_target=None, axis=None):
-        point_to_correct = axis[round(len(axis)/2)]
+        point_to_correct = axis[round(len(axis) / 2)]
         nu_initial = self.dataset.metadata.bridge.mw_frequency.value
-        offset = point_to_correct - (nu_target/nu_initial) * point_to_correct
+        offset = point_to_correct - (nu_target / nu_initial) * point_to_correct
         b_target = axis + offset
         return b_target
 
