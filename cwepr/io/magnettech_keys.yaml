@@ -1,0 +1,49 @@
+temperature_control:
+  cryostat: ''
+  cryogen: ''
+  temperature:
+    unit: 'Celsius'
+    value: Temperature
+experiment:
+  type: KineticMode
+  runs: MeasurementCount
+  variable_parameter: XDatasource
+spectrometer:
+  model: Device
+  software: SWV
+magnetic_field:
+  start: Bfrom
+  stop: Bto
+  points: 0
+  field_probe_type: ''
+  field_probe_model: ''
+  sequence: ''
+  controller: ''
+  power_supply: ''
+bridge:
+  model: ''
+  controller: ''
+  attenuation:
+    unit: ''
+    dimension: ''
+    name: ''
+    value: 0.0
+  power: MicrowavePower
+  detection: ''
+  frequency_counter: ''
+  mw_frequency:
+    value: MwFreq
+  q_value: QFactor
+signal_channel:
+  model: ''
+  modulation_amplifier: ''
+  accumulations: Accumulations
+  modulation_frequency: ModulationFreq
+  modulation_amplitude: Modulation
+  phase:
+    value: Phase
+  offset: 0.0
+probehead:
+  type: ''
+  model: ''
+  coupling: ''
