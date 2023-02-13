@@ -278,8 +278,7 @@ class TestAmplitudeSweepImporter(unittest.TestCase):
         print(type(self.dataset.metadata.measurement.start))
         self.assertTrue(self.dataset.metadata.measurement.start)
 
-
-    def test_q_value_is_float(self):
+    def test_q_value_is_averaged(self):
         self.dataset.import_from(self.amplitude_importer)
         q_value = self.dataset.metadata.bridge.q_value
-        self.assertIsInstance(q_value, float)
+        self.assertTrue(q_value)

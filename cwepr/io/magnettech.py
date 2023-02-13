@@ -33,6 +33,7 @@ of two-dimensional datasets is planned for the future.
 """
 import base64
 import glob
+import logging
 import os
 import re
 import struct
@@ -40,6 +41,9 @@ import xml.etree.ElementTree as et
 
 import dateutil.parser
 import numpy as np
+
+logger = logging.getLogger(__name__)
+logger.addHandler(logging.NullHandler())
 
 import aspecd.annotation
 import aspecd.infofile
@@ -609,9 +613,15 @@ class AmplitudeSweepImporter(aspecd.io.DatasetImporter):
         for num, dataset_ in enumerate(self._data):
             temperatures.append(
                 dataset_.metadata.temperature_control.temperature.value)
-
             qfactors.append(
                 dataset_.metadata.bridge.q_value)
+        temperature = self._average_metadata_value_and_check_for_deviation(temperatures)
+        qfactor = self._average_metadata_value_and_check_for_deviation(qfactors)
+
+        self.dataset.metadata.temperature_control.temperature.value = temperature
+        self.dataset.metadata.temperature_control.temperature.unit = \
+            self._data[0].metadata.temperature_control.temperature.unit
+        self.dataset.metadata.bridge.q_value = qfactor
 
         #for data in self._data:
          #   print(data.metadata.signal_channel.phase.value)
@@ -619,8 +629,19 @@ class AmplitudeSweepImporter(aspecd.io.DatasetImporter):
         #print(temperatures, qfactors)
 
     @staticmethod
-    def _averaged_metadata_value(list_of_values):
-        return np.average(list_of_values)
+    def _average_metadata_value_and_check_for_deviation(list_of_values,
+                                                        offset_range = 0.1):
+        value = np.average(list_of_values)
+        value_range = max(list_of_values) - min(list_of_values)
+        if value_range > offset_range * value:
+            logger.warning('Value deviation is more than 10 % of the value '
+                           'itself. Please check the measurement conditions.')
+        # TODO: Where should this warning be placed to properly show which
+        #  value range is deviating?
+        # TODO: implement offset range in parameters, make this method
+        #  non-static?
+        return value
+
 
     def _import_date_time_metadata(self):
         pass

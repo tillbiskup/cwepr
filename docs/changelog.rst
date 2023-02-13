@@ -22,8 +22,6 @@ Fixes
 
 * Fix some metadata in magnettech importer (experiment.runs -> signal_channel.accumulations, correctly import spectrometer metadata, bring time stamp to same timezone.)
 
-*
-
 
 
 Version 0.3.0
