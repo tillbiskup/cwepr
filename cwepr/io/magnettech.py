@@ -45,6 +45,7 @@ import aspecd.annotation
 import aspecd.infofile
 import aspecd.io
 import aspecd.metadata
+import aspecd.processing
 
 import cwepr.dataset
 import cwepr.metadata
@@ -230,13 +231,13 @@ class MagnettechXMLImporter(aspecd.io.DatasetImporter):
         self.dataset.metadata.temperature_control.temperature.unit = 'K'
         self.dataset.metadata.experiment.type = \
             self.xml_metadata['KineticMode']
-        self.dataset.metadata.experiment.runs = \
+        self.dataset.metadata.signal_channel.accumulations = \
             self.xml_metadata['MeasurementCount']
         self.dataset.metadata.experiment.variable_parameter = \
             self.xml_metadata['XDatasource']
-        self.dataset.metadata.spectrometer = \
-            {'model': self.xml_metadata['Device'],
-             'software': self.xml_metadata['SWV']}
+        self.dataset.metadata.spectrometer.from_dict({
+            'model': self.xml_metadata['Device'],
+            'software': self.xml_metadata['SWV']})
         self.dataset.metadata.magnetic_field.start.from_string(
             self._dict_to_string(self.xml_metadata['Bfrom']))
         self.dataset.metadata.magnetic_field.stop.from_string(
@@ -283,8 +284,9 @@ class MagnettechXMLImporter(aspecd.io.DatasetImporter):
     def _map_dates(self):
         self.dataset.metadata.measurement.start = dateutil.parser.parse(
             self.xml_metadata['Timestamp'])
-        self.dataset.metadata.measurement.end = dateutil.parser.parse(
-            self.root.attrib['Timestamp'])
+        end = dateutil.parser.parse(self.root.attrib['Timestamp'])
+        diff = self.dataset.metadata.measurement.start.tzinfo
+        self.dataset.metadata.measurement.end = end.astimezone(diff)
         assert(self.dataset.metadata.measurement.start <
                self.dataset.metadata.measurement.end)
 
@@ -392,8 +394,6 @@ class GoniometerSweepImporter(aspecd.io.DatasetImporter):
             All information from the xml-file are completely ignored.
 
         """
-        # First import metadata from infofile, then override hand-written
-        # information by metadata from xml-file. The order matters.
         if self.load_infofile and self._infofile_exists():
             self._load_infofile()
             self._map_infofile()
@@ -471,12 +471,12 @@ class AmplitudeSweepImporter(aspecd.io.DatasetImporter):
         self._get_filenames()
         self._sort_filenames()
         self._import_all_spectra_to_list()
-        self._check_amplitudes_for_units()
-        self._put_amplitudes_in_list()
+        self._bring_axes_to_same_values()
+        self.check_amplitudes_and_put_into_list_as_axis()
         self._hand_data_to_dataset()
 
         self._fill_axes()
-        #self._get_metadata()
+        self._import_collected_metadata()
 
     def _get_filenames(self):
         if not os.path.exists(self.source):
@@ -501,7 +501,8 @@ class AmplitudeSweepImporter(aspecd.io.DatasetImporter):
             importer.load_infofile = False
             self._data.append(cwepr.dataset.ExperimentalDataset())
             self._data[num].import_from(importer)
-            self._amplitudes.append(importer.xml_metadata['Modulation'])
+            self._amplitudes.append(
+                self._data[num].metadata.signal_channel.modulation_amplitude)
 
            # bring all measurements to the frequency of the first
             if num > 0:
@@ -510,22 +511,17 @@ class AmplitudeSweepImporter(aspecd.io.DatasetImporter):
                     self._data[0].metadata.bridge.mw_frequency.value
                 self._data[num].process(freq_correction)
 
-            interpolate = cwepr.processing.AxisInterpolation()
-            self._interpolation_to_same_number_of_points(interpolate, num)
+    def _bring_axes_to_same_values(self):
+        extract_range = aspecd.processing.CommonRangeExtraction()
+        extract_range.datasets = self._data
+        extract_range.process()
 
-    def _interpolation_to_same_number_of_points(self, interpolate, num):
-        interpolate.parameters['points'] = len(self._data[0].data.data)
-        self._data[num].process(interpolate)
-
-    def _check_amplitudes_for_units(self):
-        for item in self._amplitudes:
-            if item['unit'] == 'G':
-                item['value'] /= 10
-                item['unit'] = 'mT'
-
-    def _put_amplitudes_in_list(self):
+    def check_amplitudes_and_put_into_list_as_axis(self):
         for amplitude in self._amplitudes:
-            self._amplitude_list.append(float(amplitude['value']))
+            if amplitude.unit == 'G':
+                amplitude.value /= 10
+                amplitude.unit = 'mT'
+            self._amplitude_list.append(amplitude.value)
 
     def _hand_data_to_dataset(self):
         my_array = np.ndarray((len(self._data[0].data.data), len(self._data)))
@@ -545,4 +541,88 @@ class AmplitudeSweepImporter(aspecd.io.DatasetImporter):
         self.dataset.data.axes[1].unit = 'mT'
         self.dataset.data.axes[1].quantity = 'modulation amplitude'
 
-# .. todo:: Import metadata from xml-files.
+    def _import_collected_metadata(self):
+        """
+        import_keys_fix = ('Device', 'SWV', )
+        import_keys_variable = (
+            dataset_.metadata.temperature_control.temperature,
+                                'Temperature',
+                                'QFactor',)
+        date_time = (dataset_.metadata.measurement.start,
+                                dataset_.metadata.measurement.end)
+                                """
+        self._import_fixed_metadata()
+        #self._import_variable_metadata()
+        self._import_variable_metadata()
+        self._import_date_time_metadata()
+
+    def _import_fixed_metadata(self):
+        self.dataset.metadata.experiment.type = 'Modulation Amplitude Sweep'
+        self.dataset.metadata.experiment.variable_parameter = 'Modulation ' \
+                                                              'Amplitude'
+        self.dataset.metadata.signal_channel.accumulations = \
+            self._data[0].metadata.experiment.runs
+        self.dataset.metadata.spectrometer = self._data[0].metadata.spectrometer
+        self.dataset.metadata.magnetic_field.start.from_string(
+            ("{:.4f}".format(self.dataset.data.axes[0].values[0])) + ' '+
+            self._data[0].metadata.magnetic_field.start.unit)
+        self.dataset.metadata.magnetic_field.stop.from_string(
+            ("{:.4f}".format(self.dataset.data.axes[0].values[-1])) + ' '+
+            self._data[0].metadata.magnetic_field.stop.unit)
+        self.dataset.metadata.magnetic_field.sweep_width.value = \
+            self.dataset.metadata.magnetic_field.stop.value - \
+            self.dataset.metadata.magnetic_field.start.value
+        self.dataset.metadata.magnetic_field.sweep_width.unit = \
+            self.dataset.metadata.magnetic_field.stop.unit
+        self.dataset.metadata.magnetic_field.points = \
+            len(self.dataset.data.axes[0].values)
+        self.dataset.metadata.magnetic_field.field_probe_type = 'Hall'
+        self.dataset.metadata.magnetic_field.field_probe_model = 'builtin'
+        if self.dataset.data.axes[0].values[-1] - \
+                self.dataset.data.axes[0].values[0] > 0:
+            self.dataset.metadata.magnetic_field.sequence = 'up'
+        else:
+            self.dataset.metadata.magnetic_field.sequence = 'down'
+        self.dataset.metadata.magnetic_field.controller = 'builtin'
+        self.dataset.metadata.magnetic_field.power_supply = 'builtin'
+        self.dataset.metadata.bridge.model = 'builtin'
+        self.dataset.metadata.bridge.controller = 'builtin'
+        self.dataset.metadata.bridge.power = self._data[0].metadata.bridge.power
+        self.dataset.metadata.bridge.detection = 'mixer'
+        self.dataset.metadata.bridge.frequency_counter = 'builtin'
+        self.dataset.metadata.bridge.mw_frequency = \
+            self._data[0].metadata.bridge.mw_frequency
+        self.dataset.metadata.signal_channel.model = 'builtin'
+        self.dataset.metadata.signal_channel.modulation_amplifier = 'builtin'
+        self.dataset.metadata.signal_channel.accumulations = \
+            self._data[0].metadata.signal_channel.accumulations
+        self.dataset.metadata.signal_channel.modulation_frequency =\
+            self._data[0].metadata.signal_channel.modulation_frequency
+        self.dataset.metadata.signal_channel.phase.value = \
+            self._data[0].metadata.signal_channel.phase.value
+        self.dataset.metadata.probehead.model = 'builtin'
+        self.dataset.metadata.probehead.coupling = 'critical'
+
+    def _import_variable_metadata(self):
+        temperatures = []
+        qfactors = []
+        for num, dataset_ in enumerate(self._data):
+            temperatures.append(
+                dataset_.metadata.temperature_control.temperature.value)
+
+            qfactors.append(
+                dataset_.metadata.bridge.q_value)
+
+        #for data in self._data:
+         #   print(data.metadata.signal_channel.phase.value)
+
+        #print(temperatures, qfactors)
+
+    @staticmethod
+    def _averaged_metadata_value(list_of_values):
+        return np.average(list_of_values)
+
+    def _import_date_time_metadata(self):
+        pass
+
+

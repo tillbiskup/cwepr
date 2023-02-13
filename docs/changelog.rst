@@ -12,13 +12,18 @@ Not yet released
 New features
 ------------
 
-* ...
+* Amplitude sweep importer for Magnettech.
 
 
 Fixes
 -----
 
 * Fix bug in analysis.FitOnData by using a helper dataset.
+
+* Fix some metadata in magnettech importer (experiment.runs -> signal_channel.accumulations, correctly import spectrometer metadata, bring time stamp to same timezone.)
+
+*
+
 
 
 Version 0.3.0

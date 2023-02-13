@@ -210,7 +210,7 @@ class TestAmplitudeSweepImporter(unittest.TestCase):
     def test_amplitudes_all_in_mT(self):
         self.dataset.import_from(self.amplitude_importer)
         for item in self.amplitude_importer._amplitudes:
-            self.assertTrue(item['unit'] == 'mT')
+            self.assertTrue(item.unit == 'mT')
 
     def test_amplitude_list_exists_of_floats(self):
         self.dataset.import_from(self.amplitude_importer)
@@ -220,6 +220,26 @@ class TestAmplitudeSweepImporter(unittest.TestCase):
     def test_import_data_fills_dataset(self):
         self.dataset.import_from(self.amplitude_importer)
         self.assertNotEqual(0, self.dataset.data.data.size)
+
+    def test_raw_data_is_different_before_and_after_range_extraction(self):
+        self.amplitude_importer._get_filenames()
+        self.amplitude_importer._sort_filenames()
+        self.amplitude_importer._import_all_spectra_to_list()
+        before = self.amplitude_importer._data[1].data.axes[0].values
+        self.amplitude_importer._bring_axes_to_same_values()
+        after = self.amplitude_importer._data[1].data.axes[0].values
+        self.assertFalse(np.array_equal(before, after))
+
+    def test_raw_data_have_same_length(self):
+        self.amplitude_importer._get_filenames()
+        self.amplitude_importer._sort_filenames()
+        self.amplitude_importer._import_all_spectra_to_list()
+        self.amplitude_importer._bring_axes_to_same_values()
+        print(self.amplitude_importer._data[0].data.axes[0].values[:5], '\n',
+              self.amplitude_importer._data[-1].data.axes[0].values[:5])
+        self.assertTrue(np.array_equal(
+            self.amplitude_importer._data[0].data.axes[0].values,
+            self.amplitude_importer._data[-1].data.axes[0].values))
 
     def test_data_and_filenames_have_same_lengths(self):
         # Check whether all data has been imported correctly and was moved
@@ -242,11 +262,22 @@ class TestAmplitudeSweepImporter(unittest.TestCase):
                                     set_.metadata.bridge.mw_frequency.value)
         self.assertAlmostEqual(max(frequencies), min(frequencies))
 
-    def test_goniometer_imports_with_slash_at_source(self):
+    def test_amplitude_imports_with_slash_at_source(self):
         source = os.path.join(ROOTPATH, 'testdata/magnettech-amplitude/')
         importer = cwepr.io.magnettech.AmplitudeSweepImporter(
             source=source)
         self.dataset.import_from(importer)
+
+    def test_fixed_values_are_imported_to_metadata(self):
+        self.dataset.import_from(self.amplitude_importer)
+        self.assertTrue(self.dataset.metadata.spectrometer.model)
+        self.assertTrue(self.dataset.metadata.spectrometer.software)
+
+    def test_time_is_imported_to_metadata(self):
+        self.dataset.import_from(self.amplitude_importer)
+        print(type(self.dataset.metadata.measurement.start))
+        self.assertTrue(self.dataset.metadata.measurement.start)
+
 
     def test_q_value_is_float(self):
         self.dataset.import_from(self.amplitude_importer)

@@ -171,7 +171,6 @@ class ESPWinEPRImporter(aspecd.io.DatasetImporter):
     # TODO: Implement handling of "RT" in temperature value
     @staticmethod
     def _check_if_temperature_empty(metadata_dict):
-        print(metadata_dict['temperature_control'])
         if 'value'not in metadata_dict['temperature_control'][
             'temperature'].keys() or metadata_dict['temperature_control'][
                                      'temperature']['value'] == 0:
