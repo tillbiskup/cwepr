@@ -26,9 +26,9 @@ two-dimensional matrix can be constructed. As the microwave frequency is
 recorded for each individual trace, a frequency correction can be applied
 beforehand.
 
-Currently, only one-dimensional datasets and angular-dependent measurements
-(goniometer sweeps) can be imported. Implementing importers for other types
-of two-dimensional datasets is planned for the future.
+Currently, one-dimensional datasets, angular-dependent measurements
+(goniometer sweeps) as well as Amplitude Sweeps can be imported. Implementing
+importers for other types of two-dimensional datasets is planned for the future.
 
 """
 import base64
@@ -466,10 +466,10 @@ class AmplitudeSweepImporter(aspecd.io.DatasetImporter):
 
     def __init__(self, source=''):
         super().__init__(source=source)
-        self._amplitude_list = []
-        self._amplitudes = []
         self.dataset = cwepr.dataset.ExperimentalDataset()
         self.filenames = None
+        self._amplitude_list = []
+        self._amplitudes = []
 
     def _import(self):
         self._get_filenames()
@@ -546,17 +546,8 @@ class AmplitudeSweepImporter(aspecd.io.DatasetImporter):
         self.dataset.data.axes[1].quantity = 'modulation amplitude'
 
     def _import_collected_metadata(self):
-        """
-        import_keys_fix = ('Device', 'SWV', )
-        import_keys_variable = (
-            dataset_.metadata.temperature_control.temperature,
-                                'Temperature',
-                                'QFactor',)
-        date_time = (dataset_.metadata.measurement.start,
-                                dataset_.metadata.measurement.end)
-                                """
         self._import_fixed_metadata()
-        #self._import_variable_metadata()
+        self._import_variable_metadata()
         self._import_variable_metadata()
         self._import_date_time_metadata()
 
@@ -623,10 +614,6 @@ class AmplitudeSweepImporter(aspecd.io.DatasetImporter):
             self._data[0].metadata.temperature_control.temperature.unit
         self.dataset.metadata.bridge.q_value = qfactor
 
-        #for data in self._data:
-         #   print(data.metadata.signal_channel.phase.value)
-
-        #print(temperatures, qfactors)
 
     @staticmethod
     def _average_metadata_value_and_check_for_deviation(list_of_values,
@@ -644,6 +631,15 @@ class AmplitudeSweepImporter(aspecd.io.DatasetImporter):
 
 
     def _import_date_time_metadata(self):
-        pass
+        starts = []
+        ends = []
+        for num, dataset_ in enumerate(self._data):
+            starts.append(
+                dataset_.metadata.measurement.start)
+            ends.append(
+                dataset_.metadata.measurement.end)
 
-
+        self.dataset.metadata.measurement.start = \
+            min(starts).strftime("%Y-%m-%d %H:%M:%S")
+        self.dataset.metadata.measurement.end = \
+            max(ends).strftime("%Y-%m-%d %H:%M:%S")

@@ -1,5 +1,6 @@
 import datetime
 import os
+import re
 import shutil
 import tempfile
 import unittest
@@ -235,8 +236,6 @@ class TestAmplitudeSweepImporter(unittest.TestCase):
         self.amplitude_importer._sort_filenames()
         self.amplitude_importer._import_all_spectra_to_list()
         self.amplitude_importer._bring_axes_to_same_values()
-        print(self.amplitude_importer._data[0].data.axes[0].values[:5], '\n',
-              self.amplitude_importer._data[-1].data.axes[0].values[:5])
         self.assertTrue(np.array_equal(
             self.amplitude_importer._data[0].data.axes[0].values,
             self.amplitude_importer._data[-1].data.axes[0].values))
@@ -273,12 +272,21 @@ class TestAmplitudeSweepImporter(unittest.TestCase):
         self.assertTrue(self.dataset.metadata.spectrometer.model)
         self.assertTrue(self.dataset.metadata.spectrometer.software)
 
-    def test_time_is_imported_to_metadata(self):
-        self.dataset.import_from(self.amplitude_importer)
-        print(type(self.dataset.metadata.measurement.start))
-        self.assertTrue(self.dataset.metadata.measurement.start)
 
     def test_q_value_is_averaged(self):
         self.dataset.import_from(self.amplitude_importer)
-        q_value = self.dataset.metadata.bridge.q_value
-        self.assertTrue(q_value)
+        self.assertTrue(self.dataset.metadata.bridge.q_value)
+
+    def test_time_start_is_imported_in_readable_format(self):
+        self.dataset.import_from(self.amplitude_importer)
+        start = self.dataset.metadata.measurement.start
+        self.assertTrue(start)
+        rex = re.compile("[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}")
+        self.assertTrue(rex.match(start))
+
+    def test_time_end_is_imported_in_readable_format(self):
+        self.dataset.import_from(self.amplitude_importer)
+        end = self.dataset.metadata.measurement.end
+        self.assertTrue(end)
+        rex = re.compile("[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}")
+        self.assertTrue(rex.match(end))

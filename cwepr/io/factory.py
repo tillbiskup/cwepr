@@ -73,12 +73,19 @@ class DatasetImporterFactory(aspecd.io.DatasetImporterFactory):
 
         """
         self._cut_file_extension_if_necessary()
-        if os.path.isdir(self.source) and self._directory_contains_gon_data():
-            self.data_format = 'GoniometerSweep'
-            importer = \
-                object_from_class_name('cwepr.io.GoniometerSweepImporter')
-            importer.source = self.source
-            return importer
+        if os.path.isdir(self.source):
+            if self._directory_contains_gon_data():
+                self.data_format = 'GoniometerSweep'
+                importer = \
+                    object_from_class_name('cwepr.io.GoniometerSweepImporter')
+                importer.source = self.source
+                return importer
+            elif self._directory_contains_amplitude_sweep_data():
+                self.data_format = 'AmplitudeSweep'
+                importer = \
+                    object_from_class_name('cwepr.io.AmplitudeSweepImporter')
+                importer.source = self.source
+                return importer
         self.data_format = self._find_format()
         importer = None
         if self.data_format:
@@ -121,5 +128,18 @@ class DatasetImporterFactory(aspecd.io.DatasetImporterFactory):
             else:
                 check_gon_filenames.append(False)
         if all(check_gon_filenames):
+            return True
+        return False
+
+    def _directory_contains_amplitude_sweep_data(self):
+        check_modamp_filenames = []
+        if not os.listdir(self.source):
+            return False
+        for element in os.listdir(self.source):
+            if 'mod' in element:
+                check_modamp_filenames.append(True)
+            else:
+                check_modamp_filenames.append(False)
+        if all(check_modamp_filenames):
             return True
         return False
