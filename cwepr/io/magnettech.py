@@ -326,6 +326,7 @@ class GoniometerSweepImporter(aspecd.io.DatasetImporter):
         self._get_filenames()
         self._sort_filenames()
         self._import_all_spectra_to_list()
+        self._bring_axes_to_same_values()
         self._hand_data_to_dataset()
 
         self._fill_axes()
@@ -362,11 +363,13 @@ class GoniometerSweepImporter(aspecd.io.DatasetImporter):
                     self._data[0].metadata.bridge.mw_frequency.value
                 self._data[num].process(freq_correction)
 
-            interpolate = cwepr.processing.AxisInterpolation()
-            self._interpolation_to_same_number_of_points(interpolate, num)
         for idx, angle in enumerate(self._angles):
             if angle > 359:
                 self._angles[idx] = 0
+    def _bring_axes_to_same_values(self):
+        extract_range = aspecd.processing.CommonRangeExtraction()
+        extract_range.datasets = self._data
+        extract_range.process()
 
     def _interpolation_to_same_number_of_points(self, interpolate, num):
         interpolate.parameters['points'] = len(self._data[0].data.data)
@@ -461,8 +464,32 @@ class GoniometerSweepImporter(aspecd.io.DatasetImporter):
 
 
 class AmplitudeSweepImporter(aspecd.io.DatasetImporter):
-    """Import modulation amplitude sweep data from a Magnettech Benchtop
-    Spectrometer. """
+    """Import modulation amplitude sweep data from a Magnettech Spectrometer.
+
+    The provided XML raw files are read and brought to an unified axis;
+    metadata is imported from the raw files and added to the dataset. To now,
+    the infofile is ignored.
+
+
+    Attributes
+    ----------
+    filenames: :class:`list`
+        Filenames of raw XML-files for an amplitude sweep.
+
+
+    Examples
+    --------
+    The amplitude sweep is read in as follows:
+
+    .. code-block:: yaml
+
+       - kind: processing
+         type: Normalisation
+         properties:
+           parameters:
+             kind: receiver_gain
+
+    """
 
     def __init__(self, source=''):
         super().__init__(source=source)
