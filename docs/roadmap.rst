@@ -30,6 +30,8 @@ For version 0.4
   * At least for goniometer, power, and modulation amplitude sweeps, these should be transformed into single datasets.
   * Requires interpolation of data, as each individual dataset has its own *x* axis (usually field).
 
+* Import infofiles in all magnettech importers.
+
 * Handling of file extensions during import: Currently, they are cut in the init and again appended afterwards. The factory only gives source names without extension.
 
 * Implement handling of "RT" as temperature value in the infofile.

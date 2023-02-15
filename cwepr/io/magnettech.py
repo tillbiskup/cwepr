@@ -181,6 +181,11 @@ class MagnettechXMLImporter(aspecd.io.DatasetImporter):
 
     def _get_magnetic_field_range(self):
         """Get magnetic field range from preprocessed XML data."""
+        if not isinstance(self.xml_metadata['Bfrom'], dict):
+            self.xml_metadata['Bfrom'] = \
+                {'value': self.xml_metadata['Bfrom'], 'unit': 'mT'}
+            self.xml_metadata['Bto'] = \
+                {'value': self.xml_metadata['Bto'], 'unit': 'mT'}
         self._bfrom = float(self.xml_metadata['Bfrom']['value'])
         self._bto = float(self.xml_metadata['Bto']['value'])
 
@@ -233,8 +238,11 @@ class MagnettechXMLImporter(aspecd.io.DatasetImporter):
         self.dataset.metadata.temperature_control.temperature.value = \
             float(self.xml_metadata['Temperature']) + 273.15
         self.dataset.metadata.temperature_control.temperature.unit = 'K'
-        self.dataset.metadata.experiment.type = \
-            self.xml_metadata['KineticMode']
+        if self.xml_metadata['Type'] == 'single':
+            self.dataset.metadata.experiment.type = \
+                self.xml_metadata['KineticMode']
+        else:
+            self.dataset.metadata.experiment.type = self.xml_metadata['Type']
         self.dataset.metadata.signal_channel.accumulations = \
             self.xml_metadata['MeasurementCount']
         self.dataset.metadata.experiment.variable_parameter = \
@@ -467,28 +475,28 @@ class AmplitudeSweepImporter(aspecd.io.DatasetImporter):
     """Import modulation amplitude sweep data from a Magnettech Spectrometer.
 
     The provided XML raw files are read and brought to an unified axis;
-    metadata is imported from the raw files and added to the dataset. To now,
-    the infofile is ignored.
 
+    .. note::
+        Different to the GoniometerSweepImporter, metadata is only taken from
+        the XML source file, ignoring the additional information from the
+        infofile.
 
     Attributes
     ----------
     filenames: :class:`list`
-        Filenames of raw XML-files for an amplitude sweep.
+        Filenames of raw XML-files for an amplitude sweep. Is normally
+        created automatically from the ``parameters['source']`` directory.
 
 
     Examples
     --------
-    The amplitude sweep is read in as follows:
+    The amplitude sweep is read in simply with:
 
     .. code-block:: yaml
 
-       - kind: processing
-         type: Normalisation
-         properties:
-           parameters:
-             kind: receiver_gain
-
+       datasets:
+        - source: amplitude-sweep-data
+          id: amplitude-sweep
     """
 
     def __init__(self, source=''):
@@ -512,7 +520,8 @@ class AmplitudeSweepImporter(aspecd.io.DatasetImporter):
     def _get_filenames(self):
         if not os.path.exists(self.source):
             raise FileNotFoundError
-        self.filenames = glob.glob(os.path.join(self.source, '*mod*.xml'))
+        if not self.filenames:
+            self.filenames = glob.glob(os.path.join(self.source, '*mod*.xml'))
 
     def _sort_filenames(self):
 
@@ -579,7 +588,8 @@ class AmplitudeSweepImporter(aspecd.io.DatasetImporter):
         self._import_date_time_metadata()
 
     def _import_fixed_metadata(self):
-        self.dataset.metadata.experiment.type = 'Modulation Amplitude Sweep'
+        self.dataset.metadata.experiment.type = \
+            self._data[0].metadata.experiment.type
         self.dataset.metadata.experiment.variable_parameter = 'Modulation ' \
                                                               'Amplitude'
         self.dataset.metadata.signal_channel.accumulations = \
