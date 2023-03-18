@@ -272,7 +272,6 @@ class TestAmplitudeSweepImporter(unittest.TestCase):
         self.assertTrue(self.dataset.metadata.spectrometer.model)
         self.assertTrue(self.dataset.metadata.spectrometer.software)
 
-
     def test_q_value_is_averaged(self):
         self.dataset.import_from(self.amplitude_importer)
         self.assertTrue(self.dataset.metadata.bridge.q_value)

@@ -172,8 +172,9 @@ class ESPWinEPRImporter(aspecd.io.DatasetImporter):
     @staticmethod
     def _check_if_temperature_empty(metadata_dict):
         if 'value'not in metadata_dict['temperature_control'][
-            'temperature'].keys() or metadata_dict['temperature_control'][
-                                     'temperature']['value'] == 0:
+            'temperature'].keys() or \
+                metadata_dict['temperature_control']['temperature']['value'] \
+                == 0:
             metadata_dict.pop('temperature_control')
         return metadata_dict
 

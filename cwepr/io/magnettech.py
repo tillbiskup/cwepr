@@ -27,7 +27,7 @@ recorded for each individual trace, a frequency correction can be applied
 beforehand.
 
 Currently, one-dimensional datasets, angular-dependent measurements
-(goniometer sweeps) as well as Amplitude Sweeps can be imported. Implementing
+(goniometer sweeps) as well as amplitude sweeps can be imported. Implementing
 importers for other types of two-dimensional datasets is planned for the future.
 
 """
@@ -42,9 +42,6 @@ import xml.etree.ElementTree as et
 import dateutil.parser
 import numpy as np
 
-logger = logging.getLogger(__name__)
-logger.addHandler(logging.NullHandler())
-
 import aspecd.annotation
 import aspecd.infofile
 import aspecd.io
@@ -55,6 +52,9 @@ import cwepr.dataset
 import cwepr.metadata
 import cwepr.processing
 import cwepr.exceptions
+
+logger = logging.getLogger(__name__)
+logger.addHandler(logging.NullHandler())
 
 
 class MagnettechXMLImporter(aspecd.io.DatasetImporter):
@@ -91,7 +91,7 @@ class MagnettechXMLImporter(aspecd.io.DatasetImporter):
         self.root = None
         self.full_filename = ''
         self.load_infofile = True
-        self.xml_metadata = dict()
+        self.xml_metadata = {}
         # private properties
         self._infofile = aspecd.infofile.Infofile()
         self._bfrom = float()
@@ -201,8 +201,9 @@ class MagnettechXMLImporter(aspecd.io.DatasetImporter):
         if self._get_infofile_name() and os.path.exists(
                 self._get_infofile_name()[0]):
             return True
-        print('No infofile found for dataset %s, import continued without '
-              'infofile.' % os.path.split(self.source)[1])
+        print(f'No infofile found for dataset '
+              f'{os.path.split(self.source)[1]}, import continued without' 
+              'infofile.')
         return False
 
     def _load_infofile(self):
@@ -299,7 +300,7 @@ class MagnettechXMLImporter(aspecd.io.DatasetImporter):
         end = dateutil.parser.parse(self.root.attrib['Timestamp'])
         diff = self.dataset.metadata.measurement.start.tzinfo
         self.dataset.metadata.measurement.end = end.astimezone(diff)
-        assert(self.dataset.metadata.measurement.start <
+        assert (self.dataset.metadata.measurement.start <
                self.dataset.metadata.measurement.end)
 
     @staticmethod
@@ -374,6 +375,7 @@ class GoniometerSweepImporter(aspecd.io.DatasetImporter):
         for idx, angle in enumerate(self._angles):
             if angle > 359:
                 self._angles[idx] = 0
+
     def _bring_axes_to_same_values(self):
         extract_range = aspecd.processing.CommonRangeExtraction()
         extract_range.datasets = self._data
@@ -417,8 +419,9 @@ class GoniometerSweepImporter(aspecd.io.DatasetImporter):
         if self._get_infofile_name() and os.path.exists(
                 self._get_infofile_name()[0]):
             return True
-        print('No infofile found for dataset %s, import continued without '
-              'infofile.' % os.path.split(self.source)[1])
+        print(f'No infofile found for dataset '
+              f'{os.path.split(self.source)[1]}, import continued without '
+              f'infofile.')
         return False
 
     def _load_infofile(self):
@@ -497,12 +500,16 @@ class AmplitudeSweepImporter(aspecd.io.DatasetImporter):
        datasets:
         - source: amplitude-sweep-data
           id: amplitude-sweep
+
+    .. versionadded:: 0.4
+
     """
 
     def __init__(self, source=''):
         super().__init__(source=source)
         self.dataset = cwepr.dataset.ExperimentalDataset()
         self.filenames = None
+        self._data = []
         self._amplitude_list = []
         self._amplitudes = []
 
@@ -511,7 +518,7 @@ class AmplitudeSweepImporter(aspecd.io.DatasetImporter):
         self._sort_filenames()
         self._import_all_spectra_to_list()
         self._bring_axes_to_same_values()
-        self.check_amplitudes_and_put_into_list_as_axis()
+        self._check_amplitudes_and_put_into_list_as_axis()
         self._hand_data_to_dataset()
 
         self._fill_axes()
@@ -533,7 +540,6 @@ class AmplitudeSweepImporter(aspecd.io.DatasetImporter):
         self.filenames = sorted(self.filenames, key=sort_key)
 
     def _import_all_spectra_to_list(self):
-        self._data = []
         # import all files without infofile
         for num, filename in enumerate(self.filenames):
             filename = filename[:-4]  # remove extension
@@ -544,7 +550,7 @@ class AmplitudeSweepImporter(aspecd.io.DatasetImporter):
             self._amplitudes.append(
                 self._data[num].metadata.signal_channel.modulation_amplitude)
 
-           # bring all measurements to the frequency of the first
+            # bring all measurements to the frequency of the first
             if num > 0:
                 freq_correction = cwepr.processing.FrequencyCorrection()
                 freq_correction.parameters['frequency'] = \
@@ -556,7 +562,7 @@ class AmplitudeSweepImporter(aspecd.io.DatasetImporter):
         extract_range.datasets = self._data
         extract_range.process()
 
-    def check_amplitudes_and_put_into_list_as_axis(self):
+    def _check_amplitudes_and_put_into_list_as_axis(self):
         for amplitude in self._amplitudes:
             if amplitude.unit == 'G':
                 amplitude.value /= 10
@@ -596,10 +602,10 @@ class AmplitudeSweepImporter(aspecd.io.DatasetImporter):
             self._data[0].metadata.experiment.runs
         self.dataset.metadata.spectrometer = self._data[0].metadata.spectrometer
         self.dataset.metadata.magnetic_field.start.from_string(
-            ("{:.4f}".format(self.dataset.data.axes[0].values[0])) + ' '+
+            ("{:.4f}".format(self.dataset.data.axes[0].values[0])) + ' ' +
             self._data[0].metadata.magnetic_field.start.unit)
         self.dataset.metadata.magnetic_field.stop.from_string(
-            ("{:.4f}".format(self.dataset.data.axes[0].values[-1])) + ' '+
+            ("{:.4f}".format(self.dataset.data.axes[0].values[-1])) + ' ' +
             self._data[0].metadata.magnetic_field.stop.unit)
         self.dataset.metadata.magnetic_field.sweep_width.value = \
             self.dataset.metadata.magnetic_field.stop.value - \
@@ -638,39 +644,36 @@ class AmplitudeSweepImporter(aspecd.io.DatasetImporter):
     def _import_variable_metadata(self):
         temperatures = []
         qfactors = []
-        for num, dataset_ in enumerate(self._data):
+        for _, dataset_ in enumerate(self._data):
             temperatures.append(
                 dataset_.metadata.temperature_control.temperature.value)
             qfactors.append(
                 dataset_.metadata.bridge.q_value)
-        temperature = self._average_metadata_value_and_check_for_deviation(temperatures)
-        qfactor = self._average_metadata_value_and_check_for_deviation(qfactors)
+        temperature = self._average_and_check_for_deviation(temperatures)
+        qfactor = self._average_and_check_for_deviation(qfactors)
 
-        self.dataset.metadata.temperature_control.temperature.value = temperature
+        self.dataset.metadata.temperature_control.temperature.value = \
+            temperature
         self.dataset.metadata.temperature_control.temperature.unit = \
             self._data[0].metadata.temperature_control.temperature.unit
         self.dataset.metadata.bridge.q_value = qfactor
 
-
     @staticmethod
-    def _average_metadata_value_and_check_for_deviation(list_of_values,
-                                                        offset_range = 0.1):
+    def _average_and_check_for_deviation(list_of_values, offset_range=0.1):
         value = np.average(list_of_values)
         value_range = max(list_of_values) - min(list_of_values)
         if value_range > offset_range * value:
             logger.warning('Value deviation is more than 10 % of the value '
                            'itself. Please check the measurement conditions.')
-        # TODO: Where should this warning be placed to properly show which
-        #  value range is deviating?
+        # TODO: Check that logging is working with ASpecD
         # TODO: implement offset range in parameters, make this method
         #  non-static?
         return value
 
-
     def _import_date_time_metadata(self):
         starts = []
         ends = []
-        for num, dataset_ in enumerate(self._data):
+        for _, dataset_ in enumerate(self._data):
             starts.append(
                 dataset_.metadata.measurement.start)
             ends.append(

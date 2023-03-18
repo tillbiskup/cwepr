@@ -480,37 +480,37 @@ class SignalToNoiseRatio(aspecd.analysis.SingleAnalysisStep):
     # noinspection PyUnresolvedReferences
     """Get a spectrum's signal-to-noise ratio.
 
-        This is done by comparing the absolute maximum of the spectrum to the
-        maximum of the edge part of the spectrum (i.e. a part which is
-        considered to not contain any signal).
+    This is done by comparing the absolute maximum of the spectrum to the
+    maximum of the edge part of the spectrum (i.e. a part which is
+    considered to not contain any signal).
 
 
-        Attributes
-        ----------
-        parameters : :class:`dict`
-            All parameters necessary for this step.
+    Attributes
+    ----------
+    parameters : :class:`dict`
+        All parameters necessary for this step.
 
-            percentage : :class:`int`
-                percentage of the spectrum to be considered edge part on any
-                side  (i.e. 10 % means 10 % on each side).
+        percentage : :class:`int`
+            percentage of the spectrum to be considered edge part on any
+            side  (i.e. 10 % means 10 % on each side).
 
-                Default: 10 %
+            Default: 10 %
 
-        Examples
-        --------
-        The analysis can be applied either with or without the additional
-        parameter "percentage":
+    Examples
+    --------
+    The analysis can be applied either with or without the additional
+    parameter "percentage":
 
-        .. code-block:: yaml
+    .. code-block:: yaml
 
-            - kind: singleanalysis
-              type: SignalToNoiseRatio
-              properties:
-                parameters:
-                    percentage: 7
-              result: SNR
+        - kind: singleanalysis
+          type: SignalToNoiseRatio
+          properties:
+            parameters:
+                percentage: 7
+          result: SNR
 
-        """
+    """
 
     def __init__(self):
         super().__init__()
@@ -722,71 +722,71 @@ class FitOnData(aspecd.analysis.SingleAnalysisStep):
     # noinspection PyUnresolvedReferences
     """Perform polynomial fit on data and return its parameters or a dataset.
 
-        Developed tests first.
+    Developed tests first.
 
-        Attributes
-        ----------
-        parameters : :class:`dict`
-            All parameters necessary for this step.
+    Attributes
+    ----------
+    parameters : :class:`dict`
+        All parameters necessary for this step.
 
-            points : :class:`int`
-                first n points that should be taken into account
+        points : :class:`int`
+            first n points that should be taken into account
 
-                Default: 3
+            Default: 3
 
-            order : :class:`int`
-                order of the fit.
+        order : :class:`int`
+            order of the fit.
 
-                Default: 1
+            Default: 1
 
-            return_type : :class:`str`
-                Choose to returning the coefficients of the fit in order
-                of increasing degree or a calculated dataset containing
-                the curve to plot.
+        return_type : :class:`str`
+            Choose to returning the coefficients of the fit in order
+            of increasing degree or a calculated dataset containing
+            the curve to plot.
 
-                Default: coefficients.
+            Default: coefficients.
 
-                Valid values: 'coefficients', 'dataset'
+            Valid values: 'coefficients', 'dataset'
 
-            fixed_intercept : :class:`bool`
-                Perform linear regression with fixed intercept, *i.e.*,
-                only fitting the slope.
+        fixed_intercept : :class:`bool`
+            Perform linear regression with fixed intercept, *i.e.*,
+            only fitting the slope.
 
-                To change the intercept from the origin, use the parameter
-                `offset`.
+            To change the intercept from the origin, use the parameter
+            `offset`.
 
-                Default: False.
+            Default: False.
 
-            offset : :class:`float`
-                Vertical offset of the data, *i.e.* f(0)
+        offset : :class:`float`
+            Vertical offset of the data, *i.e.* f(0)
 
-                Useful in cases where the model defines an intercept f(0) != 0.
+            Useful in cases where the model defines an intercept f(0) != 0.
 
-                Default: 0
+            Default: 0
 
-        Examples
-        --------
-        Some parameters can be chosen here, depending on the purpose and the
-        following analysis and processing steps.
+    Examples
+    --------
+    Some parameters can be chosen here, depending on the purpose and the
+    following analysis and processing steps.
 
-        .. code-block:: yaml
+    .. code-block:: yaml
 
-            - kind: singleanalysis
-              type: FitOnData
-              properties:
-                parameters:
-                    points: 5
-                    order: 2
-                    return_type: dataset
-                    fixed_intercept: True
-              result: fit
+        - kind: singleanalysis
+          type: FitOnData
+          properties:
+            parameters:
+                points: 5
+                order: 2
+                return_type: dataset
+                fixed_intercept: True
+          result: fit
 
-        .. versionchanged:: 0.3
-            Rewrite to perform fits with fixed intercept, remove parameter
-            "add_origin", introduced "fixed_intercept".
-            Return coefficients in order of increasing degree
+    .. versionchanged:: 0.3
+        Rewrite to perform fits with fixed intercept, remove parameter
+        "add_origin", introduced "fixed_intercept".
+        Return coefficients in order of increasing degree
 
-        """
+    """
 
     def __init__(self):
         super().__init__()

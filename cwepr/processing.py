@@ -506,7 +506,6 @@ class FrequencyCorrection(aspecd.processing.SingleProcessingStep):
 
     Examples
     --------
-
     .. code-block:: yaml
 
        - kind: processing
@@ -532,6 +531,7 @@ class FrequencyCorrection(aspecd.processing.SingleProcessingStep):
 
     .. versionchanged:: 0.4
         Choice between the two methods of  frequency correction
+
     """
 
     def __init__(self):

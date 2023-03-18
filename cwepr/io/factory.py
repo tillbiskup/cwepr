@@ -80,7 +80,7 @@ class DatasetImporterFactory(aspecd.io.DatasetImporterFactory):
                     object_from_class_name('cwepr.io.GoniometerSweepImporter')
                 importer.source = self.source
                 return importer
-            elif self._directory_contains_amplitude_sweep_data():
+            if self._directory_contains_amplitude_sweep_data():
                 self.data_format = 'AmplitudeSweep'
                 importer = \
                     object_from_class_name('cwepr.io.AmplitudeSweepImporter')
