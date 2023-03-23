@@ -92,8 +92,12 @@ class MagnettechXMLImporter(aspecd.io.DatasetImporter):
         self.full_filename = ''
         self.load_infofile = True
         self.xml_metadata = {}
+        self.parameters['data_curve_type'] = 'MW_Absorption'
+        self.parameters['axis_curve_type'] = 'BField'
         # private properties
         self._infofile = aspecd.infofile.Infofile()
+        self._data_curve = None
+        self._axis_curve = None
         self._bfrom = float()
         self._bto = float()
         self._xvalues = None
@@ -104,6 +108,7 @@ class MagnettechXMLImporter(aspecd.io.DatasetImporter):
         self._get_full_filename()
         self._get_xml_root_element()
 
+        self._choose_data_source()
         self._get_raw_data()
         self._create_x_axis()
         self._extract_metadata_from_xml()  # Is needed for cutting data
@@ -131,12 +136,19 @@ class MagnettechXMLImporter(aspecd.io.DatasetImporter):
             raise FileNotFoundError('XML file not found.')
         self.root = et.parse(self.full_filename).getroot()
 
+    def _choose_data_source(self):
+
+        for curve in self.root[0][0][1]:
+            if self.parameters['data_curve_type'] == curve.attrib['YType']:
+                self._data_curve = curve
+            if self.parameters['axis_curve_type'] == curve.attrib['YType']:
+                self._axis_curve = curve
+
     def _get_raw_data(self):
         self._xvalues = \
-            self._convert_base64string_to_np_array(self.root[0][0][1][0].text)
-        # TODO: Not take last element but first harmonic (or so)
+            self._convert_base64string_to_np_array(self._axis_curve.text)
         self._yvalues = \
-            self._convert_base64string_to_np_array(self.root[0][0][1][-1].text)
+            self._convert_base64string_to_np_array(self._data_curve.text)
 
     @staticmethod
     def _convert_base64string_to_np_array(string):
@@ -148,17 +160,17 @@ class MagnettechXMLImporter(aspecd.io.DatasetImporter):
         return np.asarray(data)
 
     def _create_x_axis(self):
-        b_field_x_offset = float(self.root[0][0][1][0].attrib['XOffset'])
-        b_field_x_slope = float(self.root[0][0][1][0].attrib['XSlope'])
-        mw_abs_x_offset = float(self.root[0][0][1][-1].attrib['XOffset'])
-        mw_abs_x_slope = float(self.root[0][0][1][-1].attrib['XSlope'])
+        b_field_x_offset = float(self._axis_curve.attrib['XOffset'])
+        b_field_x_slope = float(self._axis_curve.attrib['XSlope'])
+        mw_abs_x_offset = float(self._data_curve.attrib['XOffset'])
+        mw_abs_x_slope = float(self._data_curve.attrib['XSlope'])
 
         mw_x = mw_abs_x_offset + \
-            np.linspace(0, len(self._yvalues) - 1, num=len(self._yvalues)) \
-            * mw_abs_x_slope
+               np.linspace(0, len(self._yvalues) - 1, num=len(self._yvalues)) \
+               * mw_abs_x_slope
         b_field_x = b_field_x_offset + \
-            np.linspace(0, len(self._xvalues) - 1, num=len(self._xvalues)) * \
-            b_field_x_slope
+                    np.linspace(0, len(self._xvalues) - 1,
+                                num=len(self._xvalues)) * b_field_x_slope
         self._xvalues = np.interp(mw_x, b_field_x, self._xvalues)
 
     def _extract_metadata_from_xml(self):
@@ -202,7 +214,7 @@ class MagnettechXMLImporter(aspecd.io.DatasetImporter):
                 self._get_infofile_name()[0]):
             return True
         print(f'No infofile found for dataset '
-              f'{os.path.split(self.source)[1]}, import continued without' 
+              f'{os.path.split(self.source)[1]}, import continued without'
               'infofile.')
         return False
 
@@ -301,7 +313,7 @@ class MagnettechXMLImporter(aspecd.io.DatasetImporter):
         diff = self.dataset.metadata.measurement.start.tzinfo
         self.dataset.metadata.measurement.end = end.astimezone(diff)
         assert (self.dataset.metadata.measurement.start <
-               self.dataset.metadata.measurement.end)
+                self.dataset.metadata.measurement.end)
 
     @staticmethod
     def _dict_to_string(dict_):
@@ -634,7 +646,7 @@ class AmplitudeSweepImporter(aspecd.io.DatasetImporter):
         self.dataset.metadata.signal_channel.modulation_amplifier = 'builtin'
         self.dataset.metadata.signal_channel.accumulations = \
             self._data[0].metadata.signal_channel.accumulations
-        self.dataset.metadata.signal_channel.modulation_frequency =\
+        self.dataset.metadata.signal_channel.modulation_frequency = \
             self._data[0].metadata.signal_channel.modulation_frequency
         self.dataset.metadata.signal_channel.phase.value = \
             self._data[0].metadata.signal_channel.phase.value

@@ -88,6 +88,13 @@ class TestMagnettechXmlImporter(unittest.TestCase):
         self.dataset.import_from(importer)
         self.assertTrue(self.dataset.annotations)
 
+    def test_import_with_second_harmonic_imports_first(self):
+        source = os.path.join(ROOTPATH, 'testdata/magnettech-second-harmonic')
+        self.importer.source = source
+        self.dataset.import_from(self.importer)
+        self.assertEqual(self.importer._data_curve.attrib['Name'],
+                         'MWAbsorption (1st harm.)')
+
 
 class TestGoniometerSweepImporter(unittest.TestCase):
     def setUp(self):
