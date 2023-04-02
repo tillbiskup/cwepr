@@ -36,8 +36,12 @@ class DatasetImporterFactory(aspecd.io.DatasetImporterFactory):
         list of file extensions to detect the correct importer.
 
     data_format : :class:`str`
-        Name of the format that has been detected.
+        Name of the format that has been given or detected.
 
+    .. versionchanged:: 0.4
+        File extension is taken into account, so that two files with the same
+        name and different extension can be next to each other and the correct
+        one is taken into account.
     """
 
     def __init__(self):
@@ -72,7 +76,6 @@ class DatasetImporterFactory(aspecd.io.DatasetImporterFactory):
             formats
 
         """
-        #self._cut_file_extension_if_necessary()
         if os.path.isdir(self.source):
             if self._directory_contains_gon_data():
                 self.data_format = 'GoniometerSweep'
@@ -86,28 +89,27 @@ class DatasetImporterFactory(aspecd.io.DatasetImporterFactory):
                     object_from_class_name('cwepr.io.AmplitudeSweepImporter')
                 importer.source = self.source
                 return importer
-        self.data_format = self._find_format_new()
-        #importer = None
+        self.data_format = self._find_format()
         if self.data_format:
             importer = object_from_class_name(
                 ".".join(["cwepr", "io", self.data_format + "Importer"]))
             importer.source = self.source
             return importer
 
-    def _find_format_new(self):
+    def _find_format(self):
         # detect extension
         detected_format = None
-        root, extension = os.path.splitext(self.source)
+        root, file_extension = os.path.splitext(self.source)
         for file_format, extensions in self.supported_formats.items():
             file_exists = []
-            if extension in extensions:
-                for specific_extension in extensions:
-                    file_exists.append(os.path.isfile(root + specific_extension))
+            if file_extension in extensions:
+                for extension in extensions:
+                    file_exists.append(os.path.isfile(root + extension))
                 if all(file_exists):
                     detected_format = file_format
-            elif not extension:
-                for specific_extension in extensions:
-                    file_exists.append(os.path.isfile(self.source + specific_extension))
+            elif not file_extension:
+                for extension in extensions:
+                    file_exists.append(os.path.isfile(self.source + extension))
                 if all(file_exists):
                     detected_format = file_format
         return detected_format
@@ -137,4 +139,3 @@ class DatasetImporterFactory(aspecd.io.DatasetImporterFactory):
         if all(check_modamp_filenames):
             return True
         return False
-

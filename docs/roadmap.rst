@@ -34,7 +34,11 @@ For version 0.4
 
 * Implement handling of "RT" as temperature value in the infofile.
 
-* Import and store filter mode from Magnettech data -> changes in the metadata
+* Import and store filter mode from Magnettech data
+
+    * change metadata (done)
+
+    * adapt infofile-importer (in every importer)
 
 * Magnettech: Choose between raw data and data filtered during measurement.
 

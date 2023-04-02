@@ -105,7 +105,7 @@ To install the necessary Python dependencies, create a virtual environment, e.g.
 .. code-block:: bash
 
     pip install sphinx
-    pip install sphinx-rtd-theme
+    pip install sphinx-rtd-theme sphinxcontrib-bibtex sphinx-multiversion
 
 
 To build the documentation:

@@ -12,7 +12,15 @@ Not yet released
 New features
 ------------
 
-* Amplitude sweep importer for Magnettech.
+* Add Frequency Correction with offset: This keeps the hyperfine splitting values.
+
+* Amplitude sweep importer for Magnettech. Averaging of temperature and Q-Values, which are averaged, a warning is issued if they vary too much.
+
+* Implement Digital Filter into metadata.
+
+* Data is imported according to its file extension specified in the recipe.
+
+* Added support for cwepr-infofile version 0.1.5
 
 
 Fixes

@@ -429,7 +429,6 @@ Module documentation
 ====================
 
 What  follows is the API documentation of each class implemented in this module.
-
 """
 import numpy as np
 import scipy.integrate
@@ -700,7 +699,7 @@ class AutomaticPhaseCorrection(aspecd.processing.SingleProcessingStep):
         # TODO: introduce parameter step width/number of points.
         angles = np.linspace(min_angle, max_angle, num=181)
         for angle in angles:
-            rotated_signal = (np.exp(1j * angle) * self._analytic_signal)
+            rotated_signal = np.exp(1j * angle) * self._analytic_signal
             if self.parameters['order'] > 0:
                 # pylint: disable=unused-variable
                 for j in range(self.parameters['order']):
