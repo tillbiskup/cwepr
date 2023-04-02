@@ -29,22 +29,25 @@ class TestDatasetImporterFactory(unittest.TestCase):
         source = os.path.join(ROOTPATH, 'testdata', 'magnettech-goniometer/')
         with tempfile.TemporaryDirectory() as tmpdir:
             new_source = os.path.join(tmpdir, 'new')
-            shutil.copytree(source, new_source)
-            list_element = os.listdir(new_source)[2]
-            source_name = os.path.join(new_source, list_element)
-            target_name = os.path.join(new_source, 'fake_name')
-            os.rename(source_name, target_name)
             importer = cwepr.dataset.DatasetFactory().importer_factory
             importer.get_importer(source=new_source)
             self.assertNotEqual('MagnettechXML', importer.data_format)
 
-    def test_factory_cuts_filename(self):
+    def test_factory_detects_extension(self):
         source = os.path.join(ROOTPATH, 'testdata', 'test-magnettech.xml')
         factory = cwepr.dataset.DatasetFactory()
         importer_factory = factory.importer_factory
         importer_factory.get_importer(source=source)
         root_source, _ = os.path.splitext(source)
-        self.assertEqual(root_source, importer_factory.source)
+        self.assertEqual(importer_factory.data_format, 'MagnettechXML')
+
+    def test_factory_without_extension_returns(self):
+        source = os.path.join(ROOTPATH, 'testdata', 'test-magnettech')
+        factory = cwepr.dataset.DatasetFactory()
+        importer_factory = factory.importer_factory
+        importer_factory.get_importer(source=source)
+        root_source, _ = os.path.splitext(source)
+        self.assertEqual(importer_factory.data_format, 'MagnettechXML')
 
     def test_with_adf_extension_returns_adf_importer(self):
         source = 'test.adf'

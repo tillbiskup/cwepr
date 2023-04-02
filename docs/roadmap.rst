@@ -32,13 +32,9 @@ For version 0.4
 
 * Import infofiles in all magnettech importers.
 
-* Handling of file extensions during import: Currently, they are cut in the init and again appended afterwards. The factory only gives source names without extension.
-
 * Implement handling of "RT" as temperature value in the infofile.
 
-* Handling of Magnettech-Files containing the second derivative spectrum i.e. not taking the first spectrum of the xml-file list.
-
-* Import and store filter mode from Magnettech data
+* Import and store filter mode from Magnettech data -> changes in the metadata
 
 * Magnettech: Choose between raw data and data filtered during measurement.
 

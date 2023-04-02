@@ -1,4 +1,4 @@
-"""Exporters for both, whole datasets as well as data alone.
+"""Exporters for both, whole datasets and data alone.
 
 Exporters
 =========
