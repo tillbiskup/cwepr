@@ -22,6 +22,9 @@ New features
 
 * Added support for cwepr-infofile version 0.1.5
 
+* Handling of Magnettech-Files containing the second derivative spectrum i.e. not taking the first spectrum of the xml-file list.
+
+
 
 Fixes
 -----
