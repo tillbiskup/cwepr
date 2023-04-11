@@ -213,9 +213,8 @@ class MagnettechXMLImporter(aspecd.io.DatasetImporter):
         if self._get_infofile_name() and os.path.exists(
                 self._get_infofile_name()[0]):
             return True
-        print(f'No infofile found for dataset '
-              f'{os.path.split(self.source)[1]}, import continued without'
-              'infofile.')
+        print(f'No infofile found for dataset {os.path.split(self.source)[1]},'
+              f' import continued without infofile.')
         return False
 
     def _load_infofile(self):

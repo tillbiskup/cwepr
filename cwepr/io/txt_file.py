@@ -11,6 +11,7 @@ You may have a look as well at the importers provided by the ASpecD package
 for similar situations, particularly :class:`aspecd.io.TxtImporter`.
 
 """
+import io
 import numpy as np
 
 import aspecd.io
@@ -25,6 +26,8 @@ class TxtImporter(aspecd.io.DatasetImporter):
     """
 
     def __init__(self, source=''):
+        if source.endswith('.txt'):
+            source = source[:-4]
         super().__init__(source=source)
         # public properties
         self.extension = '.txt'
@@ -48,19 +51,32 @@ class CsvImporter(aspecd.io.DatasetImporter):
     """Importer for simple csv imports with different delimiters."""
 
     def __init__(self, source=''):
+        if source.endswith('.csv'):
+            source = source[:-4]
         super().__init__(source=source)
         # public properties
         self.extension = '.csv'
+        self.parameters["skiprows"] = 1
+        self.parameters["delimiter"] = None
+        self.parameters["comments"] = "#"
+        self.parameters["separator"] = None
 
     def _import(self):
         self._read_data()
 
     def _read_data(self):
-        with open(self.source + self.extension) as csv_file:
+        if "separator" in self.parameters:
+            separator = self.parameters.pop("separator")
+        else:
+            separator = None
+        if separator:
+            with open(self.source+self.extension, encoding="utf8") as file:
+                contents = file.read()
+            contents = contents.replace(separator, '.')
             # noinspection PyTypeChecker
-            raw_data = np.loadtxt(csv_file, delimiter=';', skiprows=3)
-            self.dataset.data.data = raw_data[:, 1]
-            self.dataset.data.axes[0].values = raw_data[:, 0]
+            data = np.loadtxt(io.StringIO(contents), **self.parameters)
+            self.dataset.data.data = data[:, 1]
+            self.dataset.data.axes[0].values = data[:, 0]
 
     def _create_metadata(self):
         self.dataset.data.axes[0].unit = 'mT'
