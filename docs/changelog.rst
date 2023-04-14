@@ -9,12 +9,14 @@ Version 0.4.0
 
 Not yet released
 
+From this version on, cwepr requires version 0.8.0 of the ASpecD package.
+
 New features
 ------------
 
 * Add Frequency Correction with offset: This keeps the hyperfine splitting values.
 
-* Amplitude sweep importer for Magnettech. Averaging of temperature and Q-Values, which are averaged, a warning is issued if they vary too much.
+* Amplitude sweep importer for Magnettech. Averaging of temperature and Q-Values of the single measurements. A warning is issued if the values vary too much.
 
 * Implement Digital Filter into metadata.
 
@@ -22,8 +24,7 @@ New features
 
 * Added support for cwepr-infofile version 0.1.5
 
-* Handling of Magnettech-Files containing the second derivative spectrum i.e. not taking the first spectrum of the xml-file list.
-
+* Handling of data from Magnettech-Files: The filtered first derivative spectrum is taken by its name by default. The parameter can be set to also import other data curves such as the second derivative or the sinus part.
 
 
 Fixes
@@ -34,6 +35,7 @@ Fixes
 * Fix some metadata in magnettech importer (experiment.runs -> signal_channel.accumulations, correctly import spectrometer metadata, bring time stamp to same timezone.)
 
 * Do range extraction and interpolation (instead of interpolation only) in GoniometerSweepImporter.
+
 
 
 Version 0.3.0
