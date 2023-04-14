@@ -103,7 +103,6 @@ class MagnettechXMLImporter(aspecd.io.DatasetImporter):
         self._infofile = aspecd.infofile.Infofile()
 
     def _import(self):
-        print('after', self.source)
         self._clean_up_filename()
         self._get_xml_root_element()
 

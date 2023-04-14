@@ -1,4 +1,5 @@
 import datetime
+import glob
 import os
 import re
 import shutil
@@ -94,6 +95,18 @@ class TestMagnettechXmlImporter(unittest.TestCase):
         self.dataset.import_from(self.importer)
         self.assertEqual(self.importer._data_curve.attrib['Name'],
                          'MWAbsorption (1st harm.)')
+
+    def test_check_on_other_source_file_versions(self):
+        files = glob.glob('testdata/magnettech-various-formats/*')
+        for file in files:
+            self.importer.source = file
+            try:
+                self.dataset.import_from(self.importer)
+            except:
+                print(f'File {file} not imported')
+                pass
+            self.assertIsInstance(self.dataset.data.data, np.ndarray)
+            self.assertTrue(self.dataset.metadata.temperature_control.temperature)
 
 
 class TestGoniometerSweepImporter(unittest.TestCase):
