@@ -84,8 +84,6 @@ class MagnettechXMLImporter(aspecd.io.DatasetImporter):
     """
 
     def __init__(self, source=''):
-        if source.endswith('.xml'):
-            source = source[:-4]
         super().__init__(source=source)
         # public properties
         self.root = None
@@ -105,7 +103,8 @@ class MagnettechXMLImporter(aspecd.io.DatasetImporter):
         self._infofile = aspecd.infofile.Infofile()
 
     def _import(self):
-        self._get_full_filename()
+        print('after', self.source)
+        self._clean_up_filename()
         self._get_xml_root_element()
 
         self._choose_data_source()
@@ -124,9 +123,12 @@ class MagnettechXMLImporter(aspecd.io.DatasetImporter):
         self._map_metadata_from_xml()
         self._map_dates()
 
-    def _get_full_filename(self):
+    def _clean_up_filename(self):
         if self.source:
-            self.full_filename = self.source + '.xml'
+            if self.source.endswith('.xml'):
+                self.full_filename = self.source
+            else:
+                self.full_filename = self.source + '.xml'
 
     def _get_xml_root_element(self):
         """Get the root object/name of the xml document."""

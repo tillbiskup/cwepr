@@ -26,8 +26,6 @@ class TxtImporter(aspecd.io.DatasetImporter):
     """
 
     def __init__(self, source=''):
-        if source.endswith('.txt'):
-            source = source[:-4]
         super().__init__(source=source)
         # public properties
         self.extension = '.txt'
@@ -37,6 +35,9 @@ class TxtImporter(aspecd.io.DatasetImporter):
         self._create_metadata()
 
     def _get_data(self):
+        if self.source.endswith('.txt'):
+            self.source = self.source[:-4]
+
         self.source = self.source + self.extension
         raw_data = np.loadtxt(self.source, delimiter='\t')
         self.dataset.data.data = raw_data[:, 1]

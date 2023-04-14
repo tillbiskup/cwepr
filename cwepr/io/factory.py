@@ -40,8 +40,8 @@ class DatasetImporterFactory(aspecd.io.DatasetImporterFactory):
 
     .. versionchanged:: 0.4
         File extension is taken into account, so that two files with the same
-        name and different extension can be next to each other and the correct
-        one is taken into account.
+        name and different extension can reside next to each other and the
+        correct one is taken into account.
     """
 
     def __init__(self):
