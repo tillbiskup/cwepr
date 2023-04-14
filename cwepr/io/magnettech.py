@@ -126,6 +126,7 @@ class MagnettechXMLImporter(aspecd.io.DatasetImporter):
         if self.source:
             if self.source.endswith('.xml'):
                 self.full_filename = self.source
+                self.source = self.source[:-4]
             else:
                 self.full_filename = self.source + '.xml'
 
