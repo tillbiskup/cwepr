@@ -39,13 +39,13 @@ class ExperimentalDatasetMetadata(aspecd.metadata.ExperimentalDatasetMetadata):
 
     Metadata as a unified structure of information coupled to the dataset are
     necessary for the understanding, analysis and processing of data,
-    especially in cwepr. Too many parameters have an direct influence to the
+    especially in cwepr. Too many parameters have a direct influence to the
     spectral shape of the spectrum that anything other than saving them in an
     appropriate place and accessing them automatised in the respective tasks
     is no option. Some parameters are written automatically by the
     spectrometer's software, others, depending also on the actual setup (that
-    may change over time!) are omitted and it is highly recommended those
-    should be noted by hand, for example in an *.info-file.*
+    may change over time!) are omitted. It is highly recommended those
+    parameters should be noted by hand, for example in an *.info-file.*
 
     Attributes
     ----------
@@ -90,6 +90,7 @@ class ExperimentalDatasetMetadata(aspecd.metadata.ExperimentalDatasetMetadata):
         self.magnetic_field = MagneticField()
         self.bridge = Bridge()
         self.signal_channel = SignalChannel()
+        self.digital_filter = DigitalFilter()
         self.probehead = Probehead()
         self.temperature_control = TemperatureControl()
         self.metadata_modifications = []
@@ -472,7 +473,7 @@ class Bridge(aspecd.metadata.Metadata):
 
 
 class SignalChannel(aspecd.metadata.Metadata):
-    """Metadata information information on the signal channel employed.
+    """Metadata information on the signal channel employed.
 
     Parameters
     ----------
@@ -527,6 +528,44 @@ class SignalChannel(aspecd.metadata.Metadata):
         super().__init__(dict_=dict_)
 
 
+class DigitalFilter(aspecd.metadata.Metadata):
+    """Metadata about the digital filter applied to the data.
+
+    Especially in Magnettech data, by default, a digital filter is applied on
+    the data.
+
+    Parameters
+    ----------
+    dict_ : :class:`dict`
+        Dictionary containing properties to set.
+
+
+    Attributes
+    ----------
+    mode : :class:`str`
+        Mode of the digital filter. In Magnettech files, this is one of "DIG" or
+         "DIGRC".
+
+    points : :class:`int`
+        Number of points taken into account. Not used in Magnettech data.
+
+    parameter : :class:`aspecd.metadata.PhysicalQuantity`
+         In Magnettech data files, there are two different types of
+         parameters: In ``DIG`` mode the parameter is named "Smoothing
+         Filter width" and given in mT` whereas in ``DIGRC` mode, it is the
+         "Time Constant" and given in `s`.
+
+    .. versionadded:: 0.4
+
+    """
+
+    def __init__(self, dict_=None):
+        self.mode = ""
+        self.points = ""
+        self.parameter = aspecd.metadata.PhysicalQuantity()
+        super().__init__(dict_=dict_)
+
+
 class Probehead(aspecd.metadata.Metadata):
     """Metadata corresponding to the probehead.
 
@@ -551,7 +590,7 @@ class Probehead(aspecd.metadata.Metadata):
     type : :class:`str`
         Type of the probehead used.
 
-        There are several different types of probeheads regularly used. For
+        There are several types of probeheads regularly used. For
         resonators, there are, *e.g.*, dielectic and split-ring resonators,
         cylindrical and rectangular cavities. More special would be
         Fabry-Perot and stripline resonators. Sometimes, even resonator-free
