@@ -102,9 +102,9 @@ class TestMagnettechXmlImporter(unittest.TestCase):
             self.importer.source = file
             try:
                 self.dataset.import_from(self.importer)
-            except:
+            except TypeError:
                 print(f'File {file} not imported')
-                pass
+                continue
             self.assertIsInstance(self.dataset.data.data, np.ndarray)
             self.assertTrue(self.dataset.metadata.temperature_control.temperature)
 

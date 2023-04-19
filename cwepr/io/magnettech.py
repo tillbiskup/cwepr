@@ -60,7 +60,7 @@ logger.addHandler(logging.NullHandler())
 class MagnettechXMLImporter(aspecd.io.DatasetImporter):
     """Import cw-EPR raw data from the Magnettech benchtop spectrometer.
 
-    Magnettech provides a XML-file with the results. Specialities of this
+    Magnettech provides an XML-file with the results. Specialities of this
     format are existing and will be briefly explained: The data is encoded in
     hex numbers, and the *y* axis consists of 10 times more points than the
     *y* axis. Therefore, an interpolation is needed to expand the axis to the
@@ -114,7 +114,7 @@ class MagnettechXMLImporter(aspecd.io.DatasetImporter):
         self._cut_data()
         self._hand_data_to_dataset()
 
-        # First import metadata from infofile, then override hand-written
+        # First import metadata from infofile, then override handwritten
         # information by metadata from xml-file. The order matters.
         if self.load_infofile and self._infofile_exists():
             self._load_infofile()
@@ -186,6 +186,7 @@ class MagnettechXMLImporter(aspecd.io.DatasetImporter):
             else:
                 xml_metadata[childnode.attrib['Name']] = childnode.text
         self.xml_metadata = xml_metadata
+
 
     def _cut_data(self):
         self._get_magnetic_field_range()
@@ -306,6 +307,11 @@ class MagnettechXMLImporter(aspecd.io.DatasetImporter):
             float(self.xml_metadata['Phase'])
         self.dataset.metadata.probehead.model = 'builtin'
         self.dataset.metadata.probehead.coupling = 'critical'
+        self.dataset.metadata.digital_filter.mode = self.xml_metadata[
+           'FilterType']
+        self.dataset.metadata.digital_filter.parameter.from_string(
+            (self.xml_metadata['FilterPrm0']))
+        print(self.dataset.metadata.digital_filter.to_dict())
 
     def _map_dates(self):
         self.dataset.metadata.measurement.start = dateutil.parser.parse(
