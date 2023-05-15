@@ -448,7 +448,8 @@ class FieldCorrection(aspecd.processing.SingleProcessingStep):
     Attributes
     ----------
     parameters['offset']: :class:`float`
-        Offset to be added to the field axis values.
+        Offset to be added to the field axis values. Should be given in the
+        unit of the axis.
 
 
     See Also
@@ -474,8 +475,11 @@ class FieldCorrection(aspecd.processing.SingleProcessingStep):
             #       (Difficult if not filled)
             # if axis.quantity == 'magnetic field'
             if axis.unit in ('mT', 'G'):
-                self.dataset.data.axes[0].values += \
-                    self.parameters["offset"]
+                axis.values += self.parameters["offset"]
+                self.dataset.metadata.magnetic_field.start.value = \
+                    axis.values[0]
+                self.dataset.metadata.magnetic_field.stop.value = \
+                    axis.values[-1]
 
 
 class FrequencyCorrection(aspecd.processing.SingleProcessingStep):

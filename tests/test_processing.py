@@ -3,6 +3,7 @@ import os
 import unittest
 
 import numpy as np
+import numpy.testing as testing
 
 import cwepr.exceptions
 import cwepr.processing
@@ -10,6 +11,34 @@ import cwepr.dataset
 import cwepr.io.magnettech
 
 ROOTPATH = os.path.split(os.path.abspath(__file__))[0]
+
+
+
+class TestFieldCorrection(unittest.TestCase):
+    def setUp(self):
+        source = os.path.join(ROOTPATH, 'io/testdata/test-magnettech')
+        importer = cwepr.io.magnettech.MagnettechXMLImporter(source=source)
+        self.dataset = cwepr.dataset.ExperimentalDataset()
+        self.dataset.import_from(importer)
+
+    def test_axis_is_updated(self):
+        fc = cwepr.processing.FieldCorrection()
+        fc.parameters['offset'] = 10
+        axis_before = copy.deepcopy(self.dataset.data.axes[0].values)
+        self.dataset.process(fc)
+        axis_after = self.dataset.data.axes[0].values
+        testing.assert_equal(axis_before+10, axis_after)
+
+    def test_metadata_is_updated(self):
+        fc = cwepr.processing.FieldCorrection()
+        fc.parameters['offset'] = 10
+        start = copy.deepcopy(self.dataset.metadata.magnetic_field.start.value)
+        stop = copy.deepcopy(self.dataset.metadata.magnetic_field.stop.value)
+        self.dataset.process(fc)
+        self.assertGreater(self.dataset.metadata.magnetic_field.start.value,
+                           start)
+        self.assertGreater(self.dataset.metadata.magnetic_field.stop.value,
+                            stop)
 
 
 class TestAutomaticPhaseCorrection(unittest.TestCase):

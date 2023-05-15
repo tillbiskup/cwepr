@@ -36,6 +36,8 @@ Fixes
 
 * Do range extraction and interpolation (instead of interpolation only) in GoniometerSweepImporter.
 
+* Fix FieldCorrection to update correct axis and update metadata.
+
 
 
 Version 0.3.0
