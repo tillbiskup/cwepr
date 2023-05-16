@@ -742,7 +742,7 @@ class PowerSweepImporter(aspecd.io.DatasetImporter):
 
     def _import(self):
         self._get_filenames()
-        #self._sort_filenames()
+        self._sort_filenames()
         #self._import_all_spectra_to_list()
         #self._bring_axes_to_same_values()
         #self._check_amplitudes_and_put_into_list_as_axis()
@@ -756,3 +756,13 @@ class PowerSweepImporter(aspecd.io.DatasetImporter):
             raise FileNotFoundError
         if not self.filenames:
             self.filenames = glob.glob(os.path.join(self.source, '*pow*.xml'))
+
+    def _sort_filenames(self):
+
+        def sort_key(string=''):
+            num = string.split('pow_')[1]
+            print(num)
+            num = num.split('mW')[0]
+            return int(num)
+
+        self.filenames = sorted(self.filenames, key=sort_key)

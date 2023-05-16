@@ -324,3 +324,21 @@ class TestPowerSweepImporter(unittest.TestCase):
     def test_has_import_method(self):
         self.assertTrue(hasattr(self.power_importer, '_import'))
         self.assertTrue(callable(self.power_importer._import))
+
+    def test_source_path_doesnt_exist_raises(self):
+        source = 'foo/'
+        importer = cwepr.io.magnettech.PowerSweepImporter(source=source)
+        with self.assertRaises(FileNotFoundError):
+            self.dataset.import_from(importer)
+
+    def test_sort_filenames_returns_sorted_list(self):
+        self.power_importer._get_filenames()
+        self.power_importer._sort_filenames()
+        sorted_list = self.power_importer.filenames
+        nums = []
+        for filename in sorted_list:
+            num = filename.split('pow_')[1]
+            nums.append(num.split('mW')[0])
+        for x in range(len(nums)-1):
+            self.assertGreater(int(nums[x+1])-int(nums[x]), 0)
+
