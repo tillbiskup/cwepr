@@ -702,3 +702,57 @@ class AmplitudeSweepImporter(aspecd.io.DatasetImporter):
             min(starts).strftime("%Y-%m-%d %H:%M:%S")
         self.dataset.metadata.measurement.end = \
             max(ends).strftime("%Y-%m-%d %H:%M:%S")
+
+
+class PowerSweepImporter(aspecd.io.DatasetImporter):
+    """Import power sweep data from a Magnettech Spectrometer.
+
+    The provided XML raw files are read and brought to an unified axis;
+
+    .. note::
+        Different to the GoniometerSweepImporter, metadata is only taken from
+        the XML source file, ignoring the additional information from the
+        infofile.
+
+    Attributes
+    ----------
+    filenames: :class:`list`
+        Filenames of raw XML-files for an amplitude sweep. Is normally
+        created automatically from the ``parameters['source']`` directory.
+
+
+    Examples
+    --------
+    The power sweep is read in simply with:
+
+    .. code-block:: yaml
+
+       datasets:
+        - source: power-sweep-data
+          id: power-sweep
+
+    .. versionadded:: 0.4
+
+    """
+    def __init__(self, source=''):
+        super().__init__(source=source)
+        self.dataset = cwepr.dataset.ExperimentalDataset()
+        self.filenames = None
+        self._data = []
+
+    def _import(self):
+        self._get_filenames()
+        #self._sort_filenames()
+        #self._import_all_spectra_to_list()
+        #self._bring_axes_to_same_values()
+        #self._check_amplitudes_and_put_into_list_as_axis()
+        #self._hand_data_to_dataset()
+
+        #self._fill_axes()
+        #self._import_collected_metadata()
+
+    def _get_filenames(self):
+        if not os.path.exists(self.source):
+            raise FileNotFoundError
+        if not self.filenames:
+            self.filenames = glob.glob(os.path.join(self.source, '*pow*.xml'))

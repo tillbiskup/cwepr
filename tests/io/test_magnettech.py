@@ -309,3 +309,18 @@ class TestAmplitudeSweepImporter(unittest.TestCase):
         self.assertTrue(end)
         rex = re.compile("[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}")
         self.assertTrue(rex.match(end))
+
+
+class TestPowerSweepImporter(unittest.TestCase):
+    def setUp(self):
+        source = os.path.join(ROOTPATH, 'testdata/magnettech-power')
+        self.power_importer = \
+            cwepr.io.magnettech.PowerSweepImporter(source=source)
+        self.dataset = cwepr.dataset.ExperimentalDataset()
+
+    def instantiate_class(self):
+        pass
+
+    def test_has_import_method(self):
+        self.assertTrue(hasattr(self.power_importer, '_import'))
+        self.assertTrue(callable(self.power_importer._import))
