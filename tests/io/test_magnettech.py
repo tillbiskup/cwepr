@@ -342,3 +342,4 @@ class TestPowerSweepImporter(unittest.TestCase):
         for x in range(len(nums)-1):
             self.assertGreater(int(nums[x+1])-int(nums[x]), 0)
 
+

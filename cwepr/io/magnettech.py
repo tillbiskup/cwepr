@@ -311,7 +311,6 @@ class MagnettechXMLImporter(aspecd.io.DatasetImporter):
            'FilterType']
         self.dataset.metadata.digital_filter.parameter.from_string(
             (self.xml_metadata['FilterPrm0']))
-        print(self.dataset.metadata.digital_filter.to_dict())
 
     def _map_dates(self):
         self.dataset.metadata.measurement.start = dateutil.parser.parse(
@@ -761,7 +760,6 @@ class PowerSweepImporter(aspecd.io.DatasetImporter):
 
         def sort_key(string=''):
             num = string.split('pow_')[1]
-            print(num)
             num = num.split('mW')[0]
             return int(num)
 
