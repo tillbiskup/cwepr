@@ -342,4 +342,68 @@ class TestPowerSweepImporter(unittest.TestCase):
         for x in range(len(nums)-1):
             self.assertGreater(int(nums[x+1])-int(nums[x]), 0)
 
+    def test_has_import_all_data_to_list_method(self):
+        self.assertTrue(hasattr(self.power_importer,
+                                '_import_all_spectra_to_list'))
+        self.assertTrue(callable(
+            self.power_importer._import_all_spectra_to_list))
 
+    def test_power_all_in_mW(self):
+        self.dataset.import_from(self.power_importer)
+        for item in self.power_importer._power:
+            self.assertTrue(item.unit == 'mW')
+
+    def test_power_list_exists_of_floats(self):
+        self.dataset.import_from(self.power_importer)
+        self.assertTrue(all([type(x) == float for x in
+                             self.power_importer._power_list]))
+
+    def test_import_data_fills_dataset(self):
+        self.dataset.import_from(self.power_importer)
+        self.assertNotEqual(0, self.dataset.data.data.size)
+
+    def test_raw_data_is_different_before_and_after_range_extraction(self):
+        self.power_importer._get_filenames()
+        self.power_importer._sort_filenames()
+        self.power_importer._import_all_spectra_to_list()
+        before = self.power_importer._data[1].data.axes[0].values
+        self.power_importer._bring_axes_to_same_values()
+        after = self.power_importer._data[1].data.axes[0].values
+        self.assertFalse(np.array_equal(before, after))
+
+    @unittest.skip
+    def test_raw_data_have_same_length(self):
+        self.power_importer._get_filenames()
+        self.power_importer._sort_filenames()
+        self.power_importer._import_all_spectra_to_list()
+        self.power_importer._bring_axes_to_same_values()
+        self.assertTrue(np.array_equal(
+            self.power_importer._data[0].data.axes[0].values,
+            self.power_importer._data[-1].data.axes[0].values))
+
+    def test_data_and_filenames_have_same_lengths(self):
+        # Check whether all data has been imported correctly and was moved
+        # entirely to the final self.dataset.
+        self.dataset.import_from(self.power_importer)
+        self.assertEqual(len(self.power_importer.filenames),
+                         self.power_importer.dataset.data.data.shape[1])
+
+    def test_second_axis_has_correct_values(self):
+        self.dataset.import_from(self.power_importer)
+        self.assertListEqual(
+            list(self.power_importer.dataset.data.axes[1].values),
+            self.power_importer._power_list)
+
+    def test_all_datasets_have_same_frequency(self):
+        self.dataset.import_from(self.power_importer)
+        frequencies = np.array([])
+        for set_ in self.power_importer._data:
+            frequencies = np.append(frequencies,
+                                    set_.metadata.bridge.mw_frequency.value)
+        self.assertAlmostEqual(max(frequencies), min(frequencies))
+
+    def test_power_imports_with_slash_at_source(self):
+        source = os.path.join(ROOTPATH, 'testdata/magnettech-power/')
+        importer = cwepr.io.magnettech.PowerSweepImporter(
+            source=source)
+        self.dataset.import_from(importer)

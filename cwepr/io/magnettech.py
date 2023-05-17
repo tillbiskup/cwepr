@@ -739,16 +739,18 @@ class PowerSweepImporter(aspecd.io.DatasetImporter):
         self.dataset = cwepr.dataset.ExperimentalDataset()
         self.filenames = None
         self._data = []
+        self._power_list = []
+        self._power = []
 
     def _import(self):
         self._get_filenames()
         self._sort_filenames()
-        #self._import_all_spectra_to_list()
-        #self._bring_axes_to_same_values()
-        #self._check_amplitudes_and_put_into_list_as_axis()
-        #self._hand_data_to_dataset()
+        self._import_all_spectra_to_list()
+        self._bring_axes_to_same_values()
+        self._check_power_levels_and_put_into_list_as_axis()
+        self._hand_data_to_dataset()
 
-        #self._fill_axes()
+        self._fill_axes()
         #self._import_collected_metadata()
 
     def _get_filenames(self):
@@ -765,3 +767,48 @@ class PowerSweepImporter(aspecd.io.DatasetImporter):
             return int(num)
 
         self.filenames = sorted(self.filenames, key=sort_key)
+
+    def _import_all_spectra_to_list(self):
+        # import all files without infofile
+        for num, filename in enumerate(self.filenames):
+            filename = filename[:-4]  # remove extension
+            importer = cwepr.io.MagnettechXMLImporter(source=filename)
+            importer.load_infofile = False
+            self._data.append(cwepr.dataset.ExperimentalDataset())
+            self._data[num].import_from(importer)
+            self._power.append(
+                self._data[num].metadata.bridge.power)
+
+            # bring all measurements to the frequency of the first
+            if num > 0:
+                freq_correction = cwepr.processing.FrequencyCorrection()
+                freq_correction.parameters['frequency'] = \
+                    self._data[0].metadata.bridge.mw_frequency.value
+                self._data[num].process(freq_correction)
+
+    def _bring_axes_to_same_values(self):
+        extract_range = aspecd.processing.CommonRangeExtraction()
+        extract_range.datasets = self._data
+        extract_range.process()
+
+    def _check_power_levels_and_put_into_list_as_axis(self):
+        for power in self._power:
+            self._power_list.append(power.value)
+
+    def _hand_data_to_dataset(self):
+        my_array = np.ndarray((len(self._data[0].data.data), len(self._data)))
+        self.dataset.data.data = my_array
+        for num, set_ in enumerate(self._data):
+            self.dataset.data.data[:, num] = set_.data.data
+
+    def _fill_axes(self):
+        self._fill_field_axis()
+        self._fill_power_axis()
+
+    def _fill_field_axis(self):
+        self.dataset.data.axes[0] = self._data[0].data.axes[0]
+
+    def _fill_power_axis(self):
+        self.dataset.data.axes[1].values = np.asarray(self._power_list)
+        self.dataset.data.axes[1].unit = 'mW'
+        self.dataset.data.axes[1].quantity = 'microwave power'
