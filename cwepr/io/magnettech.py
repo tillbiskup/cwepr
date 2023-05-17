@@ -730,6 +730,7 @@ class PowerSweepImporter(aspecd.io.DatasetImporter):
         - source: power-sweep-data
           id: power-sweep
 
+    .. codeauthor:: Florian Taube <florian.taube@uni-rostock.de>
     .. versionadded:: 0.4
 
     """
