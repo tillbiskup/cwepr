@@ -751,7 +751,7 @@ class PowerSweepImporter(aspecd.io.DatasetImporter):
         self._hand_data_to_dataset()
 
         self._fill_axes()
-        #self._import_collected_metadata()
+        self._import_collected_metadata()
 
     def _get_filenames(self):
         if not os.path.exists(self.source):
@@ -812,3 +812,100 @@ class PowerSweepImporter(aspecd.io.DatasetImporter):
         self.dataset.data.axes[1].values = np.asarray(self._power_list)
         self.dataset.data.axes[1].unit = 'mW'
         self.dataset.data.axes[1].quantity = 'microwave power'
+
+    def _import_collected_metadata(self):
+        self._import_fixed_metadata()
+        self._import_variable_metadata()
+        self._import_variable_metadata()
+        self._import_date_time_metadata()
+
+    def _import_fixed_metadata(self):
+        self.dataset.metadata.experiment.type = \
+            self._data[0].metadata.experiment.type
+        self.dataset.metadata.experiment.variable_parameter = 'Modulation ' \
+                                                              'Amplitude'
+        self.dataset.metadata.signal_channel.accumulations = \
+            self._data[0].metadata.experiment.runs
+        self.dataset.metadata.spectrometer = self._data[0].metadata.spectrometer
+        self.dataset.metadata.magnetic_field.start.from_string(
+            ("{:.4f}".format(self.dataset.data.axes[0].values[0])) + ' ' +
+            self._data[0].metadata.magnetic_field.start.unit)
+        self.dataset.metadata.magnetic_field.stop.from_string(
+            ("{:.4f}".format(self.dataset.data.axes[0].values[-1])) + ' ' +
+            self._data[0].metadata.magnetic_field.stop.unit)
+        self.dataset.metadata.magnetic_field.sweep_width.value = \
+            self.dataset.metadata.magnetic_field.stop.value - \
+            self.dataset.metadata.magnetic_field.start.value
+        self.dataset.metadata.magnetic_field.sweep_width.unit = \
+            self.dataset.metadata.magnetic_field.stop.unit
+        self.dataset.metadata.magnetic_field.points = \
+            len(self.dataset.data.axes[0].values)
+        self.dataset.metadata.magnetic_field.field_probe_type = 'Hall'
+        self.dataset.metadata.magnetic_field.field_probe_model = 'builtin'
+        if self.dataset.data.axes[0].values[-1] - \
+                self.dataset.data.axes[0].values[0] > 0:
+            self.dataset.metadata.magnetic_field.sequence = 'up'
+        else:
+            self.dataset.metadata.magnetic_field.sequence = 'down'
+        self.dataset.metadata.magnetic_field.controller = 'builtin'
+        self.dataset.metadata.magnetic_field.power_supply = 'builtin'
+        self.dataset.metadata.bridge.model = 'builtin'
+        self.dataset.metadata.bridge.controller = 'builtin'
+        self.dataset.metadata.bridge.power = self._data[0].metadata.bridge.power
+        self.dataset.metadata.bridge.detection = 'mixer'
+        self.dataset.metadata.bridge.frequency_counter = 'builtin'
+        self.dataset.metadata.bridge.mw_frequency = \
+            self._data[0].metadata.bridge.mw_frequency
+        self.dataset.metadata.signal_channel.model = 'builtin'
+        self.dataset.metadata.signal_channel.modulation_amplifier = 'builtin'
+        self.dataset.metadata.signal_channel.accumulations = \
+            self._data[0].metadata.signal_channel.accumulations
+        self.dataset.metadata.signal_channel.modulation_frequency = \
+            self._data[0].metadata.signal_channel.modulation_frequency
+        self.dataset.metadata.signal_channel.phase.value = \
+            self._data[0].metadata.signal_channel.phase.value
+        self.dataset.metadata.probehead.model = 'builtin'
+        self.dataset.metadata.probehead.coupling = 'critical'
+    def _import_variable_metadata(self):
+        temperatures = []
+        qfactors = []
+        for _, dataset_ in enumerate(self._data):
+            temperatures.append(
+                dataset_.metadata.temperature_control.temperature.value)
+            qfactors.append(
+                dataset_.metadata.bridge.q_value)
+        temperature = self._average_and_check_for_deviation(temperatures)
+        qfactor = self._average_and_check_for_deviation(qfactors)
+
+        self.dataset.metadata.temperature_control.temperature.value = \
+            temperature
+        self.dataset.metadata.temperature_control.temperature.unit = \
+            self._data[0].metadata.temperature_control.temperature.unit
+        self.dataset.metadata.bridge.q_value = qfactor
+
+    @staticmethod
+    def _average_and_check_for_deviation(list_of_values, offset_range=0.1):
+        value = np.average(list_of_values)
+        value_range = max(list_of_values) - min(list_of_values)
+        if value_range > offset_range * value:
+            logger.warning('Value deviation is more than 10 % of the value '
+                           'itself. Please check the measurement conditions.')
+        # TODO: Check that logging is working with ASpecD
+        # TODO: implement offset range in parameters, make this method
+        #  non-static?
+        return value
+
+    def _import_date_time_metadata(self):
+        starts = []
+        ends = []
+        for _, dataset_ in enumerate(self._data):
+            starts.append(
+                dataset_.metadata.measurement.start)
+            ends.append(
+                dataset_.metadata.measurement.end)
+
+        self.dataset.metadata.measurement.start = \
+            min(starts).strftime("%Y-%m-%d %H:%M:%S")
+        self.dataset.metadata.measurement.end = \
+            max(ends).strftime("%Y-%m-%d %H:%M:%S")
+
