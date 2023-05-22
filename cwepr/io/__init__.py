@@ -35,7 +35,7 @@ series of more general modules:
 # The import statements below should *only* import the respective classes.
 from .factory import DatasetImporterFactory
 from .magnettech import MagnettechXMLImporter, GoniometerSweepImporter, \
-    AmplitudeSweepImporter
+    AmplitudeSweepImporter, PowerSweepImporter
 from .txt_file import TxtImporter, CsvImporter
 from .bes3t import BES3TImporter
 from .esp_winepr import ESPWinEPRImporter

@@ -89,6 +89,12 @@ class DatasetImporterFactory(aspecd.io.DatasetImporterFactory):
                     object_from_class_name('cwepr.io.AmplitudeSweepImporter')
                 importer.source = self.source
                 return importer
+        if self._directory_contains_power_sweep_data():
+            self.data_format = 'PowerSweep'
+            importer = \
+                object_from_class_name('cwepr.io.PowerSweepImporter')
+            importer.source = self.source
+            return importer
         self.data_format = self._find_format()
         if self.data_format:
             importer = object_from_class_name(
@@ -137,5 +143,18 @@ class DatasetImporterFactory(aspecd.io.DatasetImporterFactory):
             else:
                 check_modamp_filenames.append(False)
         if all(check_modamp_filenames):
+            return True
+        return False
+
+    def _directory_contains_power_sweep_data(self):
+        check_powersweep_filenames = []
+        if not os.listdir(self.source):
+            return False
+        for element in os.listdir(self.source):
+            if 'pow' in element:
+                check_powersweep_filenames.append(True)
+            else:
+                check_powersweep_filenames.append(False)
+        if all(check_powersweep_filenames):
             return True
         return False

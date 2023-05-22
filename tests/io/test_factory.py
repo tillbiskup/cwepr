@@ -25,6 +25,12 @@ class TestDatasetImporterFactory(unittest.TestCase):
         importer.get_importer(source=source)
         self.assertEqual('GoniometerSweep', importer.data_format)
 
+    def test_powersweep_importer_gets_correct_files(self):
+        source = os.path.join(ROOTPATH, 'testdata', 'magnettech-power/')
+        importer = cwepr.dataset.DatasetFactory().importer_factory
+        importer.get_importer(source=source)
+        self.assertEqual('PowerSweep', importer.data_format)
+
     def test_goniometer_importer_does_not_import_inconsistent_data(self):
         source = os.path.join(ROOTPATH, 'testdata', 'magnettech-goniometer/')
         with tempfile.TemporaryDirectory() as tmpdir:

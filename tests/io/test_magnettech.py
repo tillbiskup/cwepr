@@ -402,29 +402,29 @@ class TestPowerSweepImporter(unittest.TestCase):
                                     set_.metadata.bridge.mw_frequency.value)
         self.assertAlmostEqual(max(frequencies), min(frequencies))
 
-def test_power_imports_with_slash_at_source(self):
+    def test_power_imports_with_slash_at_source(self):
         source = os.path.join(ROOTPATH, 'testdata/magnettech-power/')
         importer = cwepr.io.magnettech.PowerSweepImporter(
             source=source)
         self.dataset.import_from(importer)
 
-def test_fixed_values_are_imported_to_metadata(self):
+    def test_fixed_values_are_imported_to_metadata(self):
         self.dataset.import_from(self.amplitude_importer)
         self.assertTrue(self.dataset.metadata.spectrometer.model)
         self.assertTrue(self.dataset.metadata.spectrometer.software)
 
-def test_q_value_is_averaged(self):
+    def test_q_value_is_averaged(self):
         self.dataset.import_from(self.amplitude_importer)
         self.assertTrue(self.dataset.metadata.bridge.q_value)
 
-def test_time_start_is_imported_in_readable_format(self):
+    def test_time_start_is_imported_in_readable_format(self):
         self.dataset.import_from(self.amplitude_importer)
         start = self.dataset.metadata.measurement.start
         self.assertTrue(start)
         rex = re.compile("[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}")
         self.assertTrue(rex.match(start))
 
-def test_time_end_is_imported_in_readable_format(self):
+    def test_time_end_is_imported_in_readable_format(self):
         self.dataset.import_from(self.amplitude_importer)
         end = self.dataset.metadata.measurement.end
         self.assertTrue(end)
