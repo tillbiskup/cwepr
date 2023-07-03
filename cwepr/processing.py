@@ -527,7 +527,8 @@ class FrequencyCorrection(aspecd.processing.SingleProcessingStep):
         Default: 9.5
 
     self.parameters['kind']
-        Method used for frequency correction.
+        Method used for frequency correction. Can be ``offset`` or
+        ``proportional``.
 
         Default: proportional
 
@@ -542,6 +543,10 @@ class FrequencyCorrection(aspecd.processing.SingleProcessingStep):
         self.parameters["frequency"] = 9.5
         self.parameters['kind'] = 'proportional'
         self.description = "Correct magnetic field axis for given frequency"
+
+    def _sanitise_parameters(self):
+        if type(self.parameters['frequency']) == int:
+            self.parameters['frequency'] = float(self.parameters['frequency'])
 
     def _perform_task(self):
         """Perform the actual transformation / correction."""

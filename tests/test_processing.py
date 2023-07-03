@@ -87,6 +87,13 @@ class TestFrequencyCorrection(unittest.TestCase):
         new_freq = self.dataset.metadata.bridge.mw_frequency
         self.assertNotEqual(new_freq.value, old_freq.value)
 
+    def test_frequency_given_as_int(self):
+        old_freq = copy.deepcopy(self.dataset.metadata.bridge.mw_frequency)
+        self.corrector.parameters['frequency'] = 9
+        self.dataset.process(self.corrector)
+        new_freq = self.dataset.metadata.bridge.mw_frequency
+        self.assertNotEqual(new_freq.value, old_freq.value)
+
     def test_magnetic_field_axis_is_different(self):
         old_field_axis = copy.deepcopy(
             self.dataset.data.axes[0].values)
