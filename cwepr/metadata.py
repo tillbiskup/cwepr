@@ -543,8 +543,8 @@ class DigitalFilter(aspecd.metadata.Metadata):
     Attributes
     ----------
     mode : :class:`str`
-        Mode of the digital filter. In Magnettech files, this is one of "DIG" or
-         "DIGRC".
+        Mode of the digital filter. In Magnettech files, this is one of
+        "DIG" or "DIGRC".
 
     points : :class:`int`
         Number of points taken into account. Not used in Magnettech data.
@@ -552,7 +552,7 @@ class DigitalFilter(aspecd.metadata.Metadata):
     parameter : :class:`aspecd.metadata.PhysicalQuantity`
          In Magnettech data files, there are two different types of
          parameters: In ``DIG`` mode the parameter is named "Smoothing
-         Filter width" and given in mT` whereas in ``DIGRC` mode, it is the
+         Filter width" and given in mT` whereas in ``DIGRC`` mode, it is the
          "Time Constant" and given in `s`.
 
 
