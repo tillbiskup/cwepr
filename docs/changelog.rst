@@ -9,7 +9,7 @@ Version 0.4.0
 
 Not yet released
 
-From this version on, cwepr requires version 0.8.0 of the ASpecD package.
+**Note:** Starting with this version, cwepr requires **ASpecD >= 0.8.0**.
 
 New features
 ------------
@@ -25,6 +25,12 @@ New features
 * Added support for cwepr-infofile version 0.1.5
 
 * Handling of data from Magnettech-Files: The filtered first derivative spectrum is taken by its name by default. The parameter can be set to also import other data curves such as the second derivative or the sinus part.
+
+
+Changes
+-------
+
+* Extend cw-EPR primer: additional notes on recording spectra
 
 
 Fixes

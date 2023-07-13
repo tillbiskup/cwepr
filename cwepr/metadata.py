@@ -555,6 +555,7 @@ class DigitalFilter(aspecd.metadata.Metadata):
          Filter width" and given in mT` whereas in ``DIGRC` mode, it is the
          "Time Constant" and given in `s`.
 
+
     .. versionadded:: 0.4
 
     """
