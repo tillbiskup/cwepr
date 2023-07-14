@@ -229,13 +229,7 @@ class ESPWinEPRImporter(aspecd.io.DatasetImporter):
         for object_ in objects_:
             magnetic_field_object = getattr(
                 self.dataset.metadata.magnetic_field, object_)
-            if magnetic_field_object.value and object_ in ('start', 'stop'):
-                if not magnetic_field_object.unit:
-                    if magnetic_field_object.value > 1500:  # TODO: Wert ist arbiträr, daher umbauen. Wenn Einheit nicht gegeben, dann G annehmen.
-                        magnetic_field_object.unit = 'G'
-                    else:
-                        magnetic_field_object.unit = 'mT'
-            if magnetic_field_object.unit == 'G':
+            if magnetic_field_object.unit in ('G', ''):
                 magnetic_field_object.value /= 10
                 magnetic_field_object.unit = 'mT'
             setattr(

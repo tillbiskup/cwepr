@@ -44,6 +44,8 @@ Fixes
 
 * Fix FieldCorrection to update correct axis and update metadata.
 
+* Win-EPR importer makes less mistakes in guessing the unit of the field axis.
+
 
 
 Version 0.3.0
