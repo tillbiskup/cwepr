@@ -229,11 +229,12 @@ class ESPWinEPRImporter(aspecd.io.DatasetImporter):
         for object_ in objects_:
             magnetic_field_object = getattr(
                 self.dataset.metadata.magnetic_field, object_)
-            if object_ in ('start', 'stop'):
-                if magnetic_field_object.value > 1500:
-                    magnetic_field_object.unit = 'G'
-                else:
-                    magnetic_field_object.unit = 'mT'
+            if magnetic_field_object.value and object_ in ('start', 'stop'):
+                if not magnetic_field_object.unit:
+                    if magnetic_field_object.value > 1500:  # TODO: Wert ist arbiträr, daher umbauen. Wenn Einheit nicht gegeben, dann G annehmen.
+                        magnetic_field_object.unit = 'G'
+                    else:
+                        magnetic_field_object.unit = 'mT'
             if magnetic_field_object.unit == 'G':
                 magnetic_field_object.value /= 10
                 magnetic_field_object.unit = 'mT'
@@ -266,6 +267,9 @@ class ESPWinEPRImporter(aspecd.io.DatasetImporter):
             'Length of magnetic field and size of data differ'
         # set more values in dataset
         self.dataset.metadata.magnetic_field.stop.value = stop
+        self.dataset.metadata.magnetic_field.stop.unit = \
+            self.dataset.metadata.magnetic_field.start.unit
+
         self.dataset.data.axes[0].values = magnetic_field_axis
 
     def _get_number_of_points(self):
