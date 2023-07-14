@@ -50,7 +50,7 @@ What is normally considered a simple task, comparing two or more recorded cw-EPR
 
 
 Semi-quantitative analysis
--------------------------
+--------------------------
 
 Suppose you have recorded a series of cw-EPR spectra of different samples and would like to compare them in a semi-quantitative way, *i.e.* only with respect to their relative intensities. Note that this is different from spin quantification. For details of the latter, see below.
 
