@@ -89,12 +89,12 @@ class DatasetImporterFactory(aspecd.io.DatasetImporterFactory):
                     object_from_class_name('cwepr.io.AmplitudeSweepImporter')
                 importer.source = self.source
                 return importer
-        if self._directory_contains_power_sweep_data():
-            self.data_format = 'PowerSweep'
-            importer = \
-                object_from_class_name('cwepr.io.PowerSweepImporter')
-            importer.source = self.source
-            return importer
+            if self._directory_contains_power_sweep_data():
+                self.data_format = 'PowerSweep'
+                importer = \
+                    object_from_class_name('cwepr.io.PowerSweepImporter')
+                importer.source = self.source
+                return importer
         self.data_format = self._find_format()
         if self.data_format:
             importer = object_from_class_name(
