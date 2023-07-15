@@ -1,4 +1,4 @@
-"""Module containing the analysis steps of the cwEPR package.
+"""Module containing the analysis steps of the cwepr package.
 
 .. sidebar::
     processing *vs.* analysis
@@ -15,6 +15,47 @@ complicated as a (calculated) dataset on its own containing some measure as
 function of some parameter, such as the microwave frequency for each of a
 series of recordings, allowing to visualise drifts that may or may not
 impact data analysis.
+
+
+Concrete analysis steps
+=======================
+
+* :class:`FieldCalibration`
+
+  Determine offset value for a magnetic field calibration.
+
+* :class:`LinewidthPeakToPeak`
+
+  Peak to peak linewidth in derivative spectrum.
+
+* :class:`LinewidthFWHM`
+
+  Full linewidth at half maximum (FWHM).
+
+* :class:`SignalToNoiseRatio`
+
+  Get a spectrum's signal-to-noise ratio.
+
+* :class:`Amplitude`
+
+  Determine amplitude of dataset.
+
+* :class:`AmplitudeVsPower`
+
+  Return a calculated dataset to further analyse a power-sweep experiment.
+
+* :class:`FitOnData`
+
+  Perform polynomial fit on data and return its parameters or a dataset.
+
+* :class:`PtpVsModAmp`
+
+  Create calculated dataset for modulation sweep analysis.
+
+* :class:`AreaUnderCurve`
+
+  Make definite integration, i.e. calculate the area under the curve.
+
 
 
 Note to developers
@@ -49,8 +90,8 @@ class FieldCalibration(aspecd.analysis.SingleAnalysisStep):
     comparisons between measurements.
 
     While spectrometers without removable probeheads (typically benchtop
-    devices) come often calibrated by the manufacturer, in the typical research
-    setup with probeheads and cryostats changing more frequent,
+    devices) come often calibrated by the manufacturer, in the typical
+    research setup with probeheads and cryostats changing more frequent,
     field calibration is typically performed by the individual researcher
     recording the EPR spectrum of a standard sample with known *g* value.
 
@@ -113,7 +154,7 @@ class FieldCalibration(aspecd.analysis.SingleAnalysisStep):
 
             If you provide a standard by name using the ``standard``
             parameter above, this is not necessary. Providing a value here
-            overrides the value for the standard. Hence use with care not to
+            overrides the value for the standard. Hence, use with care not to
             confuse you afterwards, when standard name and *g* value are
             inconsistent.
 
@@ -143,7 +184,7 @@ class FieldCalibration(aspecd.analysis.SingleAnalysisStep):
     for how to make use of this class. The examples focus each on a single
     aspect.
 
-    Suppose you have recorded the spectrum of a Li:LiF field standard and
+    Suppose you have recorded the spectrum of a Li:LiF field standard, and
     now you would like to obtain the field offset to correct your other
     spectra:
 
@@ -158,7 +199,8 @@ class FieldCalibration(aspecd.analysis.SingleAnalysisStep):
 
 
     This result can now be used within the same recipe to perform a field
-    correction of your other data. A more detailed example may look as follows:
+    correction of your other data. A more detailed example may look as
+    follows:
 
     .. code-block:: yaml
 
@@ -274,9 +316,9 @@ class FieldCalibration(aspecd.analysis.SingleAnalysisStep):
         """Calculates a field correction value.
 
         Finds the zero-crossing of a (derivative) spectrum of a field
-        standard by using the difference between minimum and maximum part of the
-        signal. This value is then subtracted from the the expected field
-        value for the MW frequency provided.
+        standard by using the difference between minimum and maximum part
+        of the signal. This value is then subtracted from the expected
+        field value for the MW frequency provided.
 
         Returns
         -------
@@ -386,7 +428,8 @@ class LinewidthFWHM(aspecd.analysis.SingleAnalysisStep):
 
     def __init__(self):
         super().__init__()
-        self.description = "Determine linewidth (full width at half max; FWHM)"
+        self.description = \
+            "Determine linewidth (full width at half max; FWHM)"
 
     @staticmethod
     def applicable(dataset):
@@ -434,19 +477,24 @@ class LinewidthFWHM(aspecd.analysis.SingleAnalysisStep):
 
 
 class SignalToNoiseRatio(aspecd.analysis.SingleAnalysisStep):
-    """Get a spectrum's signal to noise ratio.
+    # noinspection PyUnresolvedReferences
+    """Get a spectrum's signal-to-noise ratio.
 
     This is done by comparing the absolute maximum of the spectrum to the
-    maximum of the edge part of the spectrum (i.e. a part which is considered
-    to not contain any signal.
+    maximum of the edge part of the spectrum (i.e. a part which is
+    considered to not contain any signal).
+
 
     Attributes
     ----------
-    parameters['percentage']: :class:`int`
-        percentage of the spectrum to be considered edge part on any side
-        (i.e. 10 % means 10 % on each side).
+    parameters : :class:`dict`
+        All parameters necessary for this step.
 
-        Default: 10 %
+        percentage : :class:`int`
+            percentage of the spectrum to be considered edge part on any
+            side  (i.e. 10 % means 10 % on each side).
+
+            Default: 10 %
 
     Examples
     --------
@@ -470,7 +518,7 @@ class SignalToNoiseRatio(aspecd.analysis.SingleAnalysisStep):
         self.description = "Determine signal to noise ratio."
 
     def _perform_task(self):
-        """Determine signal to noise ratio.
+        """Determine signal-to-noise ratio.
 
         Call method to get the amplitude of the noise, compare it to the
         absolute amplitude and set a result.
@@ -498,7 +546,7 @@ class SignalToNoiseRatio(aspecd.analysis.SingleAnalysisStep):
 class Amplitude(aspecd.analysis.SingleAnalysisStep):
     """Determine amplitude of dataset.
 
-    Depending of the dimension of the dataset, the returned value is either
+    Depending on the dimension of the dataset, the returned value is either
     a scalar (1D dataset) or a vector (2D dataset) containing the amplitude of
     each row respectively.
 
@@ -548,8 +596,8 @@ class AmplitudeVsPower(aspecd.analysis.SingleAnalysisStep):
 
     Examples
     --------
-    For analysing a power sweep, extracting the amplitude and taking the root of
-    the microwave power is the first step to success (see
+    For analysing a power sweep, extracting the amplitude and taking the
+    root of the microwave power is the first step to success (see
     :ref:`power_sweep_analysis` for further details) and can be done as
     follows without additional parameters:
 
@@ -609,7 +657,8 @@ class AmplitudeVsPower(aspecd.analysis.SingleAnalysisStep):
 
     def __init__(self):
         super().__init__()
-        self.description = "Return calculated dataset for power sweep analysis."
+        self.description = \
+            "Return calculated dataset for power sweep analysis."
         self.result = aspecd.dataset.CalculatedDataset()
         # private properties
         self._analysis = None
@@ -670,6 +719,7 @@ class AmplitudeVsPower(aspecd.analysis.SingleAnalysisStep):
 
 
 class FitOnData(aspecd.analysis.SingleAnalysisStep):
+    # noinspection PyUnresolvedReferences
     """Perform polynomial fit on data and return its parameters or a dataset.
 
     Developed tests first.
@@ -679,34 +729,44 @@ class FitOnData(aspecd.analysis.SingleAnalysisStep):
     parameters : :class:`dict`
         All parameters necessary for this step.
 
-        points
-            first n points that should taken into account
+        points : :class:`int`
+            first n points that should be taken into account
 
             Default: 3
 
-        order
+        order : :class:`int`
             order of the fit.
 
             Default: 1
 
-        return_type : :class: `str`
+        return_type : :class:`str`
             Choose to returning the coefficients of the fit in order
-            of increasing degree or a calculated dataset containing the curve to
-            plot.
+            of increasing degree or a calculated dataset containing
+            the curve to plot.
 
             Default: coefficients.
 
             Valid values: 'coefficients', 'dataset'
 
-        add_origin : :class: `bool`
-            Adds the point (0,0) to the data and axes, but  does not guarantee
-            the fit really passes the origin.
+        fixed_intercept : :class:`bool`
+            Perform linear regression with fixed intercept, *i.e.*,
+            only fitting the slope.
+
+            To change the intercept from the origin, use the parameter
+            `offset`.
 
             Default: False.
 
+        offset : :class:`float`
+            Vertical offset of the data, *i.e.* f(0)
+
+            Useful in cases where the model defines an intercept f(0) != 0.
+
+            Default: 0
+
     Examples
     --------
-    Some Parameters can be chosen here, depending on the purpose and the
+    Some parameters can be chosen here, depending on the purpose and the
     following analysis and processing steps.
 
     .. code-block:: yaml
@@ -718,12 +778,12 @@ class FitOnData(aspecd.analysis.SingleAnalysisStep):
                 points: 5
                 order: 2
                 return_type: dataset
-                add_origin: True
+                fixed_intercept: True
           result: fit
 
     .. versionchanged:: 0.3
         Rewrite to perform fits with fixed intercept, remove parameter
-        "add_origin", introduced "fixed_intercerpt".
+        "add_origin", introduced "fixed_intercept".
         Return coefficients in order of increasing degree
 
     """
@@ -791,12 +851,16 @@ class FitOnData(aspecd.analysis.SingleAnalysisStep):
             self.result = self.parameters['coefficients']
 
     def _linear_regression_with_fixed_intercept(self):
+        _help = self.create_dataset()
+        _help.data.axes[0].values = \
+            self.dataset.data.axes[0].values[:self.parameters['points']]
+        _help.data.data = self.dataset.data.data[:self.parameters['points']]
         analysis = aspecd.analysis.LinearRegressionWithFixedIntercept()
         aspecd.utils.copy_values_between_dicts(source=self.parameters,
                                                target=analysis.parameters)
         analysis.parameters['polynomial_coefficients'] = True
-        analysis.dataset = self.dataset
-        result = self.dataset.analyse(analysis)
+        analysis.dataset = _help
+        result = _help.analyse(analysis)
         self.parameters['coefficients'] = result.result
 
 
@@ -821,8 +885,8 @@ class PtpVsModAmp(aspecd.analysis.SingleAnalysisStep):
 
     def __init__(self):
         super().__init__()
-        self.description = 'Create dataset with ptp-linewidth vs modulation ' \
-                           'Amplitude.'
+        self.description = \
+            'Create dataset with ptp-linewidth vs modulation Amplitude.'
         self.result = aspecd.dataset.CalculatedDataset()
         self.linewidths = np.ndarray([])
 

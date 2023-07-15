@@ -81,9 +81,9 @@ class ExperimentalDatasetLaTeXReporter(aspecd.report.LaTeXReporter):
         super().__init__(template=template, filename=filename)
         self.dataset = cwepr.dataset.ExperimentalDataset()
         # private properties
-        self._metadata = dict()
+        self._metadata = {}
         self._tasks = collections.OrderedDict()
-        self._figure_name = dict()
+        self._figure_name = {}
         self._exclude_from_to_dict.extend(['dataset'])
 
     def create(self):
@@ -171,7 +171,7 @@ class ExperimentalDatasetLaTeXReporter(aspecd.report.LaTeXReporter):
 
     def _get_figure_names(self):
         """Get the names of the figures used for the report."""
-        for i in range(len(self.dataset.representations)):
+        for i, _ in enumerate(self.dataset.representations):
             if self.dataset.representations[i].plot.description \
                     == '2D plot as scaled image.':
                 self._figure_name['Figure2D'] = \
@@ -191,8 +191,8 @@ class PowerSweepAnalysisReporter(aspecd.report.LaTeXReporter):
         super().__init__(template=template, filename=filename)
         self.dataset = cwepr.dataset.ExperimentalDataset()
         # private properties
-        self._metadata = dict()
-        self._tasks = dict()
+        self._metadata = {}
+        self._tasks = {}
         self._exclude_from_to_dict.extend(['dataset'])
 
     def create(self):
@@ -276,8 +276,8 @@ class DokuwikiCaptionsReporter(aspecd.report.Reporter):
         super().__init__(template=self.template, filename=self.filename)
         self.dataset = cwepr.dataset.ExperimentalDataset()
         # private properties
-        self._metadata = dict()
-        self._figure_name = dict()
+        self._metadata = {}
+        self._figure_name = {}
         self._exclude_from_to_dict.extend(['dataset'])
 
     def create(self):

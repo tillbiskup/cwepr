@@ -1,4 +1,4 @@
-cwEPR Info file - v. 0.1.3 (2016-01-18)
+cwEPR Info file - v. 0.1.5 (2023-03-24)
 
 GENERAL
 Filename:               test-magnettech
@@ -55,9 +55,21 @@ Accumulations:          1
 Modulation frequency:   10 kHz
 Modulation amplitude:   0.001 mT
 Receiver gain:          N/A
+Offset:                 N/A
 Conversion time:        N/A
 Time constant:          N/A
 Phase:                  0 deg
+
+DIGITAL FILTER
+Mode:                   DIG
+Number of Points:       N/A
+Parameter:              0.01 mT
+
+GONIOMETER
+Start:                  0 deg
+Increment:              10 deg
+Number of Points:       19
+Fine Tuning per Slice:  off
 
 PROBEHEAD
 Type:                   rectangular TE102

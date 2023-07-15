@@ -49,8 +49,8 @@ Comparing cw-EPR spectra
 What is normally considered a simple task, comparing two or more recorded cw-EPR spectra, is much more tricky than one might think at first. Of course, the procedure taken depends dramatically on the ultimate goal of comparing as well. If you would like to do a semi-quantitative comparison of a series of spectra, you need to take different things into account as if you are interested in comparing spectral shapes.
 
 
-Semi-quantiative analysis
--------------------------
+Semi-quantitative analysis
+--------------------------
 
 Suppose you have recorded a series of cw-EPR spectra of different samples and would like to compare them in a semi-quantitative way, *i.e.* only with respect to their relative intensities. Note that this is different from spin quantification. For details of the latter, see below.
 
@@ -66,7 +66,7 @@ While you can numerically account for microwave power, receiver gain, and Q valu
 
 The absolute intensity values are usually arbitrary units and thus not comparable at all between different setups. The same is true for different resonators within the same spectrometer. Positioning of the resonator between the pole tips of your magnet influences the signal intensity as well, although probably to a smaller extent. Measuring with and without cryostat, however, will certainly make a more dramatic difference.
 
-Suppose you have recorded all samples with identical experimental settings, and you are reasonably confident that the resulting spectra are neither saturated nor over-modulated nor clipped nor otherwise distorted. If you forgot to record the Q value, you cannot reliably do a semi-quantiative analysis, at least not if you would like to do better than an order-of-magnitude estimation.
+Suppose you have recorded all samples with identical experimental settings, and you are reasonably confident that the resulting spectra are neither saturated nor over-modulated nor clipped nor otherwise distorted. If you forgot to record the Q value, you cannot reliably do a semi-quantitative analysis, at least not if you would like to do better than an order-of-magnitude estimation.
 
 If all requirements are reasonably fulfilled, the next step is to doubly integrate your spectra recorded with the usual lock-in detection scheme. Sounds simple, is mathematically well-defined, but in reality often rather tricky. These steps usually need to be carried out:
 
@@ -99,6 +99,8 @@ But now for comparing spectral shapes. Probably there is no one "true" or "corre
 
 You should, however, never simply plot the spectra "as is" and start interpreting some overlapping parts in some way. This would mean that you implicitly perform a semi-quantitative analysis, and this is in this way most certainly wrong. For details why this is the case and how to do better, see above.
 
+
+.. _spin_quantification:
 
 Spin quantification
 ===================

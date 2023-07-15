@@ -6,7 +6,7 @@
 cwepr documentation
 ===================
 
-Welcome! This is the documentation for cwepr, a Python package for **processing and analysis of continuous-wave electron paramagnetic resonance (cw-EPR) spectra** based on the `ASpecD framework <https://www.aspecd.de/>`_. For general information see its `Homepage <https://www.cwepr.de/>`_. Due to the inheritance from the ASpecD framework, all data generated with the cwepr package are completely reproducible and have a complete history.
+Welcome! This is the documentation for cwepr, a Python package for **processing and analysis of continuous-wave electron paramagnetic resonance (cw-EPR) spectra** based on the `ASpecD framework <https://www.aspecd.de/>`_. For general information see its `Homepage <https://www.cwepr.de/>`_. Due to the inheritance from the ASpecD framework, all data generated with the cwepr package are **completely reproducible** and have a complete history.
 
 What is even better: Actual data processing and analysis **no longer requires programming skills**, but is as simple as writing a text file summarising all the steps you want to have been performed on your dataset(s) in an organised way. Curious? Have a look at the following example:
 
@@ -81,6 +81,17 @@ And to make it even more convenient for users and future-proof:
   The cwepr package is currently under active development and still considered in Beta development state. Therefore, expect frequent changes in features and public APIs that may break your own code. Nevertheless, feedback as well as feature requests are highly welcome.
 
 
+Requirements
+============
+
+The cwepr package comes with a rather minimal set of requirements:
+
+* Python >= 3.7 with aspecd, numpy, scipy and matplotlib packages
+* command-line access for :doc:`recipe-driven data analysis <usecases>`
+* :doc:`metadata <metadata>` (in addition to the usual parameter files)
+* EPR data in readable formats (details in the :mod:`cwepr.io` (sub)package)
+
+
 .. _sec-how_to_cite:
 
 How to cite
@@ -88,7 +99,7 @@ How to cite
 
 cwepr is free software. However, if you use cwepr for your own research, please cite both, the article describing it and the software itself:
 
-  * Mirjam Schröder, Till Biskup. cwepr -- a Python package for analysing cw-EPR data focussing on reproducibility and simple usage. *Journal of Magnetic Resonance* **335**:107140, 2022. `doi:10.1016/j.jmr.2021.107140 <https://doi.org/10.1016/j.jmr.2021.107140>`_
+  * Mirjam Schröder, Till Biskup. cwepr -- a Python package for analysing cw-EPR data focussing on reproducibility and simple usage. *Journal of Magnetic Resonance* **335**:107140, 2022. `doi:10.1016/j.jmr.2021.107140 <https://doi.org/10.1016/j.jmr.2021.107140>`_ | `PDF <https://www.till-biskup.de/_media/de/person/schr-jmr-335-107140-accepted.pdf>`_ | `SI <https://www.till-biskup.de/_media/de/person/schr-jmr-335-107140-si.pdf>`_
 
   * Mirjam Schröder, Till Biskup. cwepr (2021). `doi:10.5281/zenodo.4896687 <https://doi.org/10.5281/zenodo.4896687>`_
 
@@ -118,6 +129,12 @@ To install the cwepr package on your computer (sensibly within a Python virtual 
     pip install cwepr
 
 Have a look at the more detailed :doc:`installation instructions <installing>` as well.
+
+
+Actual use cases
+================
+
+The cwepr Python package has been used already for analysing published cwepr data, and for some, the data and recipes have been published as "data publications". See the list of :doc:`data publications <examples/data-publications>` for further details.
 
 
 Related projects
@@ -151,6 +168,7 @@ Finally, don't forget to check out the website on `reproducible research <https:
    audience
    introduction
    concepts
+   metadata
    usecases
    installing
 
@@ -173,6 +191,7 @@ Finally, don't forget to check out the website on `reproducible research <https:
 
    examples/index
    examples/list
+   examples/data-publications
 
 
 .. toctree::

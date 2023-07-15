@@ -1,0 +1,86 @@
+cwEPR Info file - v. 0.1.5 (2023-03-24)
+
+GENERAL
+Filename:               Sa42-01
+Date start:             2021-03-13
+Date end:               2021-03-14
+Time start:             15:50:00
+Time end:               09:00:00
+Operator:               John Doe
+Label:                  Sa42-01
+Purpose:                First overview
+
+SAMPLE
+Name:                   Random sample
+ID:                     42
+Description:            film on substrate
+Solvent:                N/A
+Preparation:            drop-cast
+Tube:                   3.9 x 3 x 250 mm
+
+EXPERIMENT
+Type:                   field-sweep
+Runs:                   1
+Variable parameter:     field
+Increment:              0.02 mT
+
+SPECTROMETER
+Model:                  Bruker EMX
+Software:               Xenon 1.3b.5
+
+MAGNETIC FIELD
+Field probe type:       Hall 
+Field probe model:      xxx 
+Start:                  341.4 mT
+Stop:                   361.5 mT
+Step:                   0.02 mT
+Sequence:               up
+Controller:             Bruker EMX Field Controller
+Power supply:           Bruker ER 081 (90/30)
+
+BRIDGE
+Model:                  Bruker EMX PremiumX
+Controller:             Bruker EMX
+Attenuation:            20 dB
+Power:                  2.00 mW
+Detection:              diode
+Frequency counter:      Bruker
+MW frequency:           9.846977 GHz
+Q value:                8300
+
+SIGNAL CHANNEL
+Model:                  Bruker EMX Signal Channel
+Modulation amplifier:   Bruker EMX Modulation Amplifier
+Accumulations:          50
+Modulation frequency:   100 kHz
+Modulation amplitude:   0.1 mT
+Receiver gain:          80 dB
+Offset:                 0.0
+Conversion time:        30.00 ms
+Time constant:          20.48 ms
+Phase:                  0 deg
+
+DIGITAL FILTER
+Mode:                   DIG 
+Number of Points:       N/A
+Parameter:              0.4 mT
+
+GONIOMETER
+Start:                  0 deg
+Increment:              10 deg
+Number of Points:       19
+Fine Tuning per Slice:  off
+
+PROBEHEAD
+Type:                   HQ
+Model:                  Bruker 4119HS-W1
+Coupling:               critical
+
+TEMPERATURE
+Temperature:            298 K
+Controller:             N/A
+Cryostat:               N/A
+Cryogen:                N/A
+
+COMMENT
+Pretty weak signal

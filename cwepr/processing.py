@@ -79,7 +79,7 @@ been inherited from the underlying ASpecD framework:
 
 * :class:`SliceExtraction`
 
-  Extract slice along one ore more dimensions from dataset.
+  Extract slice along one or more dimensions from dataset.
 
 * :class:`BaselineCorrection`
 
@@ -155,7 +155,7 @@ spectra with those from the literature (always a good idea, though).
 
   * Baseline correction
 
-    However careful measurements are performed, baselines are quite often
+    However, careful measurements are performed, baselines are quite often
     encountered. There are two different kinds of baseline that need to be
     corrected in different ways. Drifts of some kind can usually be handled
     by fitting and afterwards subtracting a (low-order) polynomial to the data.
@@ -253,7 +253,7 @@ implemented within the ASpecD framework. As there are:
     should be the most straight-forward way of comparing two spectra in a
     meaningful way.
 
-    Bare in mind, however, that spectra with strongly different overall line
+    Bear in mind, however, that spectra with strongly different overall line
     width will have dramatically different minima and maxima, making
     comparison of this kind sometimes less meaningful.
 
@@ -283,7 +283,7 @@ normalisations more particular to cwEPR spectroscopy:
 
     Comparing spectra recorded with different receiver gain settings
     therefore requires the user to *first* normalise the data to the same
-    receiver gain setting. Otherwise, (semi-)quantiative comparison is not
+    receiver gain setting. Otherwise, (semi-)quantitative comparison is not
     possible and will lead to wrong conclusions.
 
     Note on the side: Adjusting the receiver gain for each measurement is
@@ -307,7 +307,7 @@ saving each individual scan in a series of accumulations. However, this may
 sometimes be of interest, particularly as a single "spike" due to some
 external event or other malfunctioning may otherwise ruin your entire
 dataset, however long it might have taken to record it. Therefore, one way
-around this limitations is to perform a 2D experiment with repeated field
+around this limitation is to perform a 2D experiment with repeated field
 scans, but saving each scan as a row in a 2D dataset.
 
 Generally, there are at least two different processing steps of interest for
@@ -429,8 +429,9 @@ Module documentation
 ====================
 
 What  follows is the API documentation of each class implemented in this module.
-
 """
+import warnings
+
 import numpy as np
 import scipy.integrate
 import scipy.interpolate
@@ -449,7 +450,8 @@ class FieldCorrection(aspecd.processing.SingleProcessingStep):
     Attributes
     ----------
     parameters['offset']: :class:`float`
-        Offset to be added to the field axis values.
+        Offset to be added to the field axis values. Should be given in the
+        unit of the axis.
 
 
     See Also
@@ -475,14 +477,49 @@ class FieldCorrection(aspecd.processing.SingleProcessingStep):
             #       (Difficult if not filled)
             # if axis.quantity == 'magnetic field'
             if axis.unit in ('mT', 'G'):
-                self.dataset.data.axes[0].values += \
-                    self.parameters["offset"]
+                axis.values += self.parameters["offset"]
+                self.dataset.metadata.magnetic_field.start.value = \
+                    axis.values[0]
+                self.dataset.metadata.magnetic_field.stop.value = \
+                    axis.values[-1]
 
 
 class FrequencyCorrection(aspecd.processing.SingleProcessingStep):
     """Convert data of a given frequency to another given frequency.
 
     This is used to make spectra comparable.
+    There are two methods for frequency correction which has to be given
+    in the parameter section.
+
+    * calculation via the Zeeman splitting (proportional)
+
+      All magnetic field points will be recalculated to keep their g-value.
+      This preserves field-dependent interactions such as *g* anisotropy,
+      but artificially scales all field-independent shifts. HFI or ZFS
+      constants are not preserved.
+
+    * Addition of an offset value (offset)
+
+      As the EPR spectrum should be somewhat centered to the signal of
+      interest, the central point will be corrected for the new frequency.
+      The difference between the old and the new magnetic field will be added
+      onto all other magnetic field points. Preserves constant energy shifts
+      such as (first order) HFI or ZFS, but artificially scales
+      field-dependent interactions such as *g* anisotropy. *g* factors besides
+      the reference point are not preserved. (Thanks to B. Corzilius for the
+      input)
+
+    Examples
+    --------
+    .. code-block:: yaml
+
+       - kind: processing
+         type: FrequencyCorrection
+         properties:
+           parameters:
+             kind: proportional
+             frequency: 9.63
+
 
     Attributes
     ----------
@@ -491,12 +528,36 @@ class FrequencyCorrection(aspecd.processing.SingleProcessingStep):
 
         Default: 9.5
 
+    self.parameters['kind']
+        Method used for frequency correction. Can be ``offset`` or
+        ``proportional``.
+
+        Default: proportional
+
+
+    .. versionchanged:: 0.4
+        Choice between the two methods of  frequency correction
+
     """
 
     def __init__(self):
         super().__init__()
         self.parameters["frequency"] = 9.5
+        self.parameters['kind'] = 'proportional'
         self.description = "Correct magnetic field axis for given frequency"
+
+    @staticmethod
+    def applicable(dataset):
+        """Check applicability."""
+        if not dataset.metadata.bridge.mw_frequency.value:
+            message = 'No frequency given in dataset'
+            warnings.warn(message=message)
+            return False
+        return True
+
+    def _sanitise_parameters(self):
+        if isinstance(self.parameters['frequency'], int):
+            self.parameters['frequency'] = float(self.parameters['frequency'])
 
     def _perform_task(self):
         """Perform the actual transformation / correction."""
@@ -506,12 +567,15 @@ class FrequencyCorrection(aspecd.processing.SingleProcessingStep):
             #       (Difficult if not filled)
             # if axis.quantity == 'magnetic field'
             if axis.unit in ('mT', 'G'):
-                axis.values = self._correct_field_for_frequency(nu_target,
-                                                                axis.values)
+                if 'proportional' in self.parameters['kind'].lower():
+                    axis.values = self._correct_proportionally(nu_target,
+                                                               axis.values)
+                elif 'offset' in self.parameters['kind'].lower():
+                    axis.values = self._correct_with_offset(nu_target,
+                                                            axis.values)
                 self._write_new_frequency()
 
-    def _correct_field_for_frequency(self, nu_target=None,
-                                     b_initial=None):
+    def _correct_proportionally(self, nu_target=None, b_initial=None):
         """
         Calculate new field axis for given frequency.
 
@@ -531,6 +595,13 @@ class FrequencyCorrection(aspecd.processing.SingleProcessingStep):
         """
         nu_initial = self.dataset.metadata.bridge.mw_frequency.value
         b_target = (nu_target / nu_initial) * b_initial
+        return b_target
+
+    def _correct_with_offset(self, nu_target=None, axis=None):
+        point_to_correct = axis[round(len(axis) / 2)]
+        nu_initial = self.dataset.metadata.bridge.mw_frequency.value
+        offset = point_to_correct - (nu_target / nu_initial) * point_to_correct
+        b_target = axis + offset
         return b_target
 
     def _write_new_frequency(self):
@@ -648,7 +719,7 @@ class AutomaticPhaseCorrection(aspecd.processing.SingleProcessingStep):
         # TODO: introduce parameter step width/number of points.
         angles = np.linspace(min_angle, max_angle, num=181)
         for angle in angles:
-            rotated_signal = (np.exp(1j * angle) * self._analytic_signal)
+            rotated_signal = np.exp(1j * angle) * self._analytic_signal
             if self.parameters['order'] > 0:
                 # pylint: disable=unused-variable
                 for j in range(self.parameters['order']):
@@ -989,7 +1060,7 @@ class Projection(aspecd.processing.Projection):
 
 
 class SliceExtraction(aspecd.processing.SliceExtraction):
-    """Extract slice along one ore more dimensions from dataset.
+    """Extract slice along one or more dimensions from dataset.
 
     As the class is fully inherited from ASpecD for simple usage, see the
     ASpecD documentation of the :class:`aspecd.processing.SliceExtraction`
@@ -1096,7 +1167,7 @@ class BaselineCorrection(aspecd.processing.BaselineCorrection):
     2D dataset, the baseline correction will be performed along the first
     axis (index zero) for all indices of the second axis (index 1).
 
-    Of course, often you want to control a little bit more how the baseline
+    Of course, often you want to control a little more how the baseline
     will be corrected. This can be done by explicitly setting some parameters.
 
     Suppose you want to perform a baseline correction with a polynomial of

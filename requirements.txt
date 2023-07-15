@@ -3,3 +3,4 @@ numpy
 scipy
 matplotlib
 setuptools
+python-dateutil

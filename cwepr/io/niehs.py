@@ -452,7 +452,7 @@ class NIEHSDatImporter(aspecd.io.DatasetImporter):
         axis = np.linspace(center_field - sweep_width / 2,
                            center_field + sweep_width / 2,
                            num=number_points)
-        assert (axis[0] == center_field - sweep_width / 2)
+        assert axis[0] == center_field - sweep_width / 2
         self.dataset.data.axes[0].values = axis
 
     def _assign_units(self):

@@ -50,7 +50,7 @@ class BES3TImporter(aspecd.io.DatasetImporter):
         self.load_infofile = True
         # private properties
         self._infofile = aspecd.infofile.Infofile()
-        self._dsc_dict = dict()
+        self._dsc_dict = {}
         self._mapper_filename = 'dsc_keys.yaml'
         self._is_two_dimensional = False
         self._dimensions = []

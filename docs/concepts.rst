@@ -22,6 +22,8 @@ Metadata are stored outside the cwepr package in simple yet structured text file
 
 The simplest incarnation of metadata is all necessary information obtained during data acquisition that usually gets stored in a file and read upon data import. A `dataset`_ contains these metadata together with the numerical data.
 
+For more details, see the separate page on :doc:`metadata during data acquisition <metadata>`.
+
 
 History
 =======

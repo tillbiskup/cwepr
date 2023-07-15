@@ -7,7 +7,7 @@ Roadmap
 A few ideas how to develop the project further, currently a list as a reminder for the main developers themselves, in no particular order, though with a tendency to list more important aspects first:
 
 
-For version 0.4
+For version 0.5
 ===============
 
 * Implement derived importers for Magnettech files
@@ -16,13 +16,26 @@ For version 0.4
   * At least for goniometer, power, and modulation amplitude sweeps, these should be transformed into single datasets.
   * Requires interpolation of data, as each individual dataset has its own *x* axis (usually field).
 
-* Handling of file extensions during import: Currently, they are cut in the init and again appended afterwards. The factory only gives source names without extension.
+* Import infofiles in all magnettech importers.
+
+* Put infofile importer in utils module or elsewhere, to not copy code in every single importer
 
 * Implement handling of "RT" as temperature value in the infofile.
 
+* Import and store filter mode from Magnettech data
+
+  * change metadata (done)
+
+  * adapt infofile-importer (in every importer)
+
+* Magnettech: Choose between raw data and data filtered during measurement.
+
 * Logging
 
+  * Frequency correction should issue a warning (rather than throwing an exception) if no MW frequency value is contained in dataset (yes, such datasets do exist unfortunately)
+
 * Reorganise templates for reports, according to the directory layout proposed by aspecd (see :mod:`aspecd.report` for details).
+
 
 * Bugfixes
 

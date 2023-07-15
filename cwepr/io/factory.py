@@ -31,12 +31,17 @@ class DatasetImporterFactory(aspecd.io.DatasetImporterFactory):
     Attributes
     ----------
     supported_formats : :class:`dict`
-        Dictionary who's keys correspond to the base name of the respective
-        importer (*i.e.*, without the suffix "Importer") and who's values are a
+        Dictionary whose keys correspond to the base name of the respective
+        importer (*i.e.*, without the suffix "Importer") and whose values are a
         list of file extensions to detect the correct importer.
 
     data_format : :class:`str`
-        Name of the format that has been detected.
+        Name of the format that has been given or detected.
+
+    .. versionchanged:: 0.4
+        File extension is taken into account, so that two files with the same
+        name and different extension can reside next to each other and the
+        correct one is taken into account.
 
     """
 
@@ -72,43 +77,48 @@ class DatasetImporterFactory(aspecd.io.DatasetImporterFactory):
             formats
 
         """
-        self._cut_file_extension_if_necessary()
-        if os.path.isdir(self.source) and self._directory_contains_gon_data():
-            self.data_format = 'GoniometerSweep'
-            importer = \
-                object_from_class_name('cwepr.io.GoniometerSweepImporter')
-            importer.source = self.source
-            return importer
+        if os.path.isdir(self.source):
+            if self._directory_contains_gon_data():
+                self.data_format = 'GoniometerSweep'
+                importer = \
+                    object_from_class_name('cwepr.io.GoniometerSweepImporter')
+                importer.source = self.source
+                return importer
+            if self._directory_contains_amplitude_sweep_data():
+                self.data_format = 'AmplitudeSweep'
+                importer = \
+                    object_from_class_name('cwepr.io.AmplitudeSweepImporter')
+                importer.source = self.source
+                return importer
+            if self._directory_contains_power_sweep_data():
+                self.data_format = 'PowerSweep'
+                importer = \
+                    object_from_class_name('cwepr.io.PowerSweepImporter')
+                importer.source = self.source
+                return importer
         self.data_format = self._find_format()
-        importer = None
         if self.data_format:
             importer = object_from_class_name(
                 ".".join(["cwepr", "io", self.data_format + "Importer"]))
             importer.source = self.source
-        return importer
-
-    def _cut_file_extension_if_necessary(self):
-        for end_ in [extension for sublist in self.supported_formats.values()
-                     for extension in sublist]:
-            if self.source.endswith(end_):
-                self.source = self.source[:-len(end_)]
+            return importer
 
     def _find_format(self):
-        """Find out the format of the given file.
-
-        Determine the format of the given filename by checking if a data and
-        metadata file matching any supported format are present.
-
-        Determination is performed by checking if files with the correct name
-        and extension are present.
-        """
+        # detect extension
         detected_format = None
+        root, file_extension = os.path.splitext(self.source)
         for file_format, extensions in self.supported_formats.items():
             file_exists = []
-            for extension in extensions:
-                file_exists.append(os.path.isfile(self.source + extension))
-            if all(file_exists):
-                detected_format = file_format
+            if file_extension in extensions:
+                for extension in extensions:
+                    file_exists.append(os.path.isfile(root + extension))
+                if all(file_exists):
+                    detected_format = file_format
+            elif not file_extension:
+                for extension in extensions:
+                    file_exists.append(os.path.isfile(self.source + extension))
+                if all(file_exists):
+                    detected_format = file_format
         return detected_format
 
     def _directory_contains_gon_data(self):
@@ -121,5 +131,31 @@ class DatasetImporterFactory(aspecd.io.DatasetImporterFactory):
             else:
                 check_gon_filenames.append(False)
         if all(check_gon_filenames):
+            return True
+        return False
+
+    def _directory_contains_amplitude_sweep_data(self):
+        check_modamp_filenames = []
+        if not os.listdir(self.source):
+            return False
+        for element in os.listdir(self.source):
+            if 'mod' in element:
+                check_modamp_filenames.append(True)
+            else:
+                check_modamp_filenames.append(False)
+        if all(check_modamp_filenames):
+            return True
+        return False
+
+    def _directory_contains_power_sweep_data(self):
+        check_powersweep_filenames = []
+        if not os.listdir(self.source):
+            return False
+        for element in os.listdir(self.source):
+            if 'pow' in element:
+                check_powersweep_filenames.append(True)
+            else:
+                check_powersweep_filenames.append(False)
+        if all(check_powersweep_filenames):
             return True
         return False

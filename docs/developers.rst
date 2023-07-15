@@ -105,7 +105,7 @@ To install the necessary Python dependencies, create a virtual environment, e.g.
 .. code-block:: bash
 
     pip install sphinx
-    pip install sphinx-rtd-theme
+    pip install sphinx-rtd-theme sphinxcontrib-bibtex sphinx-multiversion
 
 
 To build the documentation:
@@ -124,6 +124,12 @@ Static code analysis can be performed using `Prospector <http://prospector.lands
 
     pip install prospector[all]
     pip install prospector[with_pyroma]
+
+Some shells (such as Zsh, the default shell of macOS Catalina) require brackets to be escaped:
+
+.. code-block:: bash
+
+    pip install prospector\[with_pyroma\]
 
 
 The optional arguments ensure that all necessary dependencies are installed as well.

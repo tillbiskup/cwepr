@@ -171,10 +171,10 @@ class ESPWinEPRImporter(aspecd.io.DatasetImporter):
     # TODO: Implement handling of "RT" in temperature value
     @staticmethod
     def _check_if_temperature_empty(metadata_dict):
-        print(metadata_dict['temperature_control'])
         if 'value'not in metadata_dict['temperature_control'][
-            'temperature'].keys() or metadata_dict['temperature_control'][
-                                     'temperature']['value'] == 0:
+            'temperature'].keys() or \
+                metadata_dict['temperature_control']['temperature']['value'] \
+                == 0:
             metadata_dict.pop('temperature_control')
         return metadata_dict
 
@@ -229,12 +229,7 @@ class ESPWinEPRImporter(aspecd.io.DatasetImporter):
         for object_ in objects_:
             magnetic_field_object = getattr(
                 self.dataset.metadata.magnetic_field, object_)
-            if object_ in ('start', 'stop'):
-                if magnetic_field_object.value > 1500:
-                    magnetic_field_object.unit = 'G'
-                else:
-                    magnetic_field_object.unit = 'mT'
-            if magnetic_field_object.unit == 'G':
+            if magnetic_field_object.unit in ('G', ''):
                 magnetic_field_object.value /= 10
                 magnetic_field_object.unit = 'mT'
             setattr(
@@ -266,6 +261,9 @@ class ESPWinEPRImporter(aspecd.io.DatasetImporter):
             'Length of magnetic field and size of data differ'
         # set more values in dataset
         self.dataset.metadata.magnetic_field.stop.value = stop
+        self.dataset.metadata.magnetic_field.stop.unit = \
+            self.dataset.metadata.magnetic_field.start.unit
+
         self.dataset.data.axes[0].values = magnetic_field_axis
 
     def _get_number_of_points(self):

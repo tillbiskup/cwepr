@@ -4,7 +4,51 @@ Changelog
 
 This page contains a summary of changes between the official cwepr releases. Only the biggest changes are listed here. A complete and detailed log of all changes is available through the `GitHub Repository Browser <https://github.com/tillbiskup/cwepr/commits/master>`_.
 
-Version 0.3
+Version 0.4.0
+=============
+
+Released 2023-07-15
+
+**Note:** Starting with this version, cwepr requires **ASpecD >= 0.8.0**.
+
+New features
+------------
+
+* Add Frequency Correction with offset: This keeps the hyperfine splitting values.
+
+* Amplitude sweep importer for Magnettech. Averaging of temperature and Q-Values of the single measurements. A warning is issued if the values vary too much.
+
+* Implement Digital Filter into metadata.
+
+* Data is imported according to its file extension specified in the recipe.
+
+* Added support for cwepr-infofile version 0.1.5
+
+* Handling of data from Magnettech-Files: The filtered first derivative spectrum is taken by its name by default. The parameter can be set to also import other data curves such as the second derivative or the sinus part.
+
+
+Changes
+-------
+
+* Extend cw-EPR primer: additional notes on recording spectra
+
+
+Fixes
+-----
+
+* Fix bug in analysis.FitOnData by using a helper dataset.
+
+* Fix some metadata in magnettech importer (experiment.runs -> signal_channel.accumulations, correctly import spectrometer metadata, bring time stamp to same timezone.)
+
+* Do range extraction and interpolation (instead of interpolation only) in GoniometerSweepImporter.
+
+* Fix FieldCorrection to update correct axis and update metadata.
+
+* Win-EPR importer makes less mistakes in guessing the unit of the field axis.
+
+
+
+Version 0.3.0
 =============
 
 Released 2022-07-24
@@ -12,7 +56,7 @@ Released 2022-07-24
 New features
 ------------
 
-* Add linear fit with fixed intercept to FitOnData, renamed function accordingly. (0719809a22)
+* Add linear fit with fixed intercept to FitOnData, renamed function accordingly.
 * Importer for NIEHS dat, lmb, and exp files
 
 
