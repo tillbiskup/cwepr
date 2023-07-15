@@ -71,7 +71,7 @@ class CsvImporter(aspecd.io.DatasetImporter):
         else:
             separator = None
         if separator:
-            with open(self.source+self.extension, encoding="utf8") as file:
+            with open(self.source + self.extension, encoding="utf8") as file:
                 contents = file.read()
             contents = contents.replace(separator, '.')
             # noinspection PyTypeChecker

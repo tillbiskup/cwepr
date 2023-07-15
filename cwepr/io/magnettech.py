@@ -187,7 +187,6 @@ class MagnettechXMLImporter(aspecd.io.DatasetImporter):
                 xml_metadata[childnode.attrib['Name']] = childnode.text
         self.xml_metadata = xml_metadata
 
-
     def _cut_data(self):
         self._get_magnetic_field_range()
         mask = (self._xvalues > self._bfrom) & (self._xvalues < self._bto)
@@ -307,8 +306,8 @@ class MagnettechXMLImporter(aspecd.io.DatasetImporter):
             float(self.xml_metadata['Phase'])
         self.dataset.metadata.probehead.model = 'builtin'
         self.dataset.metadata.probehead.coupling = 'critical'
-        self.dataset.metadata.digital_filter.mode = self.xml_metadata[
-           'FilterType']
+        self.dataset.metadata.digital_filter.mode = \
+            self.xml_metadata['FilterType']
         self.dataset.metadata.digital_filter.parameter.from_string(
             (self.xml_metadata['FilterPrm0']))
 
@@ -730,10 +729,12 @@ class PowerSweepImporter(aspecd.io.DatasetImporter):
         - source: power-sweep-data
           id: power-sweep
 
+
     .. codeauthor:: Florian Taube <florian.taube@uni-rostock.de>
     .. versionadded:: 0.4
 
     """
+
     def __init__(self, source=''):
         super().__init__(source=source)
         self.dataset = cwepr.dataset.ExperimentalDataset()
@@ -866,6 +867,7 @@ class PowerSweepImporter(aspecd.io.DatasetImporter):
             self._data[0].metadata.signal_channel.phase.value
         self.dataset.metadata.probehead.model = 'builtin'
         self.dataset.metadata.probehead.coupling = 'critical'
+
     def _import_variable_metadata(self):
         temperatures = []
         qfactors = []
@@ -908,4 +910,3 @@ class PowerSweepImporter(aspecd.io.DatasetImporter):
             min(starts).strftime("%Y-%m-%d %H:%M:%S")
         self.dataset.metadata.measurement.end = \
             max(ends).strftime("%Y-%m-%d %H:%M:%S")
-

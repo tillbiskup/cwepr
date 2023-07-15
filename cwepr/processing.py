@@ -548,14 +548,15 @@ class FrequencyCorrection(aspecd.processing.SingleProcessingStep):
 
     @staticmethod
     def applicable(dataset):
+        """Check applicability."""
         if not dataset.metadata.bridge.mw_frequency.value:
-            message = 'No frequency given in dataset - Skip frequency' \
-                      ' correction.'
+            message = 'No frequency given in dataset'
             warnings.warn(message=message)
             return False
+        return True
 
     def _sanitise_parameters(self):
-        if type(self.parameters['frequency']) == int:
+        if isinstance(self.parameters['frequency'], int):
             self.parameters['frequency'] = float(self.parameters['frequency'])
 
     def _perform_task(self):

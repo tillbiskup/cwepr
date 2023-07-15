@@ -97,7 +97,7 @@ class TestMagnettechXmlImporter(unittest.TestCase):
                          'MWAbsorption (1st harm.)')
 
     def test_check_on_other_source_file_versions(self):
-        files = glob.glob('testdata/magnettech-various-formats/*')
+        files = glob.glob('testdata/magnettech-various-formats/*.xml')
         for file in files:
             self.importer.source = file
             try:
