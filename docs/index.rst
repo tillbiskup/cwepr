@@ -131,6 +131,12 @@ To install the cwepr package on your computer (sensibly within a Python virtual 
 Have a look at the more detailed :doc:`installation instructions <installing>` as well.
 
 
+Actual use cases
+================
+
+The cwepr Python package has been used already for analysing published cwepr data, and for some, the data and recipes have been published as "data publications". See the list of :doc:`data publications <examples/data-publications>` for further details.
+
+
 Related projects
 ================
 
@@ -185,6 +191,7 @@ Finally, don't forget to check out the website on `reproducible research <https:
 
    examples/index
    examples/list
+   examples/data-publications
 
 
 .. toctree::
