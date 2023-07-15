@@ -2,6 +2,8 @@ import copy
 import os
 import unittest
 
+import aspecd.metadata
+import aspecd.exceptions
 import numpy as np
 import numpy.testing as testing
 
@@ -11,7 +13,6 @@ import cwepr.dataset
 import cwepr.io.magnettech
 
 ROOTPATH = os.path.split(os.path.abspath(__file__))[0]
-
 
 
 class TestFieldCorrection(unittest.TestCase):
@@ -27,7 +28,7 @@ class TestFieldCorrection(unittest.TestCase):
         axis_before = copy.deepcopy(self.dataset.data.axes[0].values)
         self.dataset.process(fc)
         axis_after = self.dataset.data.axes[0].values
-        testing.assert_equal(axis_before+10, axis_after)
+        testing.assert_equal(axis_before + 10, axis_after)
 
     def test_metadata_is_updated(self):
         fc = cwepr.processing.FieldCorrection()
@@ -38,7 +39,7 @@ class TestFieldCorrection(unittest.TestCase):
         self.assertGreater(self.dataset.metadata.magnetic_field.start.value,
                            start)
         self.assertGreater(self.dataset.metadata.magnetic_field.stop.value,
-                            stop)
+                           stop)
 
 
 class TestAutomaticPhaseCorrection(unittest.TestCase):
@@ -93,6 +94,12 @@ class TestFrequencyCorrection(unittest.TestCase):
         self.dataset.process(self.corrector)
         new_freq = self.dataset.metadata.bridge.mw_frequency
         self.assertNotEqual(new_freq.value, old_freq.value)
+
+    def test_no_frequency_given(self):
+        self.dataset.metadata.bridge.mw_frequency = \
+            aspecd.metadata.PhysicalQuantity()
+        with self.assertRaises(aspecd.exceptions.NotApplicableToDatasetError):
+            self.dataset.process(self.corrector)
 
     def test_magnetic_field_axis_is_different(self):
         old_field_axis = copy.deepcopy(
@@ -243,7 +250,7 @@ class TestNormalisation(unittest.TestCase):
         correction.parameters['kind'] = 'receiver_gain'
         before = max(self.dataset.data.data)
         rg = 10 ** (
-                    self.dataset.metadata.signal_channel.receiver_gain.value / 20)
+                self.dataset.metadata.signal_channel.receiver_gain.value / 20)
         self.dataset.process(correction)
         after = max(self.dataset.data.data)
         self.assertEqual(before / rg, after)

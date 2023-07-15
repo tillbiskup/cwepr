@@ -7,22 +7,6 @@ Roadmap
 A few ideas how to develop the project further, currently a list as a reminder for the main developers themselves, in no particular order, though with a tendency to list more important aspects first:
 
 
-For version 0.4
-===============
-
-* Documentation
-
-  * Metadata for data acquisition: document cwepr info file
-  * Add "Best Practices" section showing data publications using the package (currently only one: Järsvall et al., Chem. Mater. 2022)
-  * Add "prerequisites" section to the index page (and probably more details on a separate page) -- Python, command-line access, metadata, EPR data in readable formats
-
-* Document source and originator of additional Magnettech data files (easyspin Forum).
-
-* Usability
-
-  * Frequency correction should issue a warning (rather than throwing an exception) if no MW frequency value is contained in dataset (yes, such datasets do exist unfortunately).
-
-
 For version 0.5
 ===============
 
@@ -40,15 +24,18 @@ For version 0.5
 
 * Import and store filter mode from Magnettech data
 
-    * change metadata (done)
+  * change metadata (done)
 
-    * adapt infofile-importer (in every importer)
+  * adapt infofile-importer (in every importer)
 
 * Magnettech: Choose between raw data and data filtered during measurement.
 
 * Logging
 
+  * Frequency correction should issue a warning (rather than throwing an exception) if no MW frequency value is contained in dataset (yes, such datasets do exist unfortunately)
+
 * Reorganise templates for reports, according to the directory layout proposed by aspecd (see :mod:`aspecd.report` for details).
+
 
 * Bugfixes
 

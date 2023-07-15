@@ -430,6 +430,8 @@ Module documentation
 
 What  follows is the API documentation of each class implemented in this module.
 """
+import warnings
+
 import numpy as np
 import scipy.integrate
 import scipy.interpolate
@@ -543,6 +545,14 @@ class FrequencyCorrection(aspecd.processing.SingleProcessingStep):
         self.parameters["frequency"] = 9.5
         self.parameters['kind'] = 'proportional'
         self.description = "Correct magnetic field axis for given frequency"
+
+    @staticmethod
+    def applicable(dataset):
+        if not dataset.metadata.bridge.mw_frequency.value:
+            message = 'No frequency given in dataset - Skip frequency' \
+                      ' correction.'
+            warnings.warn(message=message)
+            return False
 
     def _sanitise_parameters(self):
         if type(self.parameters['frequency']) == int:
