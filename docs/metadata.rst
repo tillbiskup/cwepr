@@ -2,7 +2,7 @@
 Metadata during data acquisition
 ================================
 
-(Numerical) data without accompanying metadata are pretty useless, as data can only be analysed (and the results somewhat reproduced) knowing the context of their recording, *i.e.* what (instrumental) parameters have been used for data acquisition and what sample has been measured. While the cwepr package takes care of recording all metadata acquired *during* data processing and analysis, thanks to being based on the `ASpecD framework <https://docs.aspecd.de/>`, we are here concerned with **metadata during data acquisition**, *i.e.* the step before the cwepr package enters the stage.
+(Numerical) data without accompanying metadata are pretty useless, as data can only be analysed (and the results somewhat reproduced) knowing the context of their recording, *i.e.* what (instrumental) parameters have been used for data acquisition and what sample has been measured. While the cwepr package takes care of recording all metadata acquired *during* data processing and analysis, thanks to being based on the `ASpecD framework <https://docs.aspecd.de/>`_, we are here concerned with **metadata during data acquisition**, *i.e.* the step before the cwepr package enters the stage.
 
 .. important::
 
