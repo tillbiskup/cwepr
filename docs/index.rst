@@ -81,6 +81,17 @@ And to make it even more convenient for users and future-proof:
   The cwepr package is currently under active development and still considered in Beta development state. Therefore, expect frequent changes in features and public APIs that may break your own code. Nevertheless, feedback as well as feature requests are highly welcome.
 
 
+Requirements
+============
+
+The cwepr package comes with a rather minimal set of requirements:
+
+* Python >= 3.7 with aspecd, numpy, scipy and matplotlib packages
+* command-line access for :doc:`recipe-driven data analysis <usecases>`
+* :doc:`metadata <metadata>` (in addition to the usual parameter files)
+* EPR data in readable formats (details in the :mod:`cwepr.io` (sub)package)
+
+
 .. _sec-how_to_cite:
 
 How to cite
@@ -151,6 +162,7 @@ Finally, don't forget to check out the website on `reproducible research <https:
    audience
    introduction
    concepts
+   metadata
    usecases
    installing
 

@@ -13,6 +13,14 @@ Furthermore, if you would like to compare spectra among each other, you will nee
     Basic familiarity with operating an EPR spectrometer is tacitly assumed. You will find no information how to couple your resonator and similar things, as this strongly depends on the setup you're using.
 
 
+Metadata
+========
+
+Before delving into how to optimise the parameters of a cw-EPR experiment, we need to briefly mention an important but too often overlooked or ignored aspect: **recording all relevant metadata during data acquisition**. In short: no spectrometer will record all relevant metadata for you automatically, and some will sometimes even record wrong parameters. Hence, make it a habit to *always* record all relevant metadata *during data acquisition* in a format that can be directly read by the cwepr package. This is both, a matter of convenience for you when later processing and analysing the data, and a prerequisite for reproducible research and hence integral part of the scientific method.
+
+For further details, see the section on :doc:`metadata during data acquisition <../metadata>` in the user manual.
+
+
 Field range
 ===========
 
