@@ -371,7 +371,6 @@ class TestPowerSweepImporter(unittest.TestCase):
         after = self.power_importer._data[1].data.axes[0].values
         self.assertFalse(np.array_equal(before, after))
 
-    @unittest.skip
     def test_raw_data_have_same_length(self):
         self.power_importer._get_filenames()
         self.power_importer._sort_filenames()
@@ -409,23 +408,23 @@ class TestPowerSweepImporter(unittest.TestCase):
         self.dataset.import_from(importer)
 
     def test_fixed_values_are_imported_to_metadata(self):
-        self.dataset.import_from(self.amplitude_importer)
+        self.dataset.import_from(self.power_importer)
         self.assertTrue(self.dataset.metadata.spectrometer.model)
         self.assertTrue(self.dataset.metadata.spectrometer.software)
 
     def test_q_value_is_averaged(self):
-        self.dataset.import_from(self.amplitude_importer)
+        self.dataset.import_from(self.power_importer)
         self.assertTrue(self.dataset.metadata.bridge.q_value)
 
     def test_time_start_is_imported_in_readable_format(self):
-        self.dataset.import_from(self.amplitude_importer)
+        self.dataset.import_from(self.power_importer)
         start = self.dataset.metadata.measurement.start
         self.assertTrue(start)
         rex = re.compile("[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}")
         self.assertTrue(rex.match(start))
 
     def test_time_end_is_imported_in_readable_format(self):
-        self.dataset.import_from(self.amplitude_importer)
+        self.dataset.import_from(self.power_importer)
         end = self.dataset.metadata.measurement.end
         self.assertTrue(end)
         rex = re.compile("[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}")
