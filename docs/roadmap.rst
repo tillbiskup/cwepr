@@ -7,12 +7,12 @@ Roadmap
 A few ideas how to develop the project further, currently a list as a reminder for the main developers themselves, in no particular order, though with a tendency to list more important aspects first:
 
 
-For version 0.3.x
-=================
+For version 0.4
+===============
 
 * Documentation
 
-  * Metadata for data acquisition: document cwepr info file and alternative methods (and implement importers for alternative methods!)
+  * Metadata for data acquisition: document cwepr info file
   * Add "Best Practices" section showing data publications using the package (currently only one: Järsvall et al., Chem. Mater. 2022)
   * Add "prerequisites" section to the index page (and probably more details on a separate page) -- Python, command-line access, metadata, EPR data in readable formats
 
@@ -23,7 +23,7 @@ For version 0.3.x
   * Frequency correction should issue a warning (rather than throwing an exception) if no MW frequency value is contained in dataset (yes, such datasets do exist unfortunately).
 
 
-For version 0.4
+For version 0.5
 ===============
 
 * Implement derived importers for Magnettech files
@@ -33,6 +33,8 @@ For version 0.4
   * Requires interpolation of data, as each individual dataset has its own *x* axis (usually field).
 
 * Import infofiles in all magnettech importers.
+
+* Put infofile importer in utils module or elsewhere, to not copy code in every single importer
 
 * Implement handling of "RT" as temperature value in the infofile.
 
