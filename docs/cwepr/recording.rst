@@ -18,6 +18,11 @@ Metadata
 
 Before delving into how to optimise the parameters of a cw-EPR experiment, we need to briefly mention an important but too often overlooked or ignored aspect: **recording all relevant metadata during data acquisition**. In short: no spectrometer will record all relevant metadata for you automatically, and some will sometimes even record wrong parameters. Hence, make it a habit to *always* record all relevant metadata *during data acquisition* in a format that can be directly read by the cwepr package. This is both, a matter of convenience for you when later processing and analysing the data, and a prerequisite for reproducible research and hence integral part of the scientific method.
 
+.. important::
+
+    Note that most commercial **EPR spectrometers do not record sufficient metadata** for full reproducibility. What is even worse: some tend to write **wrong parameter values**, as they do not read the parameter values from the devices when the measurement starts/finishes, but only when the operator manually triggers the saving. Hence, you better record crucial metadata by hand in an *external* file -- and understand which values to trust and why.
+
+
 For further details, see the section on :doc:`metadata during data acquisition <../metadata>` in the user manual.
 
 
