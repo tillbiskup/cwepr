@@ -24,11 +24,7 @@ For version 0.5
 
 * Import and store filter mode from Magnettech data
 
-  * change metadata (done)
-
   * adapt infofile-importer (in every importer)
-
-* Magnettech: Choose between raw data and data filtered during measurement.
 
 * Logging
 
