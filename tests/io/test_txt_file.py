@@ -13,3 +13,25 @@ class TestTxtImporter(unittest.TestCase):
         importer = cwepr.io.TxtImporter(source=source)
         dataset = cwepr.dataset.ExperimentalDataset()
         dataset.import_from(importer)
+
+    def test_import_metadata(self):
+        source = os.path.join(ROOTPATH, 'testdata/noisy_data')
+        importer = cwepr.io.TxtImporter(source=source)
+        dataset = cwepr.dataset.ExperimentalDataset()
+        dataset.import_from(importer)
+        self.assertTrue(dataset.data.axes[0].unit)
+
+
+class TestCsvImporter(unittest.TestCase):
+    def test_import(self):
+        source = os.path.join(ROOTPATH, 'testdata/noisy_data.txt')
+        importer = cwepr.io.CsvImporter(source=source)
+        dataset = cwepr.dataset.ExperimentalDataset()
+        dataset.import_from(importer)
+
+    def test_import_metadata(self):
+        source = os.path.join(ROOTPATH, 'testdata/noisy_data.txt')
+        importer = cwepr.io.CsvImporter(source=source)
+        dataset = cwepr.dataset.ExperimentalDataset()
+        dataset.import_from(importer)
+        self.assertTrue(dataset.data.axes[0].unit)

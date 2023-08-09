@@ -18,6 +18,8 @@ For version 0.5
 
 * Import infofiles in all magnettech importers.
 
+* Summarize CsvImporter and TxtImporter, basing them on the aspecd-Importer and only adding some basic metadata.
+
 * Put infofile importer in utils module or elsewhere, to not copy code in every single importer
 
 * Implement handling of "RT" as temperature value in the infofile.
@@ -36,6 +38,8 @@ For version 0.5
 * Bugfixes
 
   * Keep step parameter of magnetic field or not?
+
+  * Fix docs in tyt-file importer module.
 
 
 For later versions
