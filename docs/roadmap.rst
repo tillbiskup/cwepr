@@ -41,6 +41,8 @@ For version 0.5
 
   * Fix docs in tyt-file importer module.
 
+  * Check Offset method of Frequency correction. Might be incorrect.
+
 
 For later versions
 ==================
