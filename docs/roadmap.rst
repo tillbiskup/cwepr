@@ -33,6 +33,8 @@ For version 0.5
 
 * Bugfixes
 
+  * Handle filename with '.' in TxtImporter that is given without extension
+
   * Keep step parameter of magnetic field or not?
 
   * Fix docs in tyt-file importer module.

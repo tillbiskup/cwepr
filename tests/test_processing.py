@@ -44,8 +44,9 @@ class TestFieldCorrection(unittest.TestCase):
 
 class TestAutomaticPhaseCorrection(unittest.TestCase):
     def setUp(self):
-        source = os.path.join(ROOTPATH, 'io/testdata/phase-45_noise0.000')
-        importer = cwepr.io.txt_file.CsvImporter(source=source)
+        source = os.path.join(ROOTPATH, 'io/testdata/phase-45_noise0.000.txt')
+        importer = cwepr.io.txt_file.TxtImporter(source=source)
+        importer.parameters['delimiter'] = '\t'
         self.dataset = cwepr.dataset.ExperimentalDataset()
         self.dataset.import_from(importer)
 
@@ -228,7 +229,7 @@ class TestAxisInterpolation(unittest.TestCase):
 class TestNormalisationOfDerivativeToArea(unittest.TestCase):
     def setUp(self):
         source = os.path.join(ROOTPATH, 'io/testdata/not_noisy_data')
-        importer = cwepr.io.txt_file.CsvImporter(source=source)
+        importer = cwepr.io.txt_file.TxtImporter(source=source)
         self.dataset = cwepr.dataset.ExperimentalDataset()
         self.dataset.import_from(importer)
 
