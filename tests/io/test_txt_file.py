@@ -29,6 +29,9 @@ class TestCsvImporter(unittest.TestCase):
         dataset = cwepr.dataset.ExperimentalDataset()
         dataset.import_from(importer)
 
+    def test_file_extension(self):
+        source = os.path.join(ROOTPATH, 'testdata/noisy_data.txt')
+
     def test_import_metadata(self):
         source = os.path.join(ROOTPATH, 'testdata/noisy_data.txt')
         importer = cwepr.io.CsvImporter(source=source)

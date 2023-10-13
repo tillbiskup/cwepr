@@ -51,9 +51,39 @@ class CsvImporter(aspecd.io.DatasetImporter):
     """
     Importer for simple csv imports with different delimiters.
 
-    .. note::
-        Currently not nicely implemented. The file extension has to be given
-        in the input file, otherwise the file will not be found.
+    Can import csv files as well as txt files, the latter only, if the
+    extension is given in the recipe.
+
+    As this function is used sometimes for the import of simulations that
+    were made with EasySpin, the importer adds three values as metadata in
+    order to get the axis label for the magnetic field axis correctly:
+
+    * Unit of the first axis: mT
+
+    * Quantity of the fist axis: magnetic field
+
+    * Quantity of the second axis: intensity
+
+    A matlab excerpt for saving the simulated spectrum might look as follows:
+
+
+    .. code-block:: matlab
+
+        [B_sim_iso, Spc_sim_iso] = garlic(Sys, Exp);
+
+        data = [B_sim_iso', Spc_sim_iso'];
+        writematrix(data, 'Simulated-spectrum')
+
+
+    Read in the simulated spectrum with:
+
+    .. code-block:: yaml
+
+        - source: Simulated-spectrum.txt
+          id: simulation
+          importer: CsvImporter
+          importer_parameters:
+              delimiter: ','
 
 
     Attributes
@@ -79,8 +109,9 @@ class CsvImporter(aspecd.io.DatasetImporter):
 
             Default: None (meaning: dot)
 
+
     .. versionchanged:: 0.4.1
-        Changed Importer to not cut file extension.
+        Importer can deal .txt files if explicitely given.
 
     """
 
@@ -94,8 +125,17 @@ class CsvImporter(aspecd.io.DatasetImporter):
         self.parameters["separator"] = None
 
     def _import(self):
+        self._get_extension()
         self._read_data()
         self._create_metadata()
+
+
+    def _get_extension(self):
+        if self.source.endswith('.txt'):
+            self.source = self.source[:-4]
+            self.extension = '.txt'
+        self.source += self.extension
+        print(self.source)
 
 
     def _read_data(self):
