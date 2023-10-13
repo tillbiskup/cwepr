@@ -9,6 +9,16 @@ Version 0.5.0
 
 Not yet released
 
+New features
+------------
+
+* Renamed CsvImporter to TxtImporter and vice versa, generalised handling of text files. Now inherits from aspecd.io.TxtImporter.
+
+Changes
+-------
+
+* Add comments on how to prevent figure title to clash with g axis
+
 
 Version 0.4.0
 =============

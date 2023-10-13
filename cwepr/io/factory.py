@@ -54,6 +54,7 @@ class DatasetImporterFactory(aspecd.io.DatasetImporterFactory):
                                   "NIEHSLmb": [".lmb"],
                                   "NIEHSExp": [".exp"],
                                   "Txt": [".txt"],
+                                  "Csv": [".csv"],
                                   }
         self.data_format = None
 

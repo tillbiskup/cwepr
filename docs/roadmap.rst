@@ -18,15 +18,11 @@ For version 0.5
 
 * Import infofiles in all magnettech importers.
 
-* Summarize CsvImporter and TxtImporter, basing them on the aspecd-Importer and only adding some basic metadata.
-
 * Put infofile importer in utils module or elsewhere, to not copy code in every single importer
 
 * Implement handling of "RT" as temperature value in the infofile.
 
-* Import and store filter mode from Magnettech data
-
-  * adapt infofile-importer (in every importer)
+* adapt infofile-importer (in every importer)
 
 * Logging
 

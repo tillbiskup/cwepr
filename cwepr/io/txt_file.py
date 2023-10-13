@@ -16,74 +16,22 @@ import numpy as np
 import aspecd.io
 
 
-class TxtImporter(aspecd.io.DatasetImporter):
+class TxtImporter(aspecd.io.TxtImporter):
     """
-    Simple importer for txt files containing data.
+    Importer for text files with various delimiters and separators.
 
-    Sometimes, data come from sources as a txt file only. So far, the format
-    is hardcoded and should contain two columns separated by a tabulator.
-    """
+    Automatically detects the extension of a file. Therefore, the importer
+    should be given explicitly in the recipe if it is different from ".txt".
 
-    def __init__(self, source=''):
-        super().__init__(source=source)
-        # public properties
-        self.extension = '.txt'
-
-    def _import(self):
-        self._get_data()
-        self._create_metadata()
-
-    def _get_data(self):
-        if self.source.endswith('.txt'):
-            self.source = self.source[:-4]
-
-        self.source = self.source + self.extension
-        raw_data = np.loadtxt(self.source, delimiter='\t')
-        self.dataset.data.data = raw_data[:, 1]
-        self.dataset.data.axes[0].values = raw_data[:, 0]
-
-    def _create_metadata(self):
-        self.dataset.data.axes[0].unit = 'mT'
-        self.dataset.data.axes[1].quantity = 'intensity'
-
-
-class CsvImporter(aspecd.io.DatasetImporter):
-    """
-    Importer for simple csv imports with different delimiters.
-
-    Can import csv files as well as txt files, the latter only, if the
-    extension is given in the recipe.
-
-    As this function is used sometimes for the import of simulations that
-    were made with EasySpin, the importer adds three values as metadata in
-    order to get the axis label for the magnetic field axis correctly:
+    Due to the inherent lacking of metadata in text files despite their
+    widespread use, the importer adds three values as metadata in order to
+    get the axis label for the magnetic field axis correctly:
 
     * Unit of the first axis: mT
 
     * Quantity of the fist axis: magnetic field
 
     * Quantity of the second axis: intensity
-
-    A matlab excerpt for saving the simulated spectrum might look as follows:
-
-
-    .. code-block:: matlab
-
-        [B_sim_iso, Spc_sim_iso] = garlic(Sys, Exp);
-
-        data = [B_sim_iso', Spc_sim_iso'];
-        writematrix(data, 'Simulated-spectrum')
-
-
-    Read in the simulated spectrum with:
-
-    .. code-block:: yaml
-
-        - source: Simulated-spectrum.txt
-          id: simulation
-          importer: CsvImporter
-          importer_parameters:
-              delimiter: ','
 
 
     Attributes
@@ -110,8 +58,121 @@ class CsvImporter(aspecd.io.DatasetImporter):
             Default: None (meaning: dot)
 
 
-    .. versionchanged:: 0.4.1
-        Importer can deal .txt files if explicitely given.
+    Examples
+    --------
+    For convenience, a series of examples in recipe style (for details of the
+    recipe-driven data analysis, see :mod:`aspecd.tasks`) is given below for
+    how to make use of this class. The examples focus each on a single aspect.
+
+    The most general and simple case, using only default values:
+
+    .. code-block:: yaml
+
+        datasets:
+          - eprdata.txt
+
+    However, you can control the import in quite some detail, with respect to
+    delimiter, decimal separator, rows to skip from the top, and comment
+    character. A full example setting each of these parameters may look as
+    follows:
+
+    .. code-block:: yaml
+
+        datasets:
+          - source: eprdata.txt
+            importer_parameters:
+                delimiter: '\t'
+                separator: ','
+                skiprows: 3
+                comments: '%'
+
+    Here, the delimiter between columns is the tabulator, the decimal
+    separator the comma, the first three lines are skipped by default as well
+    as every line starting with a percent character, as this is interpreted as
+    comment.
+
+    A frequent use case is importing simulations that were carried out with
+    EasySpin. A MATLAB excerpt for saving the simulated spectrum might look
+    as follows:
+
+
+    .. code-block:: matlab
+
+        [B_sim_iso, Spc_sim_iso] = garlic(Sys, Exp);
+
+        data = [B_sim_iso', Spc_sim_iso'];
+        writematrix(data, 'Simulated-spectrum')
+
+
+    Read in the simulated spectrum with:
+
+    .. code-block:: yaml
+
+        datasets:
+          - source: Simulated-spectrum.txt
+            id: simulation
+            importer: TxtImporter
+            importer_parameters:
+                delimiter: ','
+
+
+    .. versionchanged:: 0.5
+        Renamed from CsvImporter to TxtImporter and generalised handling of text
+        files. Now inherits from :class:`aspecd.io.TxtImporter`.
+
+    """
+
+    def __init__(self, source=''):
+        super().__init__(source=source)
+        # public properties
+        self.extension = '.txt'
+        self.parameters["skiprows"] = 0
+        self.parameters["delimiter"] = None
+        self.parameters["comments"] = "#"
+        self.parameters["separator"] = None
+
+    def _import(self):
+        self._get_extension()
+        super()._import()
+        self._create_metadata()
+
+    def _get_extension(self):
+        if '.' in self.source:
+            extension = self.source[self.source.rfind('.'):]
+        else:
+            extension = None
+        if extension:
+            self.extension = extension
+            self.source = self.source[:self.source.rfind('.')]
+        self.source += self.extension
+
+    def _create_metadata(self):
+        self.dataset.data.axes[0].unit = 'mT'
+        self.dataset.data.axes[0].quantity = 'magnetic field'
+        self.dataset.data.axes[1].quantity = 'intensity'
+
+
+class CsvImporter(TxtImporter):
+    """
+    Simple importer for csv files containing EPR data.
+
+    The delimiter defaults to the comma, as the name implies, but you can
+    set the delimiter as well as other parameters explicitly. See
+    :class:`TxtImporter` for details.
+
+    Due to the inherent lacking of metadata in text files despite their
+    widespread use, the importer adds three values as metadata in order to
+    get the axis label for the magnetic field axis correctly:
+
+    * Unit of the first axis: mT
+
+    * Quantity of the fist axis: magnetic field
+
+    * Quantity of the second axis: intensity
+
+    .. versionchanged:: 0.5
+        Renamed from CsvImporter to TxtImporter and generalised handling of text
+        files. Now inherits from :class:`TxtImporter`.
 
     """
 
@@ -119,44 +180,5 @@ class CsvImporter(aspecd.io.DatasetImporter):
         super().__init__(source=source)
         # public properties
         self.extension = '.csv'
-        self.parameters["skiprows"] = 1
-        self.parameters["delimiter"] = None
-        self.parameters["comments"] = "#"
-        self.parameters["separator"] = None
+        self.parameters["delimiter"] = ','
 
-    def _import(self):
-        self._get_extension()
-        self._read_data()
-        self._create_metadata()
-
-
-    def _get_extension(self):
-        if self.source.endswith('.txt'):
-            self.source = self.source[:-4]
-            self.extension = '.txt'
-        self.source += self.extension
-        print(self.source)
-
-
-    def _read_data(self):
-        if "separator" in self.parameters:
-            separator = self.parameters.pop("separator")
-        else:
-            separator = None
-        if separator:
-            with open(self.source, encoding="utf8") as file:
-                contents = file.read()
-            contents = contents.replace(separator, '.')
-            # noinspection PyTypeChecker
-            data = np.loadtxt(io.StringIO(contents), **self.parameters)
-        else:
-            data = np.loadtxt(self.source, **self.parameters)
-        if len(np.shape(data)) > 1 and np.shape(data)[1] == 2:
-            self.dataset.data.axes[0].values = data[:, 0]
-            data = data[:, 1]
-        self.dataset.data.data = data
-
-    def _create_metadata(self):
-        self.dataset.data.axes[0].unit = 'mT'
-        self.dataset.data.axes[0].quantity = 'magnetic field'
-        self.dataset.data.axes[1].quantity = 'intensity'

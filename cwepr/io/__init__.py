@@ -36,7 +36,7 @@ series of more general modules:
 from .factory import DatasetImporterFactory
 from .magnettech import MagnettechXMLImporter, GoniometerSweepImporter, \
     AmplitudeSweepImporter, PowerSweepImporter
-from .txt_file import TxtImporter, CsvImporter
+from .txt_file import CsvImporter, TxtImporter
 from .bes3t import BES3TImporter
 from .esp_winepr import ESPWinEPRImporter
 from .niehs import NIEHSDatImporter, NIEHSLmbImporter, NIEHSExpImporter
