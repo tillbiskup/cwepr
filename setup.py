@@ -38,6 +38,8 @@ setuptools.setup(
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
         "License :: OSI Approved :: BSD License",
         "Operating System :: OS Independent",
         "Intended Audience :: Science/Research",
@@ -51,8 +53,9 @@ setuptools.setup(
         'matplotlib',
     ],
     extras_require={
-        'dev': ['prospector'],
-        'docs': ['sphinx', 'sphinx-rtd-theme', 'sphinxcontrib-bibtex'],
+        'dev': ['prospector[with_pyroma]'],
+        'docs': ['sphinx', 'sphinx-rtd-theme', 'sphinxcontrib-bibtex',
+                 'sphinx-multiversion'],
     },
     python_requires='>=3.7',
 )

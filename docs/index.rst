@@ -1,4 +1,4 @@
-.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.4896687.svg
+.. image:: images/zenodo.4896687.svg
    :target: https://doi.org/10.5281/zenodo.4896687
    :align: right
 
@@ -101,7 +101,7 @@ cwepr is free software. However, if you use cwepr for your own research, please 
 
 To make things easier, cwepr has a `DOI <https://doi.org/10.5281/zenodo.4896687>`_ provided by `Zenodo <https://zenodo.org/>`_, and you may click on the badge below to directly access the record associated with it. Note that this DOI refers to the package as such and always forwards to the most current version.
 
-.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.4896687.svg
+.. image:: images/zenodo.4896687.svg
    :target: https://doi.org/10.5281/zenodo.4896687
 
 
