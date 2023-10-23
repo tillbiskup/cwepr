@@ -110,7 +110,7 @@ class BES3TImporter(aspecd.io.DatasetImporter):
 
     def _extract_metadata_from_dsc(self):
         dsc_filename = self.source + '.DSC'
-        with open(dsc_filename, 'r') as file:
+        with open(dsc_filename, 'r', encoding='ascii') as file:
             lines = file.read().splitlines()
 
         for line in lines:

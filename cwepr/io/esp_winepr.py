@@ -88,7 +88,7 @@ class ESPWinEPRImporter(aspecd.io.DatasetImporter):
 
     def _read_parameter_file(self):
         par_filename = self.source + '.par'
-        with open(par_filename, 'r') as file:
+        with open(par_filename, 'r', encoding='ascii') as file:
             lines = file.read().splitlines()
 
         for line in lines:

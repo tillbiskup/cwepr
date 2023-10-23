@@ -168,11 +168,11 @@ class MagnettechXMLImporter(aspecd.io.DatasetImporter):
         mw_abs_x_slope = float(self._data_curve.attrib['XSlope'])
 
         mw_x = mw_abs_x_offset + \
-               np.linspace(0, len(self._yvalues) - 1, num=len(self._yvalues)) \
-               * mw_abs_x_slope
+            np.linspace(0, len(self._yvalues) - 1, num=len(self._yvalues)) \
+            * mw_abs_x_slope
         b_field_x = b_field_x_offset + \
-                    np.linspace(0, len(self._xvalues) - 1,
-                                num=len(self._xvalues)) * b_field_x_slope
+            np.linspace(0, len(self._xvalues) - 1,
+                        num=len(self._xvalues)) * b_field_x_slope
         self._xvalues = np.interp(mw_x, b_field_x, self._xvalues)
 
     def _extract_metadata_from_xml(self):

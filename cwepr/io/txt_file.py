@@ -10,14 +10,12 @@ as simple text or CSV files.
 You may have a look as well at the importers provided by the ASpecD package
 for similar situations, particularly :class:`aspecd.io.TxtImporter`.
 """
-import io
-import numpy as np
 
 import aspecd.io
 
 
 class TxtImporter(aspecd.io.TxtImporter):
-    """
+    r"""
     Importer for text files with various delimiters and separators.
 
     Automatically detects the extension of a file. Therefore, the importer
@@ -172,7 +170,8 @@ class CsvImporter(TxtImporter):
 
     .. versionchanged:: 0.5
         Renamed from CsvImporter to TxtImporter and generalised handling of text
-        files. Now inherits from :class:`TxtImporter`.
+        files. This is now a derived dedicated csv importer and inherits
+        from :class:`TxtImporter`.
 
     """
 
@@ -181,4 +180,3 @@ class CsvImporter(TxtImporter):
         # public properties
         self.extension = '.csv'
         self.parameters["delimiter"] = ','
-
