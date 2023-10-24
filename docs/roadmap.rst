@@ -7,7 +7,7 @@ Roadmap
 A few ideas how to develop the project further, currently a list as a reminder for the main developers themselves, in no particular order, though with a tendency to list more important aspects first:
 
 
-For version 0.5
+For version 0.6
 ===============
 
 * Implement derived importers for Magnettech files
@@ -22,13 +22,7 @@ For version 0.5
 
 * Implement handling of "RT" as temperature value in the infofile.
 
-* Import and store filter mode from Magnettech data
-
-  * change metadata (done)
-
-  * adapt infofile-importer (in every importer)
-
-* Magnettech: Choose between raw data and data filtered during measurement.
+* adapt infofile-importer (in every importer)
 
 * Logging
 
@@ -39,7 +33,13 @@ For version 0.5
 
 * Bugfixes
 
+  * Handle filename with '.' in TxtImporter that is given without extension
+
   * Keep step parameter of magnetic field or not?
+
+  * Fix docs in txt-file importer module.
+
+  * Check Offset method of Frequency correction. Might be incorrect.
 
 
 For later versions

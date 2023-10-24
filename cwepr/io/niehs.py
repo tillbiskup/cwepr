@@ -677,7 +677,7 @@ class NIEHSExpImporter(aspecd.io.DatasetImporter):
 
     def _read_file_contents(self):
         filename = self.source + ".exp"
-        with open(filename, 'r') as file:
+        with open(filename, 'r', encoding='ascii') as file:
             self._file_contents = file.read()
         self._lines = self._file_contents.splitlines()
 

@@ -429,6 +429,13 @@ class PlotterExtensions:
             magnetic field values to be in millitesla (mT), as it calls
             :func:`cwepr.utils.convert_mT2g`.
 
+            .. important::
+
+                If you add a *g* axis to your plot, and at the same time
+                specify a figure title, this will result in the figure
+                title clashing with the *g* axis. The solution: set an
+                *axes* title rather than a *figure* title.
+
 
     .. versionadded:: 0.2
 
@@ -504,6 +511,14 @@ class SinglePlotter1D(aspecd.plotting.SinglePlotter1D, PlotterExtensions):
            parameters:
              g-axis: true
            filename: output.pdf
+
+
+    .. important::
+
+        If you add a *g* axis to your plot, and at the same time specify a
+        figure title, this will result in the figure title clashing with
+        the *g* axis. The solution: set an *axes* title rather than a
+        *figure* title.
 
     """
 
@@ -603,6 +618,14 @@ class SinglePlotter2D(aspecd.plotting.SinglePlotter2D, PlotterExtensions):
              g-axis: true
            filename: output.pdf
 
+
+    .. important::
+
+        If you add a *g* axis to your plot, and at the same time specify a
+        figure title, this will result in the figure title clashing with
+        the *g* axis. The solution: set an *axes* title rather than a
+        *figure* title.
+
     """
 
     def _create_plot(self):
@@ -687,6 +710,14 @@ class SinglePlotter2DStacked(aspecd.plotting.SinglePlotter2DStacked,
              g-axis: true
            filename: output.pdf
 
+
+    .. important::
+
+        If you add a *g* axis to your plot, and at the same time specify a
+        figure title, this will result in the figure title clashing with
+        the *g* axis. The solution: set an *axes* title rather than a
+        *figure* title.
+
     """
 
     def _create_plot(self):
@@ -760,6 +791,14 @@ class MultiPlotter1D(aspecd.plotting.MultiPlotter1D, PlotterExtensions):
            parameters:
              g-axis: true
            filename: output.pdf
+
+
+    .. important::
+
+        If you add a *g* axis to your plot, and at the same time specify a
+        figure title, this will result in the figure title clashing with
+        the *g* axis. The solution: set an *axes* title rather than a
+        *figure* title.
 
     """
 
@@ -850,6 +889,14 @@ class MultiPlotter1DStacked(aspecd.plotting.MultiPlotter1DStacked,
            parameters:
              g-axis: true
            filename: output.pdf
+
+
+    .. important::
+
+        If you add a *g* axis to your plot, and at the same time specify a
+        figure title, this will result in the figure title clashing with
+        the *g* axis. The solution: set an *axes* title rather than a
+        *figure* title.
 
     """
 

@@ -168,11 +168,11 @@ class MagnettechXMLImporter(aspecd.io.DatasetImporter):
         mw_abs_x_slope = float(self._data_curve.attrib['XSlope'])
 
         mw_x = mw_abs_x_offset + \
-               np.linspace(0, len(self._yvalues) - 1, num=len(self._yvalues)) \
-               * mw_abs_x_slope
+            np.linspace(0, len(self._yvalues) - 1, num=len(self._yvalues)) \
+            * mw_abs_x_slope
         b_field_x = b_field_x_offset + \
-                    np.linspace(0, len(self._xvalues) - 1,
-                                num=len(self._xvalues)) * b_field_x_slope
+            np.linspace(0, len(self._xvalues) - 1,
+                        num=len(self._xvalues)) * b_field_x_slope
         self._xvalues = np.interp(mw_x, b_field_x, self._xvalues)
 
     def _extract_metadata_from_xml(self):
@@ -619,10 +619,10 @@ class AmplitudeSweepImporter(aspecd.io.DatasetImporter):
             self._data[0].metadata.experiment.runs
         self.dataset.metadata.spectrometer = self._data[0].metadata.spectrometer
         self.dataset.metadata.magnetic_field.start.from_string(
-            ("{:.4f}".format(self.dataset.data.axes[0].values[0])) + ' ' +
-            self._data[0].metadata.magnetic_field.start.unit)
+            (f"{self.dataset.data.axes[0].values[0]:.4f} " +
+                self._data[0].metadata.magnetic_field.start.unit))
         self.dataset.metadata.magnetic_field.stop.from_string(
-            ("{:.4f}".format(self.dataset.data.axes[0].values[-1])) + ' ' +
+            f"{self.dataset.data.axes[0].values[-1]:.4f} " +
             self._data[0].metadata.magnetic_field.stop.unit)
         self.dataset.metadata.magnetic_field.sweep_width.value = \
             self.dataset.metadata.magnetic_field.stop.value - \
@@ -829,10 +829,10 @@ class PowerSweepImporter(aspecd.io.DatasetImporter):
             self._data[0].metadata.experiment.runs
         self.dataset.metadata.spectrometer = self._data[0].metadata.spectrometer
         self.dataset.metadata.magnetic_field.start.from_string(
-            ("{:.4f}".format(self.dataset.data.axes[0].values[0])) + ' ' +
+            f"{self.dataset.data.axes[0].values[0]:.4f} " +
             self._data[0].metadata.magnetic_field.start.unit)
         self.dataset.metadata.magnetic_field.stop.from_string(
-            ("{:.4f}".format(self.dataset.data.axes[0].values[-1])) + ' ' +
+            f"{self.dataset.data.axes[0].values[-1]:.4f} " +
             self._data[0].metadata.magnetic_field.stop.unit)
         self.dataset.metadata.magnetic_field.sweep_width.value = \
             self.dataset.metadata.magnetic_field.stop.value - \

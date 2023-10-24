@@ -44,7 +44,7 @@ For more general information on the cwepr package and for how to use it, see its
 Features
 --------
 
-A list of features, not all implemented yet but aimed at for the first public release (cwEPR 0.1):
+A list of features:
 
 - Fully reproducible processing of cw-EPR data
 - Import of EPR data from diverse sources (Bruker ESP, EMX, Elexsys; Magnettech)
@@ -58,14 +58,25 @@ And to make it even more convenient for users and future-proof:
 - Extensive user and API documentation
 
 
-.. warning::
-  The cwEPR package is currently under active development and still considered in Beta development state. Therefore, expect frequent changes in features and public APIs that may break your own code. Nevertheless, feedback as well as feature requests are highly welcome.
-
-
 Target audience
 ---------------
 
 The cwepr package addresses scientists working with cwEPR data (both, measured and calculated) on a daily base and concerned with `reproducibility <https://www.reproducible-research.de/>`_. Due to being based on the `ASpecD framework <https://www.aspecd.de/>`_, the cwepr package ensures reproducibility and---as much as possible---replicability of data processing, starting from recording data and ending with their final (graphical) representation, e.g., in a peer-reviewed publication. This is achieved by automatically creating a gap-less record of each operation performed on your data. If you do care about reproducibility and are looking for a system that helps you to achieve this goal, the cwepr package may well be interesting for you.
+
+
+How to cite
+-----------
+
+cwepr is free software. However, if you use cwepr for your own research, please cite both, the article describing it and the software itself:
+
+  * Mirjam Schröder, Till Biskup. cwepr -- a Python package for analysing cw-EPR data focussing on reproducibility and simple usage. *Journal of Magnetic Resonance* **335**:107140, 2022. `doi:10.1016/j.jmr.2021.107140 <https://doi.org/10.1016/j.jmr.2021.107140>`_ | `PDF <https://www.till-biskup.de/_media/de/person/schr-jmr-335-107140-accepted.pdf>`_ | `SI <https://www.till-biskup.de/_media/de/person/schr-jmr-335-107140-si.pdf>`_
+
+  * Mirjam Schröder, Till Biskup. cwepr (2021). `doi:10.5281/zenodo.4896687 <https://doi.org/10.5281/zenodo.4896687>`_
+
+To make things easier, cwepr has a `DOI <https://doi.org/10.5281/zenodo.4896687>`_ provided by `Zenodo <https://zenodo.org/>`_, and you may click on the badge below to directly access the record associated with it. Note that this DOI refers to the package as such and always forwards to the most current version.
+
+.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.4896687.svg
+   :target: https://doi.org/10.5281/zenodo.4896687
 
 
 Related projects

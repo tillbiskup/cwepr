@@ -919,7 +919,7 @@ class PtpVsModAmp(aspecd.analysis.SingleAnalysisStep):
         index_max = np.argmax(self.dataset.data.data, axis=0)
         index_min = np.argmin(self.dataset.data.data, axis=0)
         self.linewidths = self.dataset.data.axes[0].values[index_min] - \
-                          self.dataset.data.axes[0].values[index_max]
+            self.dataset.data.axes[0].values[index_max]
 
     def _fill_dataset(self):
         self.result.data.data = self.linewidths

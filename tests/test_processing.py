@@ -44,8 +44,9 @@ class TestFieldCorrection(unittest.TestCase):
 
 class TestAutomaticPhaseCorrection(unittest.TestCase):
     def setUp(self):
-        source = os.path.join(ROOTPATH, 'io/testdata/phase-45_noise0.000')
+        source = os.path.join(ROOTPATH, 'io/testdata/phase-45_noise0.000.txt')
         importer = cwepr.io.txt_file.TxtImporter(source=source)
+        importer.parameters['delimiter'] = '\t'
         self.dataset = cwepr.dataset.ExperimentalDataset()
         self.dataset.import_from(importer)
 
