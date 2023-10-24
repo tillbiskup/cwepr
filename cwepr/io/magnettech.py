@@ -620,7 +620,7 @@ class AmplitudeSweepImporter(aspecd.io.DatasetImporter):
         self.dataset.metadata.spectrometer = self._data[0].metadata.spectrometer
         self.dataset.metadata.magnetic_field.start.from_string(
             (f"{self.dataset.data.axes[0].values[0]:.4f} " +
-            self._data[0].metadata.magnetic_field.start.unit))
+                self._data[0].metadata.magnetic_field.start.unit))
         self.dataset.metadata.magnetic_field.stop.from_string(
             f"{self.dataset.data.axes[0].values[-1]:.4f} " +
             self._data[0].metadata.magnetic_field.stop.unit)
