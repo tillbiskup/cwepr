@@ -170,8 +170,7 @@ class CsvImporter(TxtImporter):
 
     .. versionchanged:: 0.5
         Renamed from CsvImporter to TxtImporter and generalised handling of text
-        files. This is now a derived dedicated csv importer and inherits
-        from :class:`TxtImporter`.
+        files. Now inherits from :class:`TxtImporter`.
 
     """
 

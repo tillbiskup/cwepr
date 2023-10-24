@@ -619,10 +619,10 @@ class AmplitudeSweepImporter(aspecd.io.DatasetImporter):
             self._data[0].metadata.experiment.runs
         self.dataset.metadata.spectrometer = self._data[0].metadata.spectrometer
         self.dataset.metadata.magnetic_field.start.from_string(
-            ("{:.4f}".format(self.dataset.data.axes[0].values[0])) + ' ' +
-            self._data[0].metadata.magnetic_field.start.unit)
+            (f"{self.dataset.data.axes[0].values[0]:.4f} " +
+            self._data[0].metadata.magnetic_field.start.unit))
         self.dataset.metadata.magnetic_field.stop.from_string(
-            ("{:.4f}".format(self.dataset.data.axes[0].values[-1])) + ' ' +
+            f"{self.dataset.data.axes[0].values[-1]:.4f} " +
             self._data[0].metadata.magnetic_field.stop.unit)
         self.dataset.metadata.magnetic_field.sweep_width.value = \
             self.dataset.metadata.magnetic_field.stop.value - \
@@ -829,10 +829,10 @@ class PowerSweepImporter(aspecd.io.DatasetImporter):
             self._data[0].metadata.experiment.runs
         self.dataset.metadata.spectrometer = self._data[0].metadata.spectrometer
         self.dataset.metadata.magnetic_field.start.from_string(
-            ("{:.4f}".format(self.dataset.data.axes[0].values[0])) + ' ' +
+            f"{self.dataset.data.axes[0].values[0]:.4f} " +
             self._data[0].metadata.magnetic_field.start.unit)
         self.dataset.metadata.magnetic_field.stop.from_string(
-            ("{:.4f}".format(self.dataset.data.axes[0].values[-1])) + ' ' +
+            f"{self.dataset.data.axes[0].values[-1]:.4f} " +
             self._data[0].metadata.magnetic_field.stop.unit)
         self.dataset.metadata.magnetic_field.sweep_width.value = \
             self.dataset.metadata.magnetic_field.stop.value - \

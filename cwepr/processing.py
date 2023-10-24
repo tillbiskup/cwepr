@@ -740,7 +740,7 @@ class AutomaticPhaseCorrection(aspecd.processing.SingleProcessingStep):
 
     def _print_results_to_command_line(self):
         phi_degree = self.parameters['phase_angle'] * 180 / np.pi
-        print('Phase correction was done with phi = %.3f degree' % phi_degree)
+        print(f'Phase correction was done with phi = {phi_degree:.3f} degree')
 
 
 class NormalisationOfDerivativeToArea(aspecd.processing.SingleProcessingStep):

@@ -104,8 +104,9 @@ class BES3TImporter(aspecd.io.DatasetImporter):
         if self._get_infofile_name() and os.path.exists(
                 self._get_infofile_name()[0]):
             return True
-        print('No infofile found for dataset %s, import continued without '
-              'infofile.' % os.path.split(self.source)[1])
+        print(f'No infofile found for dataset '
+              f'{os.path.split(self.source)[1]}, import continued without '
+              f'infofile.')
         return False
 
     def _extract_metadata_from_dsc(self):
