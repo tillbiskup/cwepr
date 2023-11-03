@@ -32,19 +32,11 @@ Currently, the following processing steps are implemented:
   * :class:`FrequencyCorrection`
   * :class:`GAxisCreation`
 
-  * :class:`BaselineCorrectionWithPolynomial`
-
   * :class:`NormalisationOfDerivativeToArea`
   * :class:`Normalisation`
 
-  * :class:`Integration`
-
-  * :class:`Averaging2DDataset`
-  * :class:`SubtractVector`
-
 Implemented but not working as they should:
 
-  * :class:`PhaseCorrection`
   * :class:`AutomaticPhaseCorrection`
 
 
@@ -85,7 +77,7 @@ been inherited from the underlying ASpecD framework:
 
   Correct baseline of dataset.
 
-* :class:`Averaging`
+* :class:`aspecd.processing.Averaging`
 
   Average data over given range along given axis.
 
