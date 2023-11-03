@@ -27,7 +27,7 @@ with open(os.path.join(os.path.dirname(__file__), '..', 'VERSION')) as \
     release_ = version_file.read().strip()
 
 project = 'cwepr'
-copyright = '2020- Mirjam Schröder, 2018/19 Pascal Kirchner, 2018– Till Biskup.'
+copyright = '2020- Mirjam Schröder, 2018/19 Pascal Kirchner, 2018– Till Biskup'
 author = 'Mirjam Schröder, Pascal Kirchner, Till Biskup'
 
 # The short X.Y version
