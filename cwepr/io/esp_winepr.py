@@ -217,7 +217,7 @@ class ESPWinEPRImporter(aspecd.io.DatasetImporter):
         par-file, some units are wrong and are corrected manually here.
         """
         # microwave frequency
-        if self.dataset.metadata.bridge.mw_frequency.value > 50:
+        if self.dataset.metadata.bridge.mw_frequency.value > 500:
             self.dataset.metadata.bridge.mw_frequency.value /= 1e9
         self.dataset.metadata.bridge.mw_frequency.unit = 'GHz'
         # microwave power

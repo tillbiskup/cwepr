@@ -868,7 +868,7 @@ class PtpVsModAmp(aspecd.analysis.SingleAnalysisStep):
     """Create calculated dataset for modulation sweep analysis.
 
     For a modulation sweep analysis, the first step is to get the peak to
-    peak amplitude and correlate it to the modulation amplitude,
+    peak linewidth and correlate it to the modulation amplitude,
     see :ref:`modulation_sweep_analysis` for further details.
 
     Examples
