@@ -25,7 +25,9 @@ class TestDatasetFactory(unittest.TestCase):
         pass
 
     def test_dataset_factory(self):
-        source = os.path.join(ROOTPATH, "io/testdata/test-bes3t-1D-fieldsweep")
+        source = os.path.join(
+            ROOTPATH, "io/testdata/test-bes3t-1D-fieldsweep"
+        )
         factory = dataset.DatasetFactory()
         ds = factory.get_dataset(source=source)
-        assert(type(ds) == dataset.ExperimentalDataset)
+        assert type(ds) == dataset.ExperimentalDataset

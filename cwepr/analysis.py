@@ -263,14 +263,14 @@ class FieldCalibration(aspecd.analysis.SingleAnalysisStep):
 
     def __init__(self):
         super().__init__()
-        self.parameters['standard'] = ''
-        self.parameters['g_value'] = None
-        self.parameters['mw_frequency'] = None
+        self.parameters["standard"] = ""
+        self.parameters["g_value"] = None
+        self.parameters["mw_frequency"] = None
         self.description = "Determine magnetic field offset from standard"
         # NOTE: keys need to be all-lowercase
         self.g_values = {
-            'dpph': 2.0036,
-            'lilif': 2.002293,
+            "dpph": 2.0036,
+            "lilif": 2.002293,
         }
 
     @staticmethod
@@ -294,23 +294,27 @@ class FieldCalibration(aspecd.analysis.SingleAnalysisStep):
         return dataset.data.data.ndim == 1
 
     def _sanitise_parameters(self):
-        if not self.parameters['mw_frequency'] and not \
-                self.dataset.metadata.bridge.mw_frequency.value:
-            raise ValueError('No microwave frequency provided, aborting.')
-        if not self.parameters['standard'] and not self.parameters['g_value']:
-            raise ValueError('No standard or g value provided, aborting.')
+        if (
+            not self.parameters["mw_frequency"]
+            and not self.dataset.metadata.bridge.mw_frequency.value
+        ):
+            raise ValueError("No microwave frequency provided, aborting.")
+        if not self.parameters["standard"] and not self.parameters["g_value"]:
+            raise ValueError("No standard or g value provided, aborting.")
 
     def _perform_task(self):
         self._assign_parameters()
         self.result = self._get_field_offset()
 
     def _assign_parameters(self):
-        if not self.parameters['mw_frequency']:
-            self.parameters['mw_frequency'] = \
-                self.dataset.metadata.bridge.mw_frequency.value
-        if not self.parameters['g_value']:
-            self.parameters['g_value'] = \
-                self.g_values[self.parameters['standard'].lower()]
+        if not self.parameters["mw_frequency"]:
+            self.parameters[
+                "mw_frequency"
+            ] = self.dataset.metadata.bridge.mw_frequency.value
+        if not self.parameters["g_value"]:
+            self.parameters["g_value"] = self.g_values[
+                self.parameters["standard"].lower()
+            ]
 
     def _get_field_offset(self):
         """Calculates a field correction value.
@@ -328,13 +332,20 @@ class FieldCalibration(aspecd.analysis.SingleAnalysisStep):
         """
         i_max = np.argmax(self.dataset.data.data)
         i_min = np.argmin(self.dataset.data.data)
-        zero_crossing_exp = (self.dataset.data.axes[0].values[i_min] +
-                             self.dataset.data.axes[0].values[i_max]) / 2
-        calculated_field = \
-            scipy.constants.value('Planck constant') \
-            * self.parameters['mw_frequency'] * 1e9 * 1e3 / \
-            (self.parameters['g_value']
-             * scipy.constants.value('Bohr magneton'))
+        zero_crossing_exp = (
+            self.dataset.data.axes[0].values[i_min]
+            + self.dataset.data.axes[0].values[i_max]
+        ) / 2
+        calculated_field = (
+            scipy.constants.value("Planck constant")
+            * self.parameters["mw_frequency"]
+            * 1e9
+            * 1e3
+            / (
+                self.parameters["g_value"]
+                * scipy.constants.value("Bohr magneton")
+            )
+        )
         delta_b0 = calculated_field - zero_crossing_exp
         return delta_b0
 
@@ -399,8 +410,10 @@ class LinewidthPeakToPeak(aspecd.analysis.SingleAnalysisStep):
         """
         index_max = np.argmax(self.dataset.data.data)
         index_min = np.argmin(self.dataset.data.data)
-        linewidth = abs(self.dataset.data.axes[0].values[index_min] -
-                        self.dataset.data.axes[0].values[index_max])
+        linewidth = abs(
+            self.dataset.data.axes[0].values[index_min]
+            - self.dataset.data.axes[0].values[index_max]
+        )
         return linewidth
 
 
@@ -428,8 +441,9 @@ class LinewidthFWHM(aspecd.analysis.SingleAnalysisStep):
 
     def __init__(self):
         super().__init__()
-        self.description = \
+        self.description = (
             "Determine linewidth (full width at half max; FWHM)"
+        )
 
     @staticmethod
     def applicable(dataset):
@@ -472,7 +486,9 @@ class LinewidthFWHM(aspecd.analysis.SingleAnalysisStep):
         left_zero_cross_index = np.argmin(spectral_data[:index_max])
         right_zero_cross_index = np.argmin(spectral_data[index_max:])
         b_field_left = self.dataset.data.axes[0].values[left_zero_cross_index]
-        b_field_right = self.dataset.data.axes[0].values[right_zero_cross_index]
+        b_field_right = self.dataset.data.axes[0].values[
+            right_zero_cross_index
+        ]
         return b_field_right - b_field_left
 
 
@@ -536,10 +552,15 @@ class SignalToNoiseRatio(aspecd.analysis.SingleAnalysisStep):
         return max(data) - min(data)
 
     def _get_noise(self):
-        number_of_points = math.ceil(len(self.dataset.data.data) *
-                                     self.parameters["percentage"] / 100.0)
-        noise_data = np.append(self.dataset.data.data[:number_of_points],
-                               self.dataset.data.data[-number_of_points:])
+        number_of_points = math.ceil(
+            len(self.dataset.data.data)
+            * self.parameters["percentage"]
+            / 100.0
+        )
+        noise_data = np.append(
+            self.dataset.data.data[:number_of_points],
+            self.dataset.data.data[-number_of_points:],
+        )
         return noise_data
 
 
@@ -574,10 +595,12 @@ class Amplitude(aspecd.analysis.SingleAnalysisStep):
     def _perform_task(self):
         if len(self.dataset.data.axes) == 2:
             self.result = max(self.dataset.data.data) - min(
-                self.dataset.data.data)
+                self.dataset.data.data
+            )
         else:
             self.result = np.amax(self.dataset.data.data, axis=0) - np.amin(
-                self.dataset.data.data, axis=0)
+                self.dataset.data.data, axis=0
+            )
 
 
 class AmplitudeVsPower(aspecd.analysis.SingleAnalysisStep):
@@ -657,8 +680,9 @@ class AmplitudeVsPower(aspecd.analysis.SingleAnalysisStep):
 
     def __init__(self):
         super().__init__()
-        self.description = \
+        self.description = (
             "Return calculated dataset for power sweep analysis."
+        )
         self.result = aspecd.dataset.CalculatedDataset()
         # private properties
         self._analysis = None
@@ -710,12 +734,12 @@ class AmplitudeVsPower(aspecd.analysis.SingleAnalysisStep):
         self.result.data.axes[0].values = self._roots_of_mw_power
 
     def _assign_units_to_result(self):
-        if self.dataset.data.axes[1].unit == 'mW':
-            self.result.data.axes[0].unit = 'sqrt(mW)'
-        elif self.dataset.data.axes[1].unit == 'W':
-            self.result.data.axes[0].unit = 'sqrt(W)'
-        self.result.data.axes[0].quantity = 'square root of mw power'
-        self.result.data.axes[1].quantity = 'EPR amplitude'
+        if self.dataset.data.axes[1].unit == "mW":
+            self.result.data.axes[0].unit = "sqrt(mW)"
+        elif self.dataset.data.axes[1].unit == "W":
+            self.result.data.axes[0].unit = "sqrt(W)"
+        self.result.data.axes[0].quantity = "square root of mw power"
+        self.result.data.axes[1].quantity = "EPR amplitude"
 
 
 class FitOnData(aspecd.analysis.SingleAnalysisStep):
@@ -792,12 +816,12 @@ class FitOnData(aspecd.analysis.SingleAnalysisStep):
         super().__init__()
         self.description = "Perform fit and return parameters."
         self.result = None
-        self.parameters['points'] = 3
-        self.parameters['order'] = 1
-        self.parameters['return_type'] = 'coefficients'
-        self.parameters['fixed_intercept'] = False
-        self.parameters['offset'] = 0
-        self.parameters['coefficients'] = []
+        self.parameters["points"] = 3
+        self.parameters["order"] = 1
+        self.parameters["return_type"] = "coefficients"
+        self.parameters["fixed_intercept"] = False
+        self.parameters["offset"] = 0
+        self.parameters["coefficients"] = []
         # private properties
         self._curve = None
 
@@ -822,7 +846,7 @@ class FitOnData(aspecd.analysis.SingleAnalysisStep):
         return dataset.data.data.ndim == 1
 
     def _perform_task(self):
-        if self.parameters['fixed_intercept']:
+        if self.parameters["fixed_intercept"]:
             self._linear_regression_with_fixed_intercept()
             self._get_curve()
         else:
@@ -831,37 +855,42 @@ class FitOnData(aspecd.analysis.SingleAnalysisStep):
         self._assign_result()
 
     def _get_coefficients(self):
-        x_data_to_process = \
-            self.dataset.data.axes[0].values[:self.parameters['points']]
-        y_data_to_process = self.dataset.data.data[:self.parameters['points']]
-        self.parameters['coefficients'] = \
-            np.polyfit(x_data_to_process, y_data_to_process, self.parameters[
-                'order'])
+        x_data_to_process = self.dataset.data.axes[0].values[
+            : self.parameters["points"]
+        ]
+        y_data_to_process = self.dataset.data.data[
+            : self.parameters["points"]
+        ]
+        self.parameters["coefficients"] = np.polyfit(
+            x_data_to_process, y_data_to_process, self.parameters["order"]
+        )
 
     def _get_curve(self):
         self._curve = self.create_dataset()
-        slope = np.polynomial.Polynomial(self.parameters['coefficients'])
+        slope = np.polynomial.Polynomial(self.parameters["coefficients"])
         self._curve.data.data = slope(self.dataset.data.axes[0].values)
         self._curve.data.axes[0] = self.dataset.data.axes[0]
 
     def _assign_result(self):
-        if self.parameters['return_type'].lower() == 'dataset':
+        if self.parameters["return_type"].lower() == "dataset":
             self.result = self._curve
         else:
-            self.result = self.parameters['coefficients']
+            self.result = self.parameters["coefficients"]
 
     def _linear_regression_with_fixed_intercept(self):
         _help = self.create_dataset()
-        _help.data.axes[0].values = \
-            self.dataset.data.axes[0].values[:self.parameters['points']]
-        _help.data.data = self.dataset.data.data[:self.parameters['points']]
+        _help.data.axes[0].values = self.dataset.data.axes[0].values[
+            : self.parameters["points"]
+        ]
+        _help.data.data = self.dataset.data.data[: self.parameters["points"]]
         analysis = aspecd.analysis.LinearRegressionWithFixedIntercept()
-        aspecd.utils.copy_values_between_dicts(source=self.parameters,
-                                               target=analysis.parameters)
-        analysis.parameters['polynomial_coefficients'] = True
+        aspecd.utils.copy_values_between_dicts(
+            source=self.parameters, target=analysis.parameters
+        )
+        analysis.parameters["polynomial_coefficients"] = True
         analysis.dataset = _help
         result = _help.analyse(analysis)
-        self.parameters['coefficients'] = result.result
+        self.parameters["coefficients"] = result.result
 
 
 class PtpVsModAmp(aspecd.analysis.SingleAnalysisStep):
@@ -885,8 +914,9 @@ class PtpVsModAmp(aspecd.analysis.SingleAnalysisStep):
 
     def __init__(self):
         super().__init__()
-        self.description = \
-            'Create dataset with ptp-linewidth vs modulation Amplitude.'
+        self.description = (
+            "Create dataset with ptp-linewidth vs modulation Amplitude."
+        )
         self.result = aspecd.dataset.CalculatedDataset()
         self.linewidths = np.ndarray([])
 
@@ -918,14 +948,16 @@ class PtpVsModAmp(aspecd.analysis.SingleAnalysisStep):
     def _get_linewidths(self):
         index_max = np.argmax(self.dataset.data.data, axis=0)
         index_min = np.argmin(self.dataset.data.data, axis=0)
-        self.linewidths = self.dataset.data.axes[0].values[index_min] - \
-            self.dataset.data.axes[0].values[index_max]
+        self.linewidths = (
+            self.dataset.data.axes[0].values[index_min]
+            - self.dataset.data.axes[0].values[index_max]
+        )
 
     def _fill_dataset(self):
         self.result.data.data = self.linewidths
         self.result.data.axes[0] = self.dataset.data.axes[1]
         self.result.data.axes[1].unit = self.dataset.data.axes[0].unit
-        self.result.data.axes[1].quantity = 'peak to peak linewidth'
+        self.result.data.axes[1].quantity = "peak to peak linewidth"
 
 
 class AreaUnderCurve(aspecd.analysis.SingleAnalysisStep):

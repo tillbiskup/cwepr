@@ -16,17 +16,19 @@ ROOTPATH = os.path.split(os.path.abspath(__file__))[0]
 
 class TestAnalysis(unittest.TestCase):
     def setUp(self):
-        source = os.path.join(ROOTPATH, 'io/testdata/test-bes3t-1D-fieldsweep')
+        source = os.path.join(
+            ROOTPATH, "io/testdata/test-bes3t-1D-fieldsweep"
+        )
         importer = cwepr.io.bes3t.BES3TImporter(source=source)
         self.dataset = cwepr.dataset.ExperimentalDataset()
         self.dataset.import_from(importer)
 
     def test_field_correction_value(self):
         analysator = cwepr.analysis.FieldCalibration()
-        analysator.parameters['standard'] = 'dpph'
+        analysator.parameters["standard"] = "dpph"
         analysator = self.dataset.analyse(analysator)
-        self.assertTrue(analysator.parameters['mw_frequency'])
-        self.assertTrue(analysator.parameters['g_value'] == 2.0036)
+        self.assertTrue(analysator.parameters["mw_frequency"])
+        self.assertTrue(analysator.parameters["g_value"] == 2.0036)
         self.assertEqual(np.float64, type(analysator.result))
 
     def test_area_under_curve(self):
@@ -56,15 +58,16 @@ class TestFieldCalibration(unittest.TestCase):
         self.dataset = cwepr.dataset.ExperimentalDataset()
         self.data = np.sin(np.linspace(0, 2 * np.pi, num=500))
         self.mw_frequency = 9.68
-        self.standard = 'LiLiF'
+        self.standard = "LiLiF"
         self.center_field = 345.410996  # For LiLiF with given MW freq
 
     def test_instantiate_class(self):
         pass
 
     def test_has_appropriate_description(self):
-        self.assertIn('magnetic field offset',
-                      self.analysis.description.lower())
+        self.assertIn(
+            "magnetic field offset", self.analysis.description.lower()
+        )
 
     def test_perform_without_frequency_raises(self):
         with self.assertRaisesRegex(ValueError, "microwave frequency"):
@@ -80,8 +83,9 @@ class TestFieldCalibration(unittest.TestCase):
         self.dataset.metadata.bridge.mw_frequency.value = self.mw_frequency
         self.analysis.parameters["standard"] = self.standard
         analysis = self.dataset.analyse(self.analysis)
-        self.assertEqual(self.mw_frequency,
-                         analysis.parameters["mw_frequency"])
+        self.assertEqual(
+            self.mw_frequency, analysis.parameters["mw_frequency"]
+        )
         self.assertEqual(2.002293, analysis.parameters["g_value"])
 
     def test_perform_returns_correct_value(self):
@@ -115,7 +119,7 @@ class TestAmplitude(unittest.TestCase):
         cwepr.analysis.Amplitude()
 
     def test_has_appropriate_description(self):
-        self.assertIn('amplitude', self.analysator.description.lower())
+        self.assertIn("amplitude", self.analysator.description.lower())
 
     def test_get_amplitude_1d_dataset(self):
         self.dataset.data.data = self.data
@@ -136,27 +140,33 @@ class TestAmplitudeVsPower(unittest.TestCase):
         self.dataset = cwepr.dataset.ExperimentalDataset()
         data = np.sin(np.linspace(0, 2 * np.pi, num=500))
         self.dataset.data.data = np.transpose(np.tile(data, (4, 1)))
-        self.dataset.data.axes[1].values = np.array([10, 5, 2.5, 1.25, 0.6125,
-                                                     0.305])
-        self.dataset.data.axes[1].unit = 'mW'
+        self.dataset.data.axes[1].values = np.array(
+            [10, 5, 2.5, 1.25, 0.6125, 0.305]
+        )
+        self.dataset.data.axes[1].unit = "mW"
 
     def test_instantiate_class(self):
         cwepr.analysis.AmplitudeVsPower()
 
     def test_has_description(self):
-        self.assertNotIn('abstract', self.analysator.description.lower())
+        self.assertNotIn("abstract", self.analysator.description.lower())
 
     def test_calculate_dataset(self):
         analysis = self.dataset.analyse(self.analysator)
         self.assertEqual(2, len(analysis.result.data.axes))
-        self.assertEqual(len(np.sqrt(self.dataset.data.axes[1].values)),
-                         len(analysis.result.data.axes[0].values))
-        self.assertEqual('sqrt(mW)', analysis.result.data.axes[0].unit)
+        self.assertEqual(
+            len(np.sqrt(self.dataset.data.axes[1].values)),
+            len(analysis.result.data.axes[0].values),
+        )
+        self.assertEqual("sqrt(mW)", analysis.result.data.axes[0].unit)
 
     def test_returns_ascending_x_axis(self):
         analysis = self.dataset.analyse(self.analysator)
-        self.assertGreater(analysis.result.data.axes[0].values[1] -
-                           analysis.result.data.axes[0].values[0], 0)
+        self.assertGreater(
+            analysis.result.data.axes[0].values[1]
+            - analysis.result.data.axes[0].values[0],
+            0,
+        )
 
 
 class TestFitOnData(unittest.TestCase):
@@ -168,7 +178,7 @@ class TestFitOnData(unittest.TestCase):
         cwepr.analysis.FitOnData()
 
     def test_has_description(self):
-        self.assertNotIn('abstract', self.analysator.description.lower())
+        self.assertNotIn("abstract", self.analysator.description.lower())
 
     def test_fit_returns_coefficients(self):
         self.dataset.data.data = np.linspace(1, 21)
@@ -177,8 +187,9 @@ class TestFitOnData(unittest.TestCase):
         self.assertTrue(all(analysis.result))
 
     def test_fit_only_takes_first_points(self):
-        self.dataset.data.data = np.concatenate([np.linspace(1, 5, num=5),
-                                                 np.linspace(5.1, 6.1, num=5)])
+        self.dataset.data.data = np.concatenate(
+            [np.linspace(1, 5, num=5), np.linspace(5.1, 6.1, num=5)]
+        )
         self.dataset.data.axes[0].values = np.linspace(1, 10, num=10)
         analysis = self.dataset.analyse(self.analysator)
         self.assertAlmostEqual(1, analysis.result[0])
@@ -186,14 +197,14 @@ class TestFitOnData(unittest.TestCase):
     def test_fit_does_second_order(self):
         self.dataset.data.axes[0].values = np.linspace(1, 10, num=10)
         self.dataset.data.data = 4 * self.dataset.data.axes[0].values ** 2
-        self.analysator.parameters['order'] = 2
+        self.analysator.parameters["order"] = 2
         analysis = self.dataset.analyse(self.analysator)
         self.assertAlmostEqual(4, analysis.result[0])
 
     def test_fixed_offset_with_offset_zero(self):
         self.dataset.data.data = np.asarray([0.45, 1, 2, 3, 4, 5])
         self.dataset.data.axes[0].values = np.asarray([0.5, 1, 2, 3, 4, 5])
-        self.analysator.parameters['fixed_intercept'] = True
+        self.analysator.parameters["fixed_intercept"] = True
         res = self.dataset.analyse(self.analysator)
         self.assertAlmostEqual(res.result[1], 1, 2)
         self.assertIsInstance(res.result, list)
@@ -202,8 +213,8 @@ class TestFitOnData(unittest.TestCase):
     def test_fixed_offset_with_offset_non_zero(self):
         self.dataset.data.data = np.asarray([1.4, 2, 3, 4, 5, 6])
         self.dataset.data.axes[0].values = np.asarray([0.5, 1, 2, 3, 4, 5])
-        self.analysator.parameters['fixed_intercept'] = True
-        self.analysator.parameters['offset'] = 1
+        self.analysator.parameters["fixed_intercept"] = True
+        self.analysator.parameters["offset"] = 1
         res = self.dataset.analyse(self.analysator)
         self.assertAlmostEqual(res.result[1], 1, 1)
         self.assertEqual(res.result[0], 1)
@@ -211,43 +222,50 @@ class TestFitOnData(unittest.TestCase):
     def test_fixed_offset_with_offset_zero_return_pol_coeffs(self):
         self.dataset.data.data = np.asarray([0.45, 1, 2, 3, 4, 5])
         self.dataset.data.axes[0].values = np.asarray([0.5, 1, 2, 3, 4, 5])
-        self.analysator.parameters['fixed_intercept'] = True
-        self.analysator.parameters['polynomial_coefficients'] = True
+        self.analysator.parameters["fixed_intercept"] = True
+        self.analysator.parameters["polynomial_coefficients"] = True
         res = self.dataset.analyse(self.analysator)
         self.assertIsInstance(res.result, list)
 
     def test_fit_returns_calculated_dataset_of_linear_slope(self):
         self.dataset.data.data = np.asarray([0.45, 1, 2, 3, 4, 5])
         self.dataset.data.axes[0].values = np.asarray([0.5, 1, 2, 3, 4, 5])
-        self.analysator.parameters['fixed_intercept'] = True
-        self.analysator.parameters['return_type'] = 'dataset'
+        self.analysator.parameters["fixed_intercept"] = True
+        self.analysator.parameters["return_type"] = "dataset"
         analysis = self.dataset.analyse(self.analysator)
-        self.assertEqual(aspecd.dataset.CalculatedDataset,
-                         type(analysis.result))
-        self.assertEqual(len(self.dataset.data.axes[0].values),
-                         analysis.result.data.data.shape[0])
+        self.assertEqual(
+            aspecd.dataset.CalculatedDataset, type(analysis.result)
+        )
+        self.assertEqual(
+            len(self.dataset.data.axes[0].values),
+            analysis.result.data.data.shape[0],
+        )
 
     def test_fit_returns_calculated_dataset_higher_order(self):
-        self.dataset.data.data = np.concatenate([np.linspace(1, 5, num=5),
-                                                 np.linspace(5.1, 6.1, num=5)])
+        self.dataset.data.data = np.concatenate(
+            [np.linspace(1, 5, num=5), np.linspace(5.1, 6.1, num=5)]
+        )
         self.dataset.data.axes[0].values = np.linspace(1, 10, num=10)
-        self.analysator.parameters['return_type'] = 'dataset'
+        self.analysator.parameters["return_type"] = "dataset"
         analysis = self.dataset.analyse(self.analysator)
-        self.assertEqual(aspecd.dataset.CalculatedDataset,
-                         type(analysis.result))
-        self.assertEqual(len(self.dataset.data.axes[0].values),
-                         analysis.result.data.data.shape[0])
+        self.assertEqual(
+            aspecd.dataset.CalculatedDataset, type(analysis.result)
+        )
+        self.assertEqual(
+            len(self.dataset.data.axes[0].values),
+            analysis.result.data.data.shape[0],
+        )
 
 
 class TestPtpVsModAmp(TestCase):
-
     def setUp(self):
         self.analysator = cwepr.analysis.PtpVsModAmp()
         self.dataset = cwepr.dataset.ExperimentalDataset()
         data = np.array([])
         for sigma in np.linspace(5, 110):
-            data = np.append(data, np.gradient(scipy.signal.windows.gaussian(
-                1000, sigma)))
+            data = np.append(
+                data, np.gradient(scipy.signal.windows.gaussian(1000, sigma))
+            )
         data = data.reshape(50, 1000).T
         self.dataset.data.data = data
         self.dataset.data.axes[1].values = np.linspace(0, 5, num=50)
@@ -256,12 +274,13 @@ class TestPtpVsModAmp(TestCase):
         cwepr.analysis.PtpVsModAmp()
 
     def test_has_description(self):
-        self.assertNotIn('abstract', self.analysator.description.lower())
+        self.assertNotIn("abstract", self.analysator.description.lower())
 
     def test_perform_task(self):
         analysis = self.dataset.analyse(self.analysator)
-        self.assertEqual(aspecd.dataset.CalculatedDataset,
-                         type(analysis.result))
+        self.assertEqual(
+            aspecd.dataset.CalculatedDataset, type(analysis.result)
+        )
 
     def test_result_has_no_values_in_last_axis(self):
         analysis = self.dataset.analyse(self.analysator)

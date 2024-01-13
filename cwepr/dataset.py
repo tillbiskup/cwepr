@@ -96,7 +96,7 @@ class DatasetFactory(aspecd.dataset.DatasetFactory):
         self.importer_factory = cwepr.io.factory.DatasetImporterFactory()
 
     @staticmethod
-    def _create_dataset(source=''):
+    def _create_dataset(source=""):
         """Return cwepr dataset.
 
         Parameters

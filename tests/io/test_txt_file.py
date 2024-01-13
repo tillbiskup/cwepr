@@ -10,9 +10,8 @@ ROOTPATH = os.path.split(os.path.abspath(__file__))[0]
 
 
 class TestCsvImporter(unittest.TestCase):
-
     def setUp(self):
-        self.filename = 'testdata.csv'
+        self.filename = "testdata.csv"
         self.data = np.random.random([5, 2])
 
     def tearDown(self):
@@ -20,7 +19,7 @@ class TestCsvImporter(unittest.TestCase):
             os.remove(self.filename)
 
     def create_testdata(self):
-        with open(self.filename, 'w+', encoding="utf8") as file:
+        with open(self.filename, "w+", encoding="utf8") as file:
             for row in self.data:
                 file.write(f"{row[0]}, {row[1]}\n")
 
@@ -41,9 +40,8 @@ class TestCsvImporter(unittest.TestCase):
 
 
 class TestTxtImporter(unittest.TestCase):
-
     def setUp(self):
-        self.filename = 'testdata.csv'
+        self.filename = "testdata.csv"
         self.data = np.random.random([5, 2])
 
     def tearDown(self):
@@ -51,10 +49,11 @@ class TestTxtImporter(unittest.TestCase):
             os.remove(self.filename)
 
     def create_testdata(self, delimiter=" ", separator="."):
-        with open(self.filename, 'w+', encoding="utf8") as file:
+        with open(self.filename, "w+", encoding="utf8") as file:
             for row in self.data:
-                file.write(f"{row[0]}{delimiter}{row[1]}\n".replace('.',
-                                                                    separator))
+                file.write(
+                    f"{row[0]}{delimiter}{row[1]}\n".replace(".", separator)
+                )
 
     def test_import(self):
         source = self.filename
@@ -65,39 +64,42 @@ class TestTxtImporter(unittest.TestCase):
 
     def test_import_with_delimiters(self):
         source = self.filename
-        for delimiter in (',', '\t', ';', ' '):
+        for delimiter in (",", "\t", ";", " "):
             with self.subTest(delimiter=delimiter):
                 self.create_testdata(delimiter=delimiter)
                 importer = cwepr.io.TxtImporter(source=source)
-                importer.parameters['delimiter'] = delimiter
+                importer.parameters["delimiter"] = delimiter
                 dataset = cwepr.dataset.ExperimentalDataset()
                 dataset.import_from(importer)
-                np.testing.assert_array_equal(self.data[:, 1],
-                                              dataset.data.data)
+                np.testing.assert_array_equal(
+                    self.data[:, 1], dataset.data.data
+                )
 
     def test_import_with_separators(self):
         source = self.filename
-        for separator in (',',  '.'):
+        for separator in (",", "."):
             with self.subTest(separator=separator):
                 self.create_testdata(separator=separator)
                 importer = cwepr.io.TxtImporter(source=source)
-                importer.parameters['separator'] = separator
+                importer.parameters["separator"] = separator
                 dataset = cwepr.dataset.ExperimentalDataset()
                 dataset.import_from(importer)
-                np.testing.assert_array_equal(self.data[:, 1],
-                                              dataset.data.data)
+                np.testing.assert_array_equal(
+                    self.data[:, 1], dataset.data.data
+                )
 
     def test_import_with_file_extensions(self):
         source = self.filename
-        for extension in ('.csv',  '.txt', '.dat', '.xyz', '.d', '.data', ''):
+        for extension in (".csv", ".txt", ".dat", ".xyz", ".d", ".data", ""):
             with self.subTest(extension=extension):
-                self.filename = self.filename.replace('.csv', extension)
+                self.filename = self.filename.replace(".csv", extension)
                 self.create_testdata()
                 importer = cwepr.io.TxtImporter(source=source)
                 dataset = cwepr.dataset.ExperimentalDataset()
                 dataset.import_from(importer)
-                np.testing.assert_array_equal(self.data[:, 1],
-                                              dataset.data.data)
+                np.testing.assert_array_equal(
+                    self.data[:, 1], dataset.data.data
+                )
 
     def test_import_with_skip_rows(self):
         source = self.filename
@@ -105,14 +107,15 @@ class TestTxtImporter(unittest.TestCase):
             with self.subTest(skiprows=skiprows):
                 self.create_testdata()
                 importer = cwepr.io.TxtImporter(source=source)
-                importer.parameters['skiprows'] = skiprows
+                importer.parameters["skiprows"] = skiprows
                 dataset = cwepr.dataset.ExperimentalDataset()
                 dataset.import_from(importer)
-                np.testing.assert_array_equal(self.data[skiprows:, 1],
-                                              dataset.data.data)
+                np.testing.assert_array_equal(
+                    self.data[skiprows:, 1], dataset.data.data
+                )
 
     def test_import_metadata(self):
-        source = os.path.join(ROOTPATH, 'testdata/noisy_data.txt')
+        source = os.path.join(ROOTPATH, "testdata/noisy_data.txt")
         importer = cwepr.io.TxtImporter(source=source)
         dataset = cwepr.dataset.ExperimentalDataset()
         dataset.import_from(importer)

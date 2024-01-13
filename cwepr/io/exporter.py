@@ -119,20 +119,21 @@ class MetadataExporter(aspecd.io.DatasetExporter):
     def __init__(self):
         super().__init__()
         self.metadata_dict = collections.OrderedDict()
-        self.filename = ''
+        self.filename = ""
 
     def _export(self):
         if not self.filename:
-            timestamp = datetime.datetime.now().strftime('%Y%m%dT%H%M%S')
-            self.filename = 'metadata-' + timestamp + '.yaml'
-        if not self.filename.endswith(('.yaml', '.yml')):
-            self.filename = self.filename + '.yaml'
+            timestamp = datetime.datetime.now().strftime("%Y%m%dT%H%M%S")
+            self.filename = "metadata-" + timestamp + ".yaml"
+        if not self.filename.endswith((".yaml", ".yml")):
+            self.filename = self.filename + ".yaml"
         self._write_metadata()
 
     def _write_metadata(self):
         self.metadata_dict = self.dataset.metadata.to_dict()
-        self.metadata_dict = \
-            self._remove_empty_items_recursively(dict_=self.metadata_dict)
+        self.metadata_dict = self._remove_empty_items_recursively(
+            dict_=self.metadata_dict
+        )
         yaml_file = aspecd.utils.Yaml()
         yaml_file.dict = self.metadata_dict
         yaml_file.write_to(self.filename)
@@ -141,10 +142,9 @@ class MetadataExporter(aspecd.io.DatasetExporter):
         tmp_dict = collections.OrderedDict()
         for key, value in dict_.items():
             if isinstance(value, dict):
-                dict_[key] = \
-                    self._remove_empty_items_recursively(value)
+                dict_[key] = self._remove_empty_items_recursively(value)
             # if magnettech has not measured the q-value it is -1
-            if key == 'q_value' and value == -1:
+            if key == "q_value" and value == -1:
                 continue
             if dict_[key]:
                 tmp_dict[key] = dict_[key]

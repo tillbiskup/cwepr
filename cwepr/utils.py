@@ -36,8 +36,8 @@ def convert_g2mT(values, mw_freq=None):  # noqa
         converted values in millitesla (mT)
 
     """
-    planck_constant = scipy.constants.value('Planck constant')
-    mu_b = scipy.constants.value('Bohr magneton')
+    planck_constant = scipy.constants.value("Planck constant")
+    mu_b = scipy.constants.value("Bohr magneton")
 
     values = np.asarray([not_zero(value) for value in values])
     return (planck_constant * mw_freq * 1e9) / (mu_b * values * 1e-3)
@@ -67,8 +67,8 @@ def convert_mT2g(values, mw_freq=None):  # noqa
         converted values in *g*
 
     """
-    planck_constant = scipy.constants.value('Planck constant')
-    mu_b = scipy.constants.value('Bohr magneton')
+    planck_constant = scipy.constants.value("Planck constant")
+    mu_b = scipy.constants.value("Bohr magneton")
 
     values = np.asarray([not_zero(value) for value in values])
     return (planck_constant * mw_freq * 1e9) / (mu_b * values * 1e-3)
@@ -101,4 +101,6 @@ def not_zero(value):
         Value guaranteed not to be zero
 
     """
-    return np.copysign(max(abs(value), np.finfo(np.float64).resolution), value)
+    return np.copysign(
+        max(abs(value), np.finfo(np.float64).resolution), value
+    )

@@ -203,21 +203,29 @@ class GoniometerSweepPlotter(aspecd.plotting.SingleCompositePlotter):
 
     def __init__(self):
         super().__init__()
-        self.description = 'Plot for one goniometric dataset in different ' \
-                           'representations.'
+        self.description = (
+            "Plot for one goniometric dataset in different "
+            "representations."
+        )
         self.grid_dimensions = [2, 2]
         self.subplot_locations = [[0, 0, 1, 1], [1, 0, 1, 1], [0, 1, 2, 1]]
-        self.plotter = [aspecd.plotting.SinglePlotter2D(),
-                        aspecd.plotting.MultiPlotter1D(),
-                        aspecd.plotting.SinglePlotter2DStacked()]
-        self.axes_positions = [[0, 0.15, 1, 1], [0, 0, 1, 1],
-                               [0.25, 0, 0.9, 1.07]]
+        self.plotter = [
+            aspecd.plotting.SinglePlotter2D(),
+            aspecd.plotting.MultiPlotter1D(),
+            aspecd.plotting.SinglePlotter2DStacked(),
+        ]
+        self.axes_positions = [
+            [0, 0.15, 1, 1],
+            [0, 0, 1, 1],
+            [0.25, 0, 0.9, 1.07],
+        ]
         self.zero_deg_slice = None
         self.hundredeighty_deg_slice = None
-        self.parameters['show_zero_lines'] = False
-        self.__kind__ = 'singleplot'
-        self._exclude_from_to_dict.extend(['dataset', 'zero_deg_slice',
-                                           'hundredeighty_deg_slice'])
+        self.parameters["show_zero_lines"] = False
+        self.__kind__ = "singleplot"
+        self._exclude_from_to_dict.extend(
+            ["dataset", "zero_deg_slice", "hundredeighty_deg_slice"]
+        )
 
     def _create_plot(self):
         self._configure_traces_plotter()
@@ -228,29 +236,27 @@ class GoniometerSweepPlotter(aspecd.plotting.SingleCompositePlotter):
 
     def _configure_contour_plotter(self):
         upper_contour = self.plotter[0]
-        upper_contour.type = 'contourf'
-        upper_contour.parameters['show_contour_lines'] = True
-        upper_contour.properties.from_dict({
-            'axes': {
-                'yticks': [0, 30, 60, 90, 120, 150, 180]
-            }
-        })
+        upper_contour.type = "contourf"
+        upper_contour.parameters["show_contour_lines"] = True
+        upper_contour.properties.from_dict(
+            {"axes": {"yticks": [0, 30, 60, 90, 120, 150, 180]}}
+        )
         self.plotter[0] = upper_contour
 
     def _extract_traces(self):
         slicing = aspecd.processing.SliceExtraction()
-        slicing.parameters['axis'] = axis_no = 1
+        slicing.parameters["axis"] = axis_no = 1
         zero_value = self._get_angle_closest_to_value(axis_no, 0)
         hundredeighty_value = self._get_angle_closest_to_value(axis_no, 180)
-        slicing.parameters['unit'] = 'axis'
-        slicing.parameters['position'] = zero_value
+        slicing.parameters["unit"] = "axis"
+        slicing.parameters["position"] = zero_value
         self.zero_deg_slice = copy.deepcopy(self.dataset)
         self.zero_deg_slice.process(slicing)
-        self.zero_deg_slice.label = f'{zero_value:.1f}°'
-        slicing.parameters['position'] = hundredeighty_value
+        self.zero_deg_slice.label = f"{zero_value:.1f}°"
+        slicing.parameters["position"] = hundredeighty_value
         self.hundredeighty_deg_slice = copy.deepcopy(self.dataset)
         self.hundredeighty_deg_slice.process(slicing)
-        self.hundredeighty_deg_slice.label = f'{hundredeighty_value:.1f}°'
+        self.hundredeighty_deg_slice.label = f"{hundredeighty_value:.1f}°"
 
     def _get_angle_closest_to_value(self, axis_no=0, value=None):
         axis = self.dataset.data.axes[axis_no].values
@@ -258,24 +264,22 @@ class GoniometerSweepPlotter(aspecd.plotting.SingleCompositePlotter):
 
     def _configure_comparison_plotter(self):
         comparison_plotter = self.plotter[1]
-        comparison_plotter.datasets = [self.zero_deg_slice,
-                                       self.hundredeighty_deg_slice]
-        comparison_plotter.properties.from_dict({
-            'drawings': [
-                {'color': 'tab:blue'},
-                {'color': 'tab:red'}
-            ],
-            'axes': {
-                'yticks': [],
-                'ylabel': r'$EPR\ intensity$'
+        comparison_plotter.datasets = [
+            self.zero_deg_slice,
+            self.hundredeighty_deg_slice,
+        ]
+        comparison_plotter.properties.from_dict(
+            {
+                "drawings": [{"color": "tab:blue"}, {"color": "tab:red"}],
+                "axes": {"yticks": [], "ylabel": r"$EPR\ intensity$"},
             }
-        })
-        comparison_plotter.parameters['show_legend'] = True
+        )
+        comparison_plotter.parameters["show_legend"] = True
         self.plotter[1] = comparison_plotter
 
     def _configure_traces_plotter(self):
-        self.plotter[2].parameters['yticklabelformat'] = '%.1f'
-        self.plotter[2].parameters['ytickcount'] = 19
+        self.plotter[2].parameters["yticklabelformat"] = "%.1f"
+        self.plotter[2].parameters["ytickcount"] = 19
 
 
 class PowerSweepAnalysisPlotter(aspecd.plotting.MultiPlotter1D):
@@ -371,12 +375,12 @@ class PowerSweepAnalysisPlotter(aspecd.plotting.MultiPlotter1D):
 
     def __init__(self):
         super().__init__()
-        self.parameters['mw-axis'] = True
-        self.parameters['tight_layout'] = True
+        self.parameters["mw-axis"] = True
+        self.parameters["tight_layout"] = True
 
     def _create_plot(self):
         super()._create_plot()
-        if self.parameters['mw-axis']:
+        if self.parameters["mw-axis"]:
             self._set_lower_xlim()
             self._create_power_axis()
 
@@ -393,15 +397,17 @@ class PowerSweepAnalysisPlotter(aspecd.plotting.MultiPlotter1D):
         Note that :func:`numpy.sqrt` returns NaN for negative values.
         Therefore, the lower axis limit is set to be >= 0 in this plot.
         """
+
         def forward(values):
             return np.power(values, 2)
 
         def backward(values):
             return np.sqrt(values)
 
-        power_axis = self.ax.secondary_xaxis('top',
-                                             functions=(backward, forward))
-        power_axis.set_xlabel('$mw\\ power$')
+        power_axis = self.ax.secondary_xaxis(
+            "top", functions=(backward, forward)
+        )
+        power_axis.set_xlabel("$mw\\ power$")
         power_axis.tick_params(labelrotation=90)
 
 
@@ -442,7 +448,7 @@ class PlotterExtensions:
     """
 
     def __init__(self):
-        self.parameters['g-axis'] = False
+        self.parameters["g-axis"] = False
 
     def _create_g_axis(self, mw_freq=None):
         """
@@ -459,14 +465,15 @@ class PlotterExtensions:
             microwave frequency (**in GHz**) used to convert from mT to g
 
         """
+
         def forward(values):
             return utils.convert_mT2g(values, mw_freq=mw_freq)
 
         def backward(values):
             return utils.convert_g2mT(values, mw_freq=mw_freq)
 
-        gaxis = self.ax.secondary_xaxis('top', functions=(backward, forward))
-        gaxis.set_xlabel(r'$g\ value$')
+        gaxis = self.ax.secondary_xaxis("top", functions=(backward, forward))
+        gaxis.set_xlabel(r"$g\ value$")
 
 
 class SinglePlotter1D(aspecd.plotting.SinglePlotter1D, PlotterExtensions):
@@ -524,8 +531,10 @@ class SinglePlotter1D(aspecd.plotting.SinglePlotter1D, PlotterExtensions):
 
     def _create_plot(self):
         super()._create_plot()
-        if self.parameters['g-axis'] and self.data.axes[0].unit == 'mT':
-            self._create_g_axis(self.dataset.metadata.bridge.mw_frequency.value)
+        if self.parameters["g-axis"] and self.data.axes[0].unit == "mT":
+            self._create_g_axis(
+                self.dataset.metadata.bridge.mw_frequency.value
+            )
 
 
 class SinglePlotter2D(aspecd.plotting.SinglePlotter2D, PlotterExtensions):
@@ -630,12 +639,15 @@ class SinglePlotter2D(aspecd.plotting.SinglePlotter2D, PlotterExtensions):
 
     def _create_plot(self):
         super()._create_plot()
-        if self.parameters['g-axis'] and self.data.axes[0].unit == 'mT':
-            self._create_g_axis(self.dataset.metadata.bridge.mw_frequency.value)
+        if self.parameters["g-axis"] and self.data.axes[0].unit == "mT":
+            self._create_g_axis(
+                self.dataset.metadata.bridge.mw_frequency.value
+            )
 
 
-class SinglePlotter2DStacked(aspecd.plotting.SinglePlotter2DStacked,
-                             PlotterExtensions):
+class SinglePlotter2DStacked(
+    aspecd.plotting.SinglePlotter2DStacked, PlotterExtensions
+):
     """Stacked plots of 2D data.
 
     A stackplot creates a series of lines stacked on top of each other from
@@ -722,8 +734,10 @@ class SinglePlotter2DStacked(aspecd.plotting.SinglePlotter2DStacked,
 
     def _create_plot(self):
         super()._create_plot()
-        if self.parameters['g-axis'] and self.data.axes[0].unit == 'mT':
-            self._create_g_axis(self.dataset.metadata.bridge.mw_frequency.value)
+        if self.parameters["g-axis"] and self.data.axes[0].unit == "mT":
+            self._create_g_axis(
+                self.dataset.metadata.bridge.mw_frequency.value
+            )
 
 
 class MultiPlotter1D(aspecd.plotting.MultiPlotter1D, PlotterExtensions):
@@ -804,14 +818,15 @@ class MultiPlotter1D(aspecd.plotting.MultiPlotter1D, PlotterExtensions):
 
     def _create_plot(self):
         super()._create_plot()
-        if self.parameters['g-axis'] \
-                and self.data[0].axes[0].unit == 'mT':
+        if self.parameters["g-axis"] and self.data[0].axes[0].unit == "mT":
             self._create_g_axis(
-                self.datasets[0].metadata.bridge.mw_frequency.value)
+                self.datasets[0].metadata.bridge.mw_frequency.value
+            )
 
 
-class MultiPlotter1DStacked(aspecd.plotting.MultiPlotter1DStacked,
-                            PlotterExtensions):
+class MultiPlotter1DStacked(
+    aspecd.plotting.MultiPlotter1DStacked, PlotterExtensions
+):
     """Stacked 1D plots of multiple datasets.
 
     Convenience class taking care of 1D plots of multiple datasets.
@@ -902,7 +917,7 @@ class MultiPlotter1DStacked(aspecd.plotting.MultiPlotter1DStacked,
 
     def _create_plot(self):
         super()._create_plot()
-        if self.parameters['g-axis'] \
-                and self.data[0].axes[0].unit == 'mT':
+        if self.parameters["g-axis"] and self.data[0].axes[0].unit == "mT":
             self._create_g_axis(
-                self.datasets[0].metadata.bridge.mw_frequency.value)
+                self.datasets[0].metadata.bridge.mw_frequency.value
+            )

@@ -23,7 +23,7 @@ class UnsupportedDataFormatError(Error):
 
     """
 
-    def __init__(self, message=''):
+    def __init__(self, message=""):
         super().__init__(message)
         self.message = message
 
@@ -38,7 +38,7 @@ class MissingPathError(Error):
 
     """
 
-    def __init__(self, message=''):
+    def __init__(self, message=""):
         super().__init__(message)
         self.message = message
 
@@ -53,7 +53,7 @@ class MissingInfoFileError(Error):
 
     """
 
-    def __init__(self, message=''):
+    def __init__(self, message=""):
         super().__init__(message)
         self.message = message
 
@@ -72,7 +72,7 @@ class ExperimentTypeError(Error):
 
     """
 
-    def __init__(self, message=''):
+    def __init__(self, message=""):
         super().__init__(message)
         self.message = message
 
@@ -87,7 +87,7 @@ class DimensionError(Error):
 
     """
 
-    def __init__(self, message=''):
+    def __init__(self, message=""):
         super().__init__()
         self.message = message
 
@@ -95,7 +95,7 @@ class DimensionError(Error):
 class MissingInformationError(Error):
     """Exception raised when not enough information is provided."""
 
-    def __init__(self, message=''):
+    def __init__(self, message=""):
         super().__init__()
         self.message = message
 
@@ -113,7 +113,7 @@ class UnequalUnitsError(Error):
 
     """
 
-    def __init__(self, message=''):
+    def __init__(self, message=""):
         super().__init__()
         self.message = message
 
@@ -128,6 +128,6 @@ class RecipeNotFoundError(Error):
 
     """
 
-    def __init__(self, message=''):
+    def __init__(self, message=""):
         super().__init__()
         self.message = message

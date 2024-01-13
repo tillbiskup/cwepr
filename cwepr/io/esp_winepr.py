@@ -55,9 +55,9 @@ class ESPWinEPRImporter(aspecd.io.DatasetImporter):
         # private properties
         self._infofile = aspecd.infofile.Infofile()
         self._par_dict = {}
-        self._mapper_filename = 'par_keys.yaml'
+        self._mapper_filename = "par_keys.yaml"
         self._metadata_dict = OrderedDict()
-        self._file_encoding = ''
+        self._file_encoding = ""
 
     def _import(self):
         self._clean_filenames()
@@ -82,13 +82,16 @@ class ESPWinEPRImporter(aspecd.io.DatasetImporter):
 
     def _set_defaults(self):
         default_file = aspecd.utils.Yaml()
-        default_file.read_stream(aspecd.utils.get_package_data(
-            'cwepr@io/par_defaults.yaml').encode())
+        default_file.read_stream(
+            aspecd.utils.get_package_data(
+                "cwepr@io/par_defaults.yaml"
+            ).encode()
+        )
         self._metadata_dict = default_file.dict
 
     def _read_parameter_file(self):
-        par_filename = self.source + '.par'
-        with open(par_filename, 'r', encoding='ascii') as file:
+        par_filename = self.source + ".par"
+        with open(par_filename, "r", encoding="ascii") as file:
             lines = file.read().splitlines()
 
         for line in lines:
@@ -97,29 +100,32 @@ class ESPWinEPRImporter(aspecd.io.DatasetImporter):
             if len(line) > 1:
                 value = line[1]
             else:
-                value = ''
-            if re.match(r'^[+-]?[0-9.]+([eE][+-]?[0-9]*)?$', value):
+                value = ""
+            if re.match(r"^[+-]?[0-9.]+([eE][+-]?[0-9]*)?$", value):
                 value = float(value)
             self._par_dict[key] = value
 
     def _import_data(self):
-        complete_filename = self.source + '.spc'
+        complete_filename = self.source + ".spc"
         self._get_file_encoding()
         raw_data = np.fromfile(complete_filename, self._file_encoding)
         self.dataset.data.data = raw_data
 
     def _get_file_encoding(self):
-        if ('DOS', 'Format') in self._par_dict.items():
-            self._file_encoding = '<f'
+        if ("DOS", "Format") in self._par_dict.items():
+            self._file_encoding = "<f"
         else:
-            self._file_encoding = '>i4'
+            self._file_encoding = ">i4"
 
     def _infofile_exists(self):
         if self._get_infofile_name() and os.path.exists(
-                self._get_infofile_name()[0]):
+            self._get_infofile_name()[0]
+        ):
             return True
-        print(f'No infofile found for dataset {os.path.split(self.source)[1]}, '
-              f'import continued without infofile.')
+        print(
+            f"No infofile found for dataset {os.path.split(self.source)[1]}, "
+            f"import continued without infofile."
+        )
         return False
 
     def _load_infofile(self):
@@ -129,11 +135,11 @@ class ESPWinEPRImporter(aspecd.io.DatasetImporter):
         self._infofile.parse()
 
     def _get_infofile_name(self):
-        return glob.glob(''.join([self.source.strip(), '.info']))
+        return glob.glob("".join([self.source.strip(), ".info"]))
 
     def _assign_comment_as_annotation(self):
         comment = aspecd.annotation.Comment()
-        comment.comment = self._infofile.parameters['COMMENT']
+        comment.comment = self._infofile.parameters["COMMENT"]
         self.dataset.annotate(comment)
 
     def _map_metadata(self, infofile_version):
@@ -141,60 +147,72 @@ class ESPWinEPRImporter(aspecd.io.DatasetImporter):
         mapper = aspecd.metadata.MetadataMapper()
         mapper.version = infofile_version
         mapper.metadata = self._infofile.parameters
-        mapper.recipe_filename = 'cwepr@metadata_mapper_cwepr.yaml'
+        mapper.recipe_filename = "cwepr@metadata_mapper_cwepr.yaml"
         mapper.map()
         infofile_dict = aspecd.utils.convert_keys_to_variable_names(
-            mapper.metadata)
-        aspecd.utils.copy_keys_between_dicts(infofile_dict,
-                                             self._metadata_dict)
-        aspecd.utils.copy_values_between_dicts(infofile_dict,
-                                               self._metadata_dict)
+            mapper.metadata
+        )
+        aspecd.utils.copy_keys_between_dicts(
+            infofile_dict, self._metadata_dict
+        )
+        aspecd.utils.copy_values_between_dicts(
+            infofile_dict, self._metadata_dict
+        )
 
     def _map_infofile(self):
         """Bring the metadata to a given format."""
-        infofile_version = self._infofile.infofile_info['version']
+        infofile_version = self._infofile.infofile_info["version"]
         self._map_metadata(infofile_version)
         self._assign_comment_as_annotation()
 
     def _map_par_file(self):
         yaml_file = aspecd.utils.Yaml()
-        yaml_file.read_stream(aspecd.utils.get_package_data(
-            'cwepr@io/' + self._mapper_filename).encode())
+        yaml_file.read_stream(
+            aspecd.utils.get_package_data(
+                "cwepr@io/" + self._mapper_filename
+            ).encode()
+        )
         metadata_dict = {}
         metadata_dict = self._traverse(yaml_file.dict, metadata_dict)
-        #metadata_dict = self._check_if_temperature_empty(metadata_dict)
-        aspecd.utils.copy_keys_between_dicts(metadata_dict, self._metadata_dict)
-        aspecd.utils.copy_values_between_dicts(metadata_dict,
-                                               self._metadata_dict)
+        # metadata_dict = self._check_if_temperature_empty(metadata_dict)
+        aspecd.utils.copy_keys_between_dicts(
+            metadata_dict, self._metadata_dict
+        )
+        aspecd.utils.copy_values_between_dicts(
+            metadata_dict, self._metadata_dict
+        )
         self._extract_datetime()
 
     # TODO: Implement handling of "RT" in temperature value
     @staticmethod
     def _check_if_temperature_empty(metadata_dict):
-        if 'value'not in metadata_dict['temperature_control'][
-            'temperature'].keys() or \
-                metadata_dict['temperature_control']['temperature']['value'] \
-                == 0:
-            metadata_dict.pop('temperature_control')
+        if (
+            "value"
+            not in metadata_dict["temperature_control"]["temperature"].keys()
+            or metadata_dict["temperature_control"]["temperature"]["value"]
+            == 0
+        ):
+            metadata_dict.pop("temperature_control")
         return metadata_dict
 
     def _extract_datetime(self):
         start_date = self._try_parsing_date()
-        if 'measurement' not in self._metadata_dict.keys():
-            self._metadata_dict['measurement'] = {}
-        self._metadata_dict['measurement']['start'] = str(start_date)
-        if 'end' not in self._metadata_dict['measurement'].keys():
-            self._metadata_dict['measurement']['end'] = \
-                str(start_date + timedelta(minutes=1))
+        if "measurement" not in self._metadata_dict.keys():
+            self._metadata_dict["measurement"] = {}
+        self._metadata_dict["measurement"]["start"] = str(start_date)
+        if "end" not in self._metadata_dict["measurement"].keys():
+            self._metadata_dict["measurement"]["end"] = str(
+                start_date + timedelta(minutes=1)
+            )
 
     def _try_parsing_date(self):
-        date = self._par_dict['JDA'] + ' ' + self._par_dict['JTM']
-        for fmt in ('%d-%b-%Y %H:%M:%S', '%d.%b.%Y %H:%M', '%m/%d/%Y %H:%M'):
+        date = self._par_dict["JDA"] + " " + self._par_dict["JTM"]
+        for fmt in ("%d-%b-%Y %H:%M:%S", "%d.%b.%Y %H:%M", "%m/%d/%Y %H:%M"):
             try:
                 return datetime.strptime(date, fmt)
             except ValueError:
                 pass
-        raise ValueError('no valid date format found')
+        raise ValueError("no valid date format found")
 
     def _set_metadata(self):
         self.dataset.metadata.from_dict(self._metadata_dict)
@@ -206,8 +224,8 @@ class ESPWinEPRImporter(aspecd.io.DatasetImporter):
                 self._traverse(value, metadata_dict[key])
             elif value in self._par_dict.keys():
                 metadata_dict[key] = self._par_dict[value]
-            elif key == 'specified_unit':
-                metadata_dict['unit'] = value
+            elif key == "specified_unit":
+                metadata_dict["unit"] = value
         return metadata_dict
 
     def _ensure_common_units(self):
@@ -219,31 +237,35 @@ class ESPWinEPRImporter(aspecd.io.DatasetImporter):
         # microwave frequency
         if self.dataset.metadata.bridge.mw_frequency.value > 500:
             self.dataset.metadata.bridge.mw_frequency.value /= 1e9
-        self.dataset.metadata.bridge.mw_frequency.unit = 'GHz'
+        self.dataset.metadata.bridge.mw_frequency.unit = "GHz"
         # microwave power
         if self.dataset.metadata.bridge.power.value < 0.001:
             self.dataset.metadata.bridge.power.value *= 1e3
-        self.dataset.metadata.bridge.power.unit = 'mW'
+        self.dataset.metadata.bridge.power.unit = "mW"
         # magnetic field objects
-        objects_ = ('start', 'stop', 'sweep_width')
+        objects_ = ("start", "stop", "sweep_width")
         for object_ in objects_:
             magnetic_field_object = getattr(
-                self.dataset.metadata.magnetic_field, object_)
-            if magnetic_field_object.unit in ('G', ''):
+                self.dataset.metadata.magnetic_field, object_
+            )
+            if magnetic_field_object.unit in ("G", ""):
                 magnetic_field_object.value /= 10
-                magnetic_field_object.unit = 'mT'
+                magnetic_field_object.unit = "mT"
             setattr(
-                self.dataset.metadata.magnetic_field, object_,
-                magnetic_field_object)
+                self.dataset.metadata.magnetic_field,
+                object_,
+                magnetic_field_object,
+            )
         if not self.dataset.metadata.temperature_control.temperature.unit:
-            self.dataset.metadata.temperature_control.temperature.unit = 'K'
+            self.dataset.metadata.temperature_control.temperature.unit = "K"
 
     def _fill_axes(self):
         self._get_magnetic_field_axis()
-        self.dataset.data.axes[0].quantity = 'magnetic field'
-        self.dataset.data.axes[0].unit = \
-            self.dataset.metadata.magnetic_field.start.unit
-        self.dataset.data.axes[-1].quantity = 'intensity'
+        self.dataset.data.axes[0].quantity = "magnetic field"
+        self.dataset.data.axes[
+            0
+        ].unit = self.dataset.metadata.magnetic_field.start.unit
+        self.dataset.data.axes[-1].quantity = "intensity"
 
     def _get_magnetic_field_axis(self):
         # Abbreviations:
@@ -255,17 +277,21 @@ class ESPWinEPRImporter(aspecd.io.DatasetImporter):
         stop = start + sweep_width
         # Set axis
         magnetic_field_axis = np.linspace(start, stop, points)
-        assert len(magnetic_field_axis) == points, \
-            'Length of magnetic field and number of points differ'
-        assert len(magnetic_field_axis) == self.dataset.data.data.shape[0], \
-            'Length of magnetic field and size of data differ'
+        assert (
+            len(magnetic_field_axis) == points
+        ), "Length of magnetic field and number of points differ"
+        assert (
+            len(magnetic_field_axis) == self.dataset.data.data.shape[0]
+        ), "Length of magnetic field and size of data differ"
         # set more values in dataset
         self.dataset.metadata.magnetic_field.stop.value = stop
-        self.dataset.metadata.magnetic_field.stop.unit = \
+        self.dataset.metadata.magnetic_field.stop.unit = (
             self.dataset.metadata.magnetic_field.start.unit
+        )
 
         self.dataset.data.axes[0].values = magnetic_field_axis
 
     def _get_number_of_points(self):
         self.dataset.metadata.magnetic_field.points = len(
-            self.dataset.data.data)
+            self.dataset.data.data
+        )

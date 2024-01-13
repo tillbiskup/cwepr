@@ -468,12 +468,14 @@ class FieldCorrection(aspecd.processing.SingleProcessingStep):
             # TODO: Question: Better check for quantity rather than unit?
             #       (Difficult if not filled)
             # if axis.quantity == 'magnetic field'
-            if axis.unit in ('mT', 'G'):
+            if axis.unit in ("mT", "G"):
                 axis.values += self.parameters["offset"]
-                self.dataset.metadata.magnetic_field.start.value = \
+                self.dataset.metadata.magnetic_field.start.value = (
                     axis.values[0]
-                self.dataset.metadata.magnetic_field.stop.value = \
-                    axis.values[-1]
+                )
+                self.dataset.metadata.magnetic_field.stop.value = axis.values[
+                    -1
+                ]
 
 
 class FrequencyCorrection(aspecd.processing.SingleProcessingStep):
@@ -535,36 +537,38 @@ class FrequencyCorrection(aspecd.processing.SingleProcessingStep):
     def __init__(self):
         super().__init__()
         self.parameters["frequency"] = 9.5
-        self.parameters['kind'] = 'proportional'
+        self.parameters["kind"] = "proportional"
         self.description = "Correct magnetic field axis for given frequency"
 
     @staticmethod
     def applicable(dataset):
         """Check applicability."""
         if not dataset.metadata.bridge.mw_frequency.value:
-            message = 'No frequency given in dataset'
+            message = "No frequency given in dataset"
             warnings.warn(message=message)
             return False
         return True
 
     def _sanitise_parameters(self):
-        if isinstance(self.parameters['frequency'], int):
-            self.parameters['frequency'] = float(self.parameters['frequency'])
+        if isinstance(self.parameters["frequency"], int):
+            self.parameters["frequency"] = float(self.parameters["frequency"])
 
     def _perform_task(self):
         """Perform the actual transformation / correction."""
-        nu_target = self.parameters['frequency']
+        nu_target = self.parameters["frequency"]
         for axis in self.dataset.data.axes:
             # TODO: Question: Better check for quantity rather than unit?
             #       (Difficult if not filled)
             # if axis.quantity == 'magnetic field'
-            if axis.unit in ('mT', 'G'):
-                if 'proportional' in self.parameters['kind'].lower():
-                    axis.values = self._correct_proportionally(nu_target,
-                                                               axis.values)
-                elif 'offset' in self.parameters['kind'].lower():
-                    axis.values = self._correct_with_offset(nu_target,
-                                                            axis.values)
+            if axis.unit in ("mT", "G"):
+                if "proportional" in self.parameters["kind"].lower():
+                    axis.values = self._correct_proportionally(
+                        nu_target, axis.values
+                    )
+                elif "offset" in self.parameters["kind"].lower():
+                    axis.values = self._correct_with_offset(
+                        nu_target, axis.values
+                    )
                 self._write_new_frequency()
 
     def _correct_proportionally(self, nu_target=None, b_initial=None):
@@ -592,13 +596,16 @@ class FrequencyCorrection(aspecd.processing.SingleProcessingStep):
     def _correct_with_offset(self, nu_target=None, axis=None):
         point_to_correct = axis[round(len(axis) / 2)]
         nu_initial = self.dataset.metadata.bridge.mw_frequency.value
-        offset = point_to_correct - (nu_target / nu_initial) * point_to_correct
+        offset = (
+            point_to_correct - (nu_target / nu_initial) * point_to_correct
+        )
         b_target = axis + offset
         return b_target
 
     def _write_new_frequency(self):
-        self.dataset.metadata.bridge.mw_frequency.value = \
-            self.parameters['frequency']
+        self.dataset.metadata.bridge.mw_frequency.value = self.parameters[
+            "frequency"
+        ]
 
 
 class GAxisCreation(aspecd.processing.SingleProcessingStep):
@@ -627,11 +634,11 @@ class GAxisCreation(aspecd.processing.SingleProcessingStep):
 
     def _perform_task(self):
         for axis in self.dataset.data.axes:
-            if axis.unit == 'mT':
+            if axis.unit == "mT":
                 mw_freq = self.dataset.metadata.bridge.mw_frequency.value
                 axis.values = utils.convert_mT2g(axis.values, mw_freq=mw_freq)
-                axis.unit = ''
-                axis.quantity = 'g value'
+                axis.unit = ""
+                axis.quantity = "g value"
 
 
 class AutomaticPhaseCorrection(aspecd.processing.SingleProcessingStep):
@@ -652,9 +659,9 @@ class AutomaticPhaseCorrection(aspecd.processing.SingleProcessingStep):
         super().__init__()
         # Public properties
         self.description = "Automatic phase correction via Hilbert transform"
-        self.parameters['order'] = 1
-        self.parameters['points_percentage'] = 10
-        self.parameters['phase_angle'] = 0
+        self.parameters["order"] = 1
+        self.parameters["points_percentage"] = 10
+        self.parameters["phase_angle"] = 0
         # private properties
         self._analytic_signal = None
         self._points_per_side = None
@@ -670,11 +677,12 @@ class AutomaticPhaseCorrection(aspecd.processing.SingleProcessingStep):
     def _find_initial_negative_area(self):
         """Get area/values below zero as indicator of the phase deviation."""
         ft_sig_tmp = self._analytic_signal
-        if self.parameters['order'] > 0:
+        if self.parameters["order"] > 0:
             # pylint: disable=unused-variable
-            for j in range(self.parameters['order']):  # integrate j times
-                ft_sig_tmp = scipy.integrate.cumtrapz(self._analytic_signal,
-                                                      initial=0)
+            for j in range(self.parameters["order"]):  # integrate j times
+                ft_sig_tmp = scipy.integrate.cumtrapz(
+                    self._analytic_signal, initial=0
+                )
         ft_sig_tmp = self._baseline_correction(signal=np.real(ft_sig_tmp))
         elements_inf_zero = [x for x in ft_sig_tmp if x < 0]
         self._area_under_curve = abs(np.trapz(elements_inf_zero))
@@ -684,14 +692,17 @@ class AutomaticPhaseCorrection(aspecd.processing.SingleProcessingStep):
         signal_size = signal.size
         if len(signal.shape) > 1 and signal.shape[1] != 1:
             signal.transpose()
-        self._points_per_side = \
-            int(np.ceil((self.parameters['points_percentage'] / 100) *
-                        signal_size))
+        self._points_per_side = int(
+            np.ceil(
+                (self.parameters["points_percentage"] / 100) * signal_size
+            )
+        )
 
         data_parts = self._extract_points(signal)
         x_axis_parts = self._extract_points(self.dataset.data.axes[0].values)
-        coefficients = np.polyfit(x_axis_parts, data_parts,
-                                  deg=self.parameters['order'])
+        coefficients = np.polyfit(
+            x_axis_parts, data_parts, deg=self.parameters["order"]
+        )
         baseline = np.polyval(coefficients, self.dataset.data.axes[0].values)
 
         corrected_signal = signal - baseline
@@ -701,8 +712,12 @@ class AutomaticPhaseCorrection(aspecd.processing.SingleProcessingStep):
 
     def _extract_points(self, values):
         # pylint: disable=invalid-unary-operand-type
-        vector_parts = np.concatenate([values[:self._points_per_side],
-                                       values[-self._points_per_side:]])
+        vector_parts = np.concatenate(
+            [
+                values[: self._points_per_side],
+                values[-self._points_per_side :],
+            ]
+        )
         return vector_parts
 
     def _find_best_phase(self):
@@ -712,27 +727,31 @@ class AutomaticPhaseCorrection(aspecd.processing.SingleProcessingStep):
         angles = np.linspace(min_angle, max_angle, num=181)
         for angle in angles:
             rotated_signal = np.exp(1j * angle) * self._analytic_signal
-            if self.parameters['order'] > 0:
+            if self.parameters["order"] > 0:
                 # pylint: disable=unused-variable
-                for j in range(self.parameters['order']):
-                    rotated_signal = scipy.integrate.cumtrapz(rotated_signal,
-                                                              initial=0)
-            rotated_signal = self._baseline_correction(signal=np.real(
-                rotated_signal))
+                for j in range(self.parameters["order"]):
+                    rotated_signal = scipy.integrate.cumtrapz(
+                        rotated_signal, initial=0
+                    )
+            rotated_signal = self._baseline_correction(
+                signal=np.real(rotated_signal)
+            )
             elements_inf_zero = [x for x in rotated_signal if x < 0]
             area = abs(np.trapz(elements_inf_zero))
             if area < self._area_under_curve:
                 self._area_under_curve = area
-                self.parameters['phase_angle'] = angle
+                self.parameters["phase_angle"] = angle
 
     def _reconstruct_real_signal(self):
-        self.dataset.data.data = np.real(np.exp(1j * self.parameters[
-            'phase_angle']) * self._analytic_signal)
+        self.dataset.data.data = np.real(
+            np.exp(1j * self.parameters["phase_angle"])
+            * self._analytic_signal
+        )
         assert not np.iscomplex(self.dataset.data.data).all()
 
     def _print_results_to_command_line(self):
-        phi_degree = self.parameters['phase_angle'] * 180 / np.pi
-        print(f'Phase correction was done with phi = {phi_degree:.3f} degree')
+        phi_degree = self.parameters["phase_angle"] * 180 / np.pi
+        print(f"Phase correction was done with phi = {phi_degree:.3f} degree")
 
 
 class NormalisationOfDerivativeToArea(aspecd.processing.SingleProcessingStep):
@@ -758,8 +777,9 @@ class NormalisationOfDerivativeToArea(aspecd.processing.SingleProcessingStep):
         self.dataset.data.data /= self._area
 
     def _integrate_spectrum(self):
-        integrated_spectrum = \
-            scipy.integrate.cumtrapz(self.dataset.data.data, initial=0)
+        integrated_spectrum = scipy.integrate.cumtrapz(
+            self.dataset.data.data, initial=0
+        )
         self._area = np.trapz(integrated_spectrum)
 
 
@@ -836,16 +856,19 @@ class Normalisation(aspecd.processing.Normalisation):
     """
 
     def _perform_task(self):
-        if 'receiver' in self.parameters["kind"].lower():
+        if "receiver" in self.parameters["kind"].lower():
             self._normalise_for_receiver_gain()
-        elif 'scan_number' in self.parameters["kind"].lower():
-            self.dataset.data.data \
-                /= self.dataset.metadata.signal_channel.accumulations
+        elif "scan_number" in self.parameters["kind"].lower():
+            self.dataset.data.data /= (
+                self.dataset.metadata.signal_channel.accumulations
+            )
         else:
             super()._perform_task()
 
     def _normalise_for_receiver_gain(self):
-        receiver_gain = self.dataset.metadata.signal_channel.receiver_gain.value
+        receiver_gain = (
+            self.dataset.metadata.signal_channel.receiver_gain.value
+        )
         receiver_gain_value = 10 ** (receiver_gain / 20)
         self.dataset.data.data /= receiver_gain_value
 
@@ -865,29 +888,32 @@ class AxisInterpolation(aspecd.processing.SingleProcessingStep):
 
     def __init__(self):
         super().__init__()
-        self.description = 'Interpolate axis to get equidistant points.'
-        self.parameters['points'] = None
+        self.description = "Interpolate axis to get equidistant points."
+        self.parameters["points"] = None
 
     def _perform_task(self):
         for num, axis in enumerate(self.dataset.data.axes):
             if not axis.equidistant:
-                if not self.parameters['points']:
+                if not self.parameters["points"]:
                     self._get_axis_length(ax_nr=num)
                 self._interpolate_axis(num)
                 break
 
     def _interpolate_axis(self, ax_number=None):
-        points = self.parameters['points']
+        points = self.parameters["points"]
         # Actual interpolation
         start = self.dataset.metadata.magnetic_field.start.value
         stop = self.dataset.metadata.magnetic_field.stop.value
         new_x_axis = np.linspace(start, stop, num=points)
-        self.dataset.data.data = np.interp(new_x_axis, self.dataset.data.axes[
-            ax_number].values, self.dataset.data.data)
+        self.dataset.data.data = np.interp(
+            new_x_axis,
+            self.dataset.data.axes[ax_number].values,
+            self.dataset.data.data,
+        )
         self.dataset.data.axes[ax_number].values = new_x_axis
 
     def _get_axis_length(self, ax_nr):
-        self.parameters['points'] = len(self.dataset.data.axes[ax_nr].values)
+        self.parameters["points"] = len(self.dataset.data.axes[ax_nr].values)
 
 
 class ScalarAlgebra(aspecd.processing.ScalarAlgebra):
