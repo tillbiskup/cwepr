@@ -289,7 +289,7 @@ class PowerSweepAnalysisPlotter(aspecd.plotting.MultiPlotter1D):
     microwave power, resulting in a power saturation curve. As long as the
     signal is not saturated, the graph shows a linear relationship.
 
-    As the class inherites from :class:`aspecd.plotting.MultiPlotter1D`
+    As the class inherits from :class:`aspecd.plotting.MultiPlotter1D`
     see there for additional details of the parameters that can be set.
 
     Attributes
@@ -524,7 +524,7 @@ class SinglePlotter1D(aspecd.plotting.SinglePlotter1D, PlotterExtensions):
 
     def _create_plot(self):
         super()._create_plot()
-        if self.parameters['g-axis'] and self.dataset.data.axes[0].unit == 'mT':
+        if self.parameters['g-axis'] and self.data.axes[0].unit == 'mT':
             self._create_g_axis(self.dataset.metadata.bridge.mw_frequency.value)
 
 
@@ -537,7 +537,7 @@ class SinglePlotter2D(aspecd.plotting.SinglePlotter2D, PlotterExtensions):
     ASpecD documentation of the :class:`aspecd.plotting.SinglePlotter2D`
     class for details.
 
-    Furthermore, the class inhertis all functionality from
+    Furthermore, the class inherits all functionality from
     :class:`PlotterExtensions`. See there for additional details.
 
 
@@ -630,7 +630,7 @@ class SinglePlotter2D(aspecd.plotting.SinglePlotter2D, PlotterExtensions):
 
     def _create_plot(self):
         super()._create_plot()
-        if self.parameters['g-axis'] and self.dataset.data.axes[0].unit == 'mT':
+        if self.parameters['g-axis'] and self.data.axes[0].unit == 'mT':
             self._create_g_axis(self.dataset.metadata.bridge.mw_frequency.value)
 
 
@@ -645,7 +645,7 @@ class SinglePlotter2DStacked(aspecd.plotting.SinglePlotter2DStacked,
     ASpecD documentation of the :class:`aspecd.plotting.SinglePlotter2DStacked`
     class for details.
 
-    Furthermore, the class inhertis all functionality from
+    Furthermore, the class inherits all functionality from
     :class:`PlotterExtensions`. See there for additional details.
 
 
@@ -722,7 +722,7 @@ class SinglePlotter2DStacked(aspecd.plotting.SinglePlotter2DStacked,
 
     def _create_plot(self):
         super()._create_plot()
-        if self.parameters['g-axis'] and self.dataset.data.axes[0].unit == 'mT':
+        if self.parameters['g-axis'] and self.data.axes[0].unit == 'mT':
             self._create_g_axis(self.dataset.metadata.bridge.mw_frequency.value)
 
 
@@ -735,7 +735,7 @@ class MultiPlotter1D(aspecd.plotting.MultiPlotter1D, PlotterExtensions):
     ASpecD documentation of the :class:`aspecd.plotting.MultiPlotter1D`
     class for details.
 
-    Furthermore, the class inhertis all functionality from
+    Furthermore, the class inherits all functionality from
     :class:`PlotterExtensions`. See there for additional details.
 
 
@@ -805,7 +805,7 @@ class MultiPlotter1D(aspecd.plotting.MultiPlotter1D, PlotterExtensions):
     def _create_plot(self):
         super()._create_plot()
         if self.parameters['g-axis'] \
-                and self.datasets[0].data.axes[0].unit == 'mT':
+                and self.data[0].axes[0].unit == 'mT':
             self._create_g_axis(
                 self.datasets[0].metadata.bridge.mw_frequency.value)
 
@@ -820,7 +820,7 @@ class MultiPlotter1DStacked(aspecd.plotting.MultiPlotter1DStacked,
     ASpecD documentation of the :class:`aspecd.plotting.MultiPlotter1DStacked`
     class for details.
 
-    Furthermore, the class inhertis all functionality from
+    Furthermore, the class inherits all functionality from
     :class:`PlotterExtensions`. See there for additional details.
 
     Examples
@@ -903,6 +903,6 @@ class MultiPlotter1DStacked(aspecd.plotting.MultiPlotter1DStacked,
     def _create_plot(self):
         super()._create_plot()
         if self.parameters['g-axis'] \
-                and self.datasets[0].data.axes[0].unit == 'mT':
+                and self.data[0].axes[0].unit == 'mT':
             self._create_g_axis(
                 self.datasets[0].metadata.bridge.mw_frequency.value)
