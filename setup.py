@@ -53,7 +53,10 @@ setuptools.setup(
         "matplotlib",
     ],
     extras_require={
-        "dev": ["prospector[with_pyroma]"],
+        "dev": [
+            "prospector[with_pyroma]",
+            "black",
+        ],
         "docs": [
             "sphinx",
             "sphinx-rtd-theme",
