@@ -10,6 +10,18 @@ Version 0.6.0
 Not yet released
 
 
+Version 0.5.1
+=============
+
+Not yet released
+
+
+Fixes
+-----
+
+* :class:`cwepr.io.esp_winepr.ESPWinEPRImporter` can better detect WinEPR files.
+
+
 Version 0.5.0
 =============
 

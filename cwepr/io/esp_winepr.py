@@ -47,6 +47,9 @@ class ESPWinEPRImporter(aspecd.io.DatasetImporter):
 
     .. versionadded:: 0.2
 
+    .. versionchanged:: 0.5.1
+        Additional condition for WinEPR files
+
     """
 
     def __init__(self, source=None):
@@ -112,7 +115,9 @@ class ESPWinEPRImporter(aspecd.io.DatasetImporter):
         self.dataset.data.data = raw_data
 
     def _get_file_encoding(self):
-        if ("DOS", "Format") in self._par_dict.items():
+        if (("DOS", "Format") in self._par_dict.items()
+            or ("ASCII", "Format") in self._par_dict.items()
+        ):
             self._file_encoding = "<f"
         else:
             self._file_encoding = ">i4"
