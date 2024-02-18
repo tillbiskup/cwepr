@@ -20,6 +20,7 @@ Fixes
 -----
 
 * :class:`cwepr.io.esp_winepr.ESPWinEPRImporter` can better detect WinEPR files.
+* :class:`cwepr.io.esp_winepr.ESPWinEPRImporter` allows for setting the file format explicitly
 
 
 Version 0.5.0

@@ -27,7 +27,9 @@ import aspecd.utils
 
 
 class ESPWinEPRImporter(aspecd.io.DatasetImporter):
-    """Importer for the Bruker ESP and EMX formats.
+    # noinspection PyUnresolvedReferences
+    """
+    Importer for the Bruker ESP and EMX formats.
 
     The Bruker EMX and ESP formats consist of two files, a data file with
     extension "spc" and a parameter file with extension "par". The
@@ -45,15 +47,117 @@ class ESPWinEPRImporter(aspecd.io.DatasetImporter):
     values specified in the parameter file.
 
 
+    Attributes
+    ----------
+    parameters : :class:`dict`
+        Additional parameters to control import options.
+
+        format : :class:`str`
+            Identifier of the file format.
+
+            Possible values are ``WinEPR``, ``ESP``, ``auto``
+
+            Note: When setting the values explicitly before importing data,
+            they are case-insensitive. But they will always be set to
+            either of the two values shown above upon data import.
+
+            There are two file formats in use with Bruker spectrometers
+            that have (nearly) the same parameter files, but entirely
+            different binary data files: The ESP and WinEPR (old EMX)
+            formats, named after the respective spectrometer series.
+
+            The importer does its best to automatically detect the format
+            for you. However, as the official file format specification
+            does not allow for such discrimination, these are necessarily
+            informed guesses. Sometimes, you need to help the importer by
+            explicitly stating which format you have at hand, Use this
+            parameter in such cases.
+
+            The parameter will be set after importing the data file,
+            hence in retrospect you can always figure out which format has
+            been detected.
+
+
+    Examples
+    --------
+    Usually, you will use the importer implicitly when cooking a recipe.
+    And in most cases, both, the overall file format as well as the
+    special format (WinEPR or ESP) should be detected automatically for
+    you. In such case, implicitly using the importer means just importing
+    datasets:
+
+    .. code-block:: yaml
+
+        datasets:
+          - winepr
+
+
+    However, if you happen to have a dataset where the importer
+    unfortunately fails with auto-detecting and discriminating between
+    WinEPR and ESP formats, you may explicitly provide the format to use:
+
+    .. code-block:: yaml
+
+        datasets:
+          - source: winepr
+            importer: ESPWinEPRImporter
+            importer_parameters:
+              format: WinEPR
+
+    For convenience, the format specifier is case-insensitive when set as
+    parameter here. Note, however, that in the resulting history of the
+    recipe, it is always written in the way specified above,
+    see :attr:`parameters` for details.
+
+    .. note::
+
+        How do you know if the importer failed? Quite simple: Your
+        resulting "spectrum" looks like garbage, but does not resemble an
+        EPR spectrum at all. Typically, you will have sort of a step
+        function with random oscillation between rather discrete values.
+
+    If you want to explicitly tell the importer to auto-detect the format,
+    *i.e.* discriminate between WinEPR and ESP formats -- that is the
+    default behaviour anyway -- you may do something like this:
+
+    .. code-block:: yaml
+
+        datasets:
+          - source: winepr
+            importer: ESPWinEPRImporter
+            importer_parameters:
+              format: auto
+
+    Just to mention: All examples so far have omitted the file extension.
+    This is fine, as long as you do *not* have additional ASCII exports
+    with the same file basename in the same directory, as in this case,
+    the :class:`cwepr.io.factory.DatasetImporterFactory` will get confused.
+    In such cases, you need to provide at least one of the two possible
+    file extensions (``par``, ``spc``) explicitly:
+
+    .. code-block:: yaml
+
+        datasets:
+          - winepr.par
+
+    This would be equivalent to:
+
+    .. code-block:: yaml
+
+        datasets:
+          - winepr.spc
+
+
     .. versionadded:: 0.2
 
     .. versionchanged:: 0.5.1
-        Additional condition for WinEPR files
+        Additional condition for WinEPR files; additional parameter ``format``
 
     """
 
     def __init__(self, source=None):
         super().__init__(source=source)
+        self.parameters["format"] = "auto"
         self.load_infofile = True
         # private properties
         self._infofile = aspecd.infofile.Infofile()
@@ -115,12 +219,19 @@ class ESPWinEPRImporter(aspecd.io.DatasetImporter):
         self.dataset.data.data = raw_data
 
     def _get_file_encoding(self):
-        if (("DOS", "Format") in self._par_dict.items()
-            or ("ASCII", "Format") in self._par_dict.items()
-        ):
+        if self.parameters["format"].lower() == "auto":
+            if (("DOS", "Format") in self._par_dict.items()
+                or ("ASCII", "Format") in self._par_dict.items()
+            ):
+                self.parameters["format"] = "WinEPR"
+            else:
+                self.parameters["format"] = "ESP"
+        if self.parameters["format"].lower() == "winepr":
             self._file_encoding = "<f"
+            self.parameters["format"] = "WinEPR"
         else:
             self._file_encoding = ">i4"
+            self.parameters["format"] = "ESP"
 
     def _infofile_exists(self):
         if self._get_infofile_name() and os.path.exists(

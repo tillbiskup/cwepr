@@ -35,6 +35,36 @@ class TestESPWinEPRImporter(unittest.TestCase):
         self.dataset.import_from(importer)
         self.assertTrue(self.dataset.data.data[0] < 10**12)
 
+    def test_importing_esp_data_sets_type_parameter(self):
+        importer = cwepr.io.esp_winepr.ESPWinEPRImporter(
+            source=self.sources[0]
+        )
+        self.dataset.import_from(importer)
+        self.assertEqual("ESP", importer.parameters["format"])
+
+    def test_importing_winepr_data_sets_type_parameter(self):
+        importer = cwepr.io.esp_winepr.ESPWinEPRImporter(
+            source=self.sources[1]
+        )
+        self.dataset.import_from(importer)
+        self.assertEqual("WinEPR", importer.parameters["format"])
+
+    def test_type_parameter_overrides_automatic_format_detection(self):
+        importer = cwepr.io.esp_winepr.ESPWinEPRImporter(
+            source=self.sources[0]
+        )
+        importer.parameters["format"] = "WinEPR"
+        self.dataset.import_from(importer)
+        self.assertEqual("WinEPR", importer.parameters["format"])
+
+    def test_type_parameter_overrides_automatic_format_detection_2(self):
+        importer = cwepr.io.esp_winepr.ESPWinEPRImporter(
+            source=self.sources[1]
+        )
+        importer.parameters["format"] = "ESP"
+        self.dataset.import_from(importer)
+        self.assertEqual("ESP", importer.parameters["format"])
+
     def test_gets_parameter(self):
         importer = cwepr.io.esp_winepr.ESPWinEPRImporter(
             source=self.sources[0]
