@@ -6,9 +6,27 @@ namely old EMX spectrometers running WinEPR and the ESP line of spectrometers.
 
 A bit of a problem with these two formats is that they are quite similar,
 but not the same. Namely the format of the file containing the data in
-binary representation is completely different. The way to tell those
+binary representation is completely different. One way to tell those
 two formats apart is to import the ``.par`` file and look, if it contains
-``DOS Format`` in the first line.
+``DOS Format`` (or alternatively, ``ASCII Format``) in the first line.
+However, this is just a workaround, as the official format specification
+does *not* allow for any clear discrimination between the two.
+
+.. todo::
+    There might be a way, though, to unequivocally discriminate between
+    the two formats: The number of field points seems to get written to
+    the parameter ``RES``. And after importing the binary data, we know
+    how many field points we have. They should differ for the two types of
+    binaries (by a factor of two). Just be aware that the ``RES``
+    parameter may not be present in the par file if it has not been
+    changed from the "default value". Hence, we need to *first* read the
+    default parameters, overwrite those that are contained in the par
+    file, and only afterwards check for the correct length of the
+    resulting data vector.
+
+.. todo::
+    Add a bit more details on the file format and all its peculiarities,
+    essentially documenting the specification.
 
 """
 import glob
