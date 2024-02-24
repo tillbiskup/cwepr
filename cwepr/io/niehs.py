@@ -385,6 +385,7 @@ Module documentation
 ====================
 
 """
+
 import io
 import struct
 

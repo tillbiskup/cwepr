@@ -29,6 +29,7 @@ does *not* allow for any clear discrimination between the two.
     essentially documenting the specification.
 
 """
+
 import glob
 import os
 import re
@@ -238,9 +239,10 @@ class ESPWinEPRImporter(aspecd.io.DatasetImporter):
 
     def _get_file_encoding(self):
         if self.parameters["format"].lower() == "auto":
-            if (("DOS", "Format") in self._par_dict.items()
-                or ("ASCII", "Format") in self._par_dict.items()
-            ):
+            if ("DOS", "Format") in self._par_dict.items() or (
+                "ASCII",
+                "Format",
+            ) in self._par_dict.items():
                 self.parameters["format"] = "WinEPR"
             else:
                 self.parameters["format"] = "ESP"
@@ -396,9 +398,9 @@ class ESPWinEPRImporter(aspecd.io.DatasetImporter):
     def _fill_axes(self):
         self._get_magnetic_field_axis()
         self.dataset.data.axes[0].quantity = "magnetic field"
-        self.dataset.data.axes[
-            0
-        ].unit = self.dataset.metadata.magnetic_field.start.unit
+        self.dataset.data.axes[0].unit = (
+            self.dataset.metadata.magnetic_field.start.unit
+        )
         self.dataset.data.axes[-1].quantity = "intensity"
 
     def _get_magnetic_field_axis(self):

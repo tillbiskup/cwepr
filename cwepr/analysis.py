@@ -308,9 +308,9 @@ class FieldCalibration(aspecd.analysis.SingleAnalysisStep):
 
     def _assign_parameters(self):
         if not self.parameters["mw_frequency"]:
-            self.parameters[
-                "mw_frequency"
-            ] = self.dataset.metadata.bridge.mw_frequency.value
+            self.parameters["mw_frequency"] = (
+                self.dataset.metadata.bridge.mw_frequency.value
+            )
         if not self.parameters["g_value"]:
             self.parameters["g_value"] = self.g_values[
                 self.parameters["standard"].lower()

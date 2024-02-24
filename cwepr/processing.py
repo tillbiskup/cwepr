@@ -422,6 +422,7 @@ Module documentation
 
 What  follows is the API documentation of each class implemented in this module.
 """
+
 import warnings
 
 import numpy as np
