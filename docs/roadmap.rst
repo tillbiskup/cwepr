@@ -7,7 +7,7 @@ Roadmap
 A few ideas how to develop the project further, currently a list as a reminder for the main developers themselves, in no particular order, though with a tendency to list more important aspects first:
 
 
-For version 0.5
+For version 0.6
 ===============
 
 * Implement derived importers for Magnettech files
@@ -37,7 +37,7 @@ For version 0.5
 
   * Keep step parameter of magnetic field or not?
 
-  * Fix docs in tyt-file importer module.
+  * Fix docs in txt-file importer module.
 
   * Check Offset method of Frequency correction. Might be incorrect.
 

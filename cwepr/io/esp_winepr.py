@@ -2,31 +2,159 @@
 Importer for the Bruker EMX and ESP format.
 
 The Bruker EMX and ESP formats are used by older Bruker EPR spectrometers,
-namely old EMX spectrometers running WinEPR and the ESP line of spectrometers.
+namely old EMX spectrometers running WinEPR and the ESP (and ECS) series of
+spectrometers.
 
 A bit of a problem with these two formats is that they are quite similar,
 but not the same. Namely the format of the file containing the data in
-binary representation is completely different. One way to tell those
-two formats apart is to import the ``.par`` file and look, if it contains
-``DOS Format`` (or alternatively, ``ASCII Format``) in the first line.
-However, this is just a workaround, as the official format specification
-does *not* allow for any clear discrimination between the two.
+binary representation is completely different:
 
-.. todo::
-    There might be a way, though, to unequivocally discriminate between
-    the two formats: The number of field points seems to get written to
-    the parameter ``RES``. And after importing the binary data, we know
-    how many field points we have. They should differ for the two types of
-    binaries (by a factor of two). Just be aware that the ``RES``
-    parameter may not be present in the par file if it has not been
-    changed from the "default value". Hence, we need to *first* read the
-    default parameters, overwrite those that are contained in the par
-    file, and only afterwards check for the correct length of the
-    resulting data vector.
+=====================  ===============================
+Spectrometer           Binary encoding
+=====================  ===============================
+Bruker EMX / WinEPR    4 byte floating point
+Bruker ESP (and ECS)   4 byte integer Motorola format
+=====================  ===============================
 
-.. todo::
-    Add a bit more details on the file format and all its peculiarities,
-    essentially documenting the specification.
+One way to tell those two formats apart is to import the ``.par`` file and
+look, if it contains ``DOS Format`` (or alternatively, ``ASCII Format``) in
+the first line. However, this is just a workaround, as the official format
+specification does *not* allow for any clear discrimination between the two.
+
+Eventually, the proof of the pudding is the eating: graphical representation
+of the imported data will immediately tell whether the importer chose the
+correct format: Either way, the wrong interpretation of the binary data will
+produce "garbage" a human can easily tell apart from an EPR spectrum (and
+even if it only contained spectrometer noise). Hence, if something goes
+wrong, you can explicitly provide the (correct) format to use. See the
+documentation of the :class:`ESPWinEPRImporter` class for details.
+
+
+Format documentation
+====================
+
+Generally, the format consists of two files per each measurement, a binary
+spectrum file with ``spc`` extension (and different binary encoding,
+as mentioned above) and an ASCII parameter file with ``par`` extension that
+should be the same for both binary formats, technically speaking. However,
+EMX spectrometers operated by WinEPR tend to add parameters to the parameter
+file that are *not* described in the format specification, but *may* be used
+to discriminate between EMX/WinEPR and ESP formats.
+
+Just to make life simpler, a parameter file usually contains *only* those
+parameters that deviate from what Bruker defined as "default" value. Those
+default values are tabulated in the specification of the file format. A
+particularly lovely quote from the specification, regarding defining the *x*
+axis of your data:
+
+    Definition of the x-axis can be very tricky because of instrument
+    offsets, *etc.* To make sure that the x-axis is represented correctly,
+    you should always use the parameters GST (start value) and GSI (sweep
+    size) and do not use HCF (center field) and HSW (sweep width).
+
+Following is the complete list of parameters, together with their default
+values and their meaning, as given in the official specification:
+
+======= ================ =========================================================
+Keyword Default Value    Definition
+======= ================ =========================================================
+JSS     0                spectrum status word
+JON                      operator name
+JRE                      resonator name
+JDA                      date of acquisition
+JTM                      time of acquisition
+JCO                      comment
+JUN     Gauss            units (Gauss/Mhz/sec/...)
+JNS     1                Scans to do
+JSD     0                Scans done
+JEX     EPR              Type of experiment
+JAR     ADD              Mode (Add/Replace)
+GST     3.455000e+03     left border of display
+GSI     5.000000e+01     width of display
+TE      -l.000000e+00    temperature (-1 means not set by software)
+HCF     3.480006e+03     ER032M center field
+HSW     5.000000e+01     ER032M sweep width
+NGA     -1               ER035M gaussmeter address (-1 means not connected)
+NOF     0.000000e+00     ER035M gaussmeter field offset
+MF      -1.000000e+00    Microwave frequency (-1 means no input made)
+MP      -1.000000e+00    Microwave power
+MCA     -1               Microwave counter address (-1 means no counter connected)
+RMA     1.000000e+00     ER023M modulation amplitude [Gauss]
+RRG     2.000000e+04     ER023M receiver gain
+RPH     0                ER023M phase
+ROF     0                ER023M offset
+RCT     5.120000e+00     ER023M conversion time
+RTC     1.280000e+00     ER023M time constant
+RMF     1.000000e+02     ER023M modulation frequency [kHz]
+RHA     1                ER023M harmonic
+RRE     1                ER023M resonator
+RES     1024             resolution of ER023M spectra
+DTM     4.096000e+00     digitizer sweep time [sec]
+DSD     0.000000e+00     digitizer sweep delay [sec]
+DCT     1000             digitizer conversion time [νsec]
+DTR     1000             digitizer trigger rate
+DCA     ON               channel A
+DCB     OFF              channel B
+DDM     OFF              DUAL mode
+DRS     4096             digitizer resolution in x-axis
+PPL     OFF              parameter plot
+PFP     2                frame pen
+PSP     1                spectra pen
+POF     0                plot offset
+PFR     ON               frame On/OFF
+EMF     3.352100e+03     ENMR field
+ESF     2.000000e+01     ENMR start frequency [MHz]
+ESW     1.000000e+01     ENMR sweep width [MHz]
+EFD     9.977000e+0l     FM-modulation [kHz]
+EPF     1.000000e+01     ENMR pump frequency [MHz]
+ESP     20               ENMR RF attenuator [dB]
+EPP     63               ENMR pump power attenuator [dB]
+EOP     0                ENMR total power attenuator [dB]
+EPH     0                ENMR phase
+FME                      filter method
+FWI                      filter width
+FOP     2                filter order of polynomial
+FER     2.000000e+00     filter value 'alpha'
+======= ================ =========================================================
+
+Note that usually, only a rather small subset of all these possible values
+are of relevance, particularly in case of the EMX spectrometer series only
+capable of performing conventional cw-EPR spectroscopy. The ESP
+spectrometer series, in contrast, could be equipped with both, pulsed and
+ENDOR capabilities and is the predecessor of the modern ELEXSYS series.
+
+Regarding the first parameter, ``JSS``, there is a bit more information
+available that should be documented here for completeness as well:
+
+.. code-block:: text
+
+    JSS is a number indicating the status of the spectrum. It is a decimal
+    number. The following describes what the numbers mean in hex:
+
+    /* CSPS: current spectrum status                                           */
+    #define s_DUAL 0x00000001L  /* current status : DUAL can change            */
+    #define s_2D   0x00000002L  /* manipulated spectrum is 2D-spec.            */
+    #define s_FT   0x00000004L  /* Fourier Transformation was done             */
+    #define s_MAN0 0x00000008L  /* 'soft' manipulation were done               */
+    #define s_MAN1 0x00000010L  /* 'hard' manipulation were done               */
+    /* 'soft' manipulation: baseline correction, addition of constant values   */
+    /* or spectrum fits, multiplication with constant values, phase correction */
+    /* 'hard' manipulation: add. and mult. with extern data (other spectra..)  */
+    /* zero function, smoothing op., expansion (only when fixed);              */
+    /* org. information lost!!!                                                */
+    #define s_PROT 0x00000020L  /* Protection flag: manip. not allowed         */
+    #define s_VEPR 0x00000040L  /* VEPR spectrum                               */
+    #define s_POW  0x00000080L  /* power spectrum                              */
+    #define s_ABS  0x00000100L  /* absolute value spectrum                     */
+    #define s_FTX  0x00000200L  /* Fourier Trans. in x-dir. of 2D-spectrum     */
+    #define s_FTY  0x00000400L  /* FT in y-dir. of 2D-spectrum                 */
+    /* s_FTX and s_FTY : FT on all slices off the spectrum; single slice: s_FT */
+    #define s_POW2 0x00000800L  /* 2D power spectrum                           */
+    #define s_ABS2 0x00001000L  /* 2D absolute value spectrum                  */
+
+
+Module documentation
+====================
 
 """
 
