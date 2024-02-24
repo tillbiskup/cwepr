@@ -385,6 +385,7 @@ Module documentation
 ====================
 
 """
+
 import io
 import struct
 
@@ -441,35 +442,44 @@ class NIEHSDatImporter(aspecd.io.DatasetImporter):
         self.dataset.data.data = self._raw_data[3:]
 
     def _create_axis(self):
-        self._raw_metadata['center_field_mT'] = center_field = \
+        self._raw_metadata["center_field_mT"] = center_field = (
             self._raw_data[1] / 10
-        self._raw_metadata['number_points'] = number_points = \
-            int(self._raw_data[2])
-        self._raw_metadata['sweep_width_mT'] = sweep_width = \
+        )
+        self._raw_metadata["number_points"] = number_points = int(
+            self._raw_data[2]
+        )
+        self._raw_metadata["sweep_width_mT"] = sweep_width = (
             self._raw_data[0] / 10
-        self._raw_metadata['start'] = center_field - sweep_width / 2
-        self._raw_metadata['stop'] = center_field + sweep_width / 2
-        axis = np.linspace(center_field - sweep_width / 2,
-                           center_field + sweep_width / 2,
-                           num=number_points)
+        )
+        self._raw_metadata["start"] = center_field - sweep_width / 2
+        self._raw_metadata["stop"] = center_field + sweep_width / 2
+        axis = np.linspace(
+            center_field - sweep_width / 2,
+            center_field + sweep_width / 2,
+            num=number_points,
+        )
         assert axis[0] == center_field - sweep_width / 2
         self.dataset.data.axes[0].values = axis
 
     def _assign_units(self):
-        self.dataset.data.axes[0].unit = 'mT'
+        self.dataset.data.axes[0].unit = "mT"
 
     def _assign_some_metadata(self):
-        self.dataset.metadata.magnetic_field.start.value = \
-            self._raw_metadata['start']
-        self.dataset.metadata.magnetic_field.stop.value = \
-            self._raw_metadata['stop']
-        self.dataset.metadata.magnetic_field.points = \
-            self._raw_metadata['number_points']
-        self.dataset.metadata.magnetic_field.sweep_width.value = \
-            self._raw_metadata['sweep_width_mT']
-        self.dataset.metadata.magnetic_field.sweep_width.unit = \
-            self.dataset.metadata.magnetic_field.start.unit = \
-            self.dataset.metadata.magnetic_field.stop.unit = 'mT'
+        self.dataset.metadata.magnetic_field.start.value = self._raw_metadata[
+            "start"
+        ]
+        self.dataset.metadata.magnetic_field.stop.value = self._raw_metadata[
+            "stop"
+        ]
+        self.dataset.metadata.magnetic_field.points = self._raw_metadata[
+            "number_points"
+        ]
+        self.dataset.metadata.magnetic_field.sweep_width.value = (
+            self._raw_metadata["sweep_width_mT"]
+        )
+        self.dataset.metadata.magnetic_field.sweep_width.unit = (
+            self.dataset.metadata.magnetic_field.start.unit
+        ) = self.dataset.metadata.magnetic_field.stop.unit = "mT"
 
 
 class NIEHSLmbImporter(aspecd.io.DatasetImporter):
@@ -518,11 +528,11 @@ class NIEHSLmbImporter(aspecd.io.DatasetImporter):
 
     def _get_raw_data(self):
         filename = self.source + ".lmb"
-        with open(filename, 'rb') as file:
+        with open(filename, "rb") as file:
             self._file_contents = file.read()
 
     def _detect_file_format(self):
-        self._file_format = self._file_contents[:4].decode('utf-8')
+        self._file_format = self._file_contents[:4].decode("utf-8")
 
     def _read_and_assign_parameters(self):
         parameters = []
@@ -531,9 +541,10 @@ class NIEHSLmbImporter(aspecd.io.DatasetImporter):
         for _ in range(max_par):
             parameters.append(
                 struct.unpack(
-                    'f',
-                    self._file_contents[self._position:
-                                        self._position + 4])[0])
+                    "f",
+                    self._file_contents[self._position : self._position + 4],
+                )[0]
+            )
             self._position += 4
         # Note: Only assign those parameters necessary in the given context
         self._parameters = {
@@ -548,9 +559,10 @@ class NIEHSLmbImporter(aspecd.io.DatasetImporter):
         for _ in range(int(self._parameters["n_points"])):
             data.append(
                 struct.unpack(
-                    'f',
-                    self._file_contents[self._position:
-                                        self._position + 4])[0])
+                    "f",
+                    self._file_contents[self._position : self._position + 4],
+                )[0]
+            )
             self._position += 4
         self.dataset.data.data = np.asarray(data)
 
@@ -558,28 +570,39 @@ class NIEHSLmbImporter(aspecd.io.DatasetImporter):
     def _read_comments_and_metadata(self):
         comment_size = 60
         self._comment = [
-            self._file_contents[self._position:
-                                self._position + comment_size
-                                ].decode('utf-8').replace('\x00', '').strip()]
+            self._file_contents[
+                self._position : self._position + comment_size
+            ]
+            .decode("utf-8")
+            .replace("\x00", "")
+            .strip()
+        ]
         self._position += comment_size
 
         str_num = 20
         str_size = 12
         strings = []
         for _ in range(str_num):
-            strings.append(self._file_contents[
-                           self._position:
-                           self._position + str_size].decode(
-                'utf-8').replace('\x00', '').strip())
+            strings.append(
+                self._file_contents[
+                    self._position : self._position + str_size
+                ]
+                .decode("utf-8")
+                .replace("\x00", "")
+                .strip()
+            )
             self._position += str_size
 
-        if self._file_format == 'ESR2':
+        if self._file_format == "ESR2":
             for _ in range(2):
                 self._comment.append(
-                    self._file_contents[self._position:
-                                        self._position + comment_size
-                                        ].decode('utf-8').replace('\x00',
-                                                                  '').strip())
+                    self._file_contents[
+                        self._position : self._position + comment_size
+                    ]
+                    .decode("utf-8")
+                    .replace("\x00", "")
+                    .strip()
+                )
                 self._position += comment_size
 
         # Only those metadata of interest are mapped
@@ -598,17 +621,21 @@ class NIEHSLmbImporter(aspecd.io.DatasetImporter):
         }
 
     def _create_axis(self):
-        self._parameters['start'] = \
-            self._parameters['center_field'] \
-            - self._parameters['sweep_width'] / 2
-        self._parameters['stop'] = \
-            self._parameters['center_field'] \
-            + self._parameters['sweep_width'] / 2
-        axis = np.linspace(self._parameters['start'],
-                           self._parameters['stop'],
-                           num=self._parameters['n_points'])
+        self._parameters["start"] = (
+            self._parameters["center_field"]
+            - self._parameters["sweep_width"] / 2
+        )
+        self._parameters["stop"] = (
+            self._parameters["center_field"]
+            + self._parameters["sweep_width"] / 2
+        )
+        axis = np.linspace(
+            self._parameters["start"],
+            self._parameters["stop"],
+            num=self._parameters["n_points"],
+        )
         self.dataset.data.axes[0].values = axis
-        self.dataset.data.axes[0].unit = 'mT'
+        self.dataset.data.axes[0].unit = "mT"
 
     def _assign_comment(self):
         comment_annotation = aspecd.annotation.Comment()
@@ -616,17 +643,21 @@ class NIEHSLmbImporter(aspecd.io.DatasetImporter):
         self.dataset.annotate(comment_annotation)
 
     def _assign_metadata(self):
-        self.dataset.metadata.magnetic_field.start.value = \
+        self.dataset.metadata.magnetic_field.start.value = (
             self.dataset.data.axes[0].values[0]
-        self.dataset.metadata.magnetic_field.stop.value = \
+        )
+        self.dataset.metadata.magnetic_field.stop.value = (
             self.dataset.data.axes[0].values[-1]
-        self.dataset.metadata.magnetic_field.sweep_width.value = \
+        )
+        self.dataset.metadata.magnetic_field.sweep_width.value = (
             self._parameters["sweep_width"]
-        self.dataset.metadata.magnetic_field.start.unit = \
-            self.dataset.metadata.magnetic_field.stop.unit = \
-            self.dataset.metadata.magnetic_field.sweep_width.unit = "mT"
-        self.dataset.metadata.signal_channel.accumulations = \
-            self._metadata["n_scans"]
+        )
+        self.dataset.metadata.magnetic_field.start.unit = (
+            self.dataset.metadata.magnetic_field.stop.unit
+        ) = self.dataset.metadata.magnetic_field.sweep_width.unit = "mT"
+        self.dataset.metadata.signal_channel.accumulations = self._metadata[
+            "n_scans"
+        ]
 
 
 class NIEHSExpImporter(aspecd.io.DatasetImporter):
@@ -677,37 +708,39 @@ class NIEHSExpImporter(aspecd.io.DatasetImporter):
 
     def _read_file_contents(self):
         filename = self.source + ".exp"
-        with open(filename, 'r', encoding='ascii') as file:
+        with open(filename, "r", encoding="ascii") as file:
             self._file_contents = file.read()
         self._lines = self._file_contents.splitlines()
 
     def _detect_file_format(self):
-        if self._lines[0].startswith('['):
-            self._file_format = 'with_blocks'
+        if self._lines[0].startswith("["):
+            self._file_format = "with_blocks"
         else:
-            self._file_format = 'DSV'
+            self._file_format = "DSV"
 
     def _import_data(self):
-        if self._file_format == 'with_blocks':
+        if self._file_format == "with_blocks":
             # noinspection PyTypeChecker
             self._raw_data = np.loadtxt(
                 io.StringIO(self._file_contents),
-                skiprows=self._lines.index('[DATA]') + 1)
-            self._header = self._lines[:self._lines.index('[DATA]')]
+                skiprows=self._lines.index("[DATA]") + 1,
+            )
+            self._header = self._lines[: self._lines.index("[DATA]")]
         else:
             # noinspection PyTypeChecker
             self._raw_data = np.loadtxt(io.StringIO(self._file_contents))
 
     def _assign_data_and_axis(self):
         self.dataset.data.axes[0].values = self._raw_data[:, 0] / 10
-        self.dataset.data.axes[0].unit = 'mT'
+        self.dataset.data.axes[0].unit = "mT"
         self.dataset.data.data = self._raw_data[:, 1]
 
     def _assign_comment(self):
         if self._header:
             # Remove empty lines and trailing spaces
-            self._header = [element.rstrip() for element in self._header
-                            if element != '']
+            self._header = [
+                element.rstrip() for element in self._header if element != ""
+            ]
             comment_annotation = aspecd.annotation.Comment()
             comment_annotation.comment = self._header
             self.dataset.annotate(comment_annotation)

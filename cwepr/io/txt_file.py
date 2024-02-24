@@ -120,10 +120,10 @@ class TxtImporter(aspecd.io.TxtImporter):
 
     """
 
-    def __init__(self, source=''):
+    def __init__(self, source=""):
         super().__init__(source=source)
         # public properties
-        self.extension = '.txt'
+        self.extension = ".txt"
         self.parameters["skiprows"] = 0
         self.parameters["delimiter"] = None
         self.parameters["comments"] = "#"
@@ -135,19 +135,19 @@ class TxtImporter(aspecd.io.TxtImporter):
         self._create_metadata()
 
     def _get_extension(self):
-        if '.' in self.source:
-            extension = self.source[self.source.rfind('.'):]
+        if "." in self.source:
+            extension = self.source[self.source.rfind(".") :]
         else:
             extension = None
         if extension:
             self.extension = extension
-            self.source = self.source[:self.source.rfind('.')]
+            self.source = self.source[: self.source.rfind(".")]
         self.source += self.extension
 
     def _create_metadata(self):
-        self.dataset.data.axes[0].unit = 'mT'
-        self.dataset.data.axes[0].quantity = 'magnetic field'
-        self.dataset.data.axes[1].quantity = 'intensity'
+        self.dataset.data.axes[0].unit = "mT"
+        self.dataset.data.axes[0].quantity = "magnetic field"
+        self.dataset.data.axes[1].quantity = "intensity"
 
 
 class CsvImporter(TxtImporter):
@@ -174,8 +174,8 @@ class CsvImporter(TxtImporter):
 
     """
 
-    def __init__(self, source=''):
+    def __init__(self, source=""):
         super().__init__(source=source)
         # public properties
-        self.extension = '.csv'
-        self.parameters["delimiter"] = ','
+        self.extension = ".csv"
+        self.parameters["delimiter"] = ","

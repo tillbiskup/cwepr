@@ -28,13 +28,16 @@ Module documentation
 ====================
 
 """
+
 import aspecd.metadata
 import aspecd.utils
 
 from cwepr.exceptions import UnequalUnitsError
 
 
-class ExperimentalDatasetMetadata(aspecd.metadata.ExperimentalDatasetMetadata):
+class ExperimentalDatasetMetadata(
+    aspecd.metadata.ExperimentalDatasetMetadata
+):
     """Set of all metadata for a dataset object.
 
     Metadata as a unified structure of information coupled to the dataset are
@@ -129,7 +132,7 @@ class Measurement(aspecd.metadata.Measurement):
 
     def __init__(self, dict_=None):
         # public properties
-        self.label = ''
+        self.label = ""
         super().__init__(dict_=dict_)
 
 
@@ -163,10 +166,10 @@ class Sample(aspecd.metadata.Sample):
 
     def __init__(self, dict_=None):
         # public properties
-        self.description = ''
-        self.solvent = ''
-        self.preparation = ''
-        self.tube = ''
+        self.description = ""
+        self.solvent = ""
+        self.preparation = ""
+        self.tube = ""
         super().__init__(dict_=dict_)
 
 
@@ -247,13 +250,13 @@ class MagneticField(aspecd.metadata.Metadata):
         sector_par = 0
         step_def = False
         step_par = 0
-        if self.start.value != 0.:
+        if self.start.value != 0.0:
             sector_def = True
             sector_par += 1
-        if self.stop.value != 0.:
+        if self.stop.value != 0.0:
             sector_def = True
             sector_par += 1
-        if self.sweep_width.value != 0.:
+        if self.sweep_width.value != 0.0:
             sector_par += 1
             step_par += 1
         if self.points != 0:
@@ -290,19 +293,19 @@ class MagneticField(aspecd.metadata.Metadata):
             self._calc_step_data(units_error_message)
 
     def _calc_field_width(self, units_error_message):
-        if self.sweep_width.value == 0.:
+        if self.sweep_width.value == 0.0:
             if self.stop.unit != self.start.unit:
                 raise UnequalUnitsError(units_error_message)
             self.sweep_width.value = self.stop.value - self.start.value
             self.sweep_width.unit = self.stop.unit
 
     def _calc_field_limits(self, units_error_message):
-        if self.stop.value == 0.:
+        if self.stop.value == 0.0:
             if self.sweep_width.unit != self.start.unit:
                 raise UnequalUnitsError(units_error_message)
             self.stop.value = self.start.value + self.sweep_width.value
             self.stop.unit = self.start.unit
-        if self.start.value == 0.:
+        if self.start.value == 0.0:
             if self.stop.unit != self.sweep_width.unit:
                 raise UnequalUnitsError(units_error_message)
             self.start.value = self.stop.value - self.sweep_width.value
@@ -312,17 +315,24 @@ class MagneticField(aspecd.metadata.Metadata):
         if self.points == 0:
             if self.sweep_width.unit != self.step_width.unit:
                 raise UnequalUnitsError(units_error_message)
-            self.points = int(round((self.sweep_width.value /
-                                     self.step_width.value), 0)) + 1
-        if self.step_width.value == 0.:
-            self.step_width.value = \
-                self.sweep_width.value / (self.points - 1)
+            self.points = (
+                int(
+                    round((self.sweep_width.value / self.step_width.value), 0)
+                )
+                + 1
+            )
+        if self.step_width.value == 0.0:
+            self.step_width.value = self.sweep_width.value / (self.points - 1)
             self.step_width.unit = self.stop.unit
 
     def gauss_to_millitesla(self):
         """Transform magnetic field parameters from gauss to millitesla."""
-        for quantity in [self.start, self.stop,
-                         self.sweep_width, self.step_width]:
+        for quantity in [
+            self.start,
+            self.stop,
+            self.sweep_width,
+            self.step_width,
+        ]:
             quantity.value /= 10
             quantity.unit = "mT"
 
@@ -643,6 +653,6 @@ class TemperatureControl(aspecd.metadata.TemperatureControl):
 
     def __init__(self, dict_=None):
         # public properties
-        self.cryostat = ''
-        self.cryogen = ''
+        self.cryostat = ""
+        self.cryogen = ""
         super().__init__(dict_=dict_)

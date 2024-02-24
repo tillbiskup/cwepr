@@ -17,14 +17,14 @@ ROOTPATH = os.path.split(os.path.abspath(__file__))[0]
 
 class TestFieldCorrection(unittest.TestCase):
     def setUp(self):
-        source = os.path.join(ROOTPATH, 'io/testdata/test-magnettech')
+        source = os.path.join(ROOTPATH, "io/testdata/test-magnettech")
         importer = cwepr.io.magnettech.MagnettechXMLImporter(source=source)
         self.dataset = cwepr.dataset.ExperimentalDataset()
         self.dataset.import_from(importer)
 
     def test_axis_is_updated(self):
         fc = cwepr.processing.FieldCorrection()
-        fc.parameters['offset'] = 10
+        fc.parameters["offset"] = 10
         axis_before = copy.deepcopy(self.dataset.data.axes[0].values)
         self.dataset.process(fc)
         axis_after = self.dataset.data.axes[0].values
@@ -32,43 +32,49 @@ class TestFieldCorrection(unittest.TestCase):
 
     def test_metadata_is_updated(self):
         fc = cwepr.processing.FieldCorrection()
-        fc.parameters['offset'] = 10
-        start = copy.deepcopy(self.dataset.metadata.magnetic_field.start.value)
+        fc.parameters["offset"] = 10
+        start = copy.deepcopy(
+            self.dataset.metadata.magnetic_field.start.value
+        )
         stop = copy.deepcopy(self.dataset.metadata.magnetic_field.stop.value)
         self.dataset.process(fc)
-        self.assertGreater(self.dataset.metadata.magnetic_field.start.value,
-                           start)
-        self.assertGreater(self.dataset.metadata.magnetic_field.stop.value,
-                           stop)
+        self.assertGreater(
+            self.dataset.metadata.magnetic_field.start.value, start
+        )
+        self.assertGreater(
+            self.dataset.metadata.magnetic_field.stop.value, stop
+        )
 
 
 class TestAutomaticPhaseCorrection(unittest.TestCase):
     def setUp(self):
-        source = os.path.join(ROOTPATH, 'io/testdata/phase-45_noise0.000.txt')
+        source = os.path.join(ROOTPATH, "io/testdata/phase-45_noise0.000.txt")
         importer = cwepr.io.txt_file.TxtImporter(source=source)
-        importer.parameters['delimiter'] = '\t'
+        importer.parameters["delimiter"] = "\t"
         self.dataset = cwepr.dataset.ExperimentalDataset()
         self.dataset.import_from(importer)
 
     def test_analytic_signal_is_complex(self):
         apc = cwepr.processing.AutomaticPhaseCorrection()
-        apc.parameters['order'] = 1
-        apc.parameters['points_percentage'] = 5
+        apc.parameters["order"] = 1
+        apc.parameters["points_percentage"] = 5
         self.dataset.process(apc)
         self.assertTrue(np.iscomplex(apc._analytic_signal).all)
 
     def test_signal_before_and_after_differ(self):
         apc = cwepr.processing.AutomaticPhaseCorrection()
-        apc.parameters['order'] = 1
-        apc.parameters['points_percentage'] = 20
+        apc.parameters["order"] = 1
+        apc.parameters["points_percentage"] = 20
         dataset_old = copy.deepcopy(self.dataset)
         self.dataset.process(apc)
-        self.assertTrue((dataset_old.data.data != self.dataset.data.data).all())
+        self.assertTrue(
+            (dataset_old.data.data != self.dataset.data.data).all()
+        )
 
 
 class TestSubtraction(unittest.TestCase):
     def setUp(self):
-        source = os.path.join(ROOTPATH, 'io/testdata/test-magnettech')
+        source = os.path.join(ROOTPATH, "io/testdata/test-magnettech")
         importer = cwepr.io.magnettech.MagnettechXMLImporter(source=source)
         self.dataset = cwepr.dataset.ExperimentalDataset()
         self.dataset.import_from(importer)
@@ -76,7 +82,7 @@ class TestSubtraction(unittest.TestCase):
 
 class TestFrequencyCorrection(unittest.TestCase):
     def setUp(self):
-        source = os.path.join(ROOTPATH, 'io/testdata/test-magnettech')
+        source = os.path.join(ROOTPATH, "io/testdata/test-magnettech")
         importer = cwepr.io.magnettech.MagnettechXMLImporter(source=source)
         self.dataset = cwepr.dataset.ExperimentalDataset()
         self.dataset.import_from(importer)
@@ -84,28 +90,28 @@ class TestFrequencyCorrection(unittest.TestCase):
 
     def test_frequency_before_is_different_from_after(self):
         old_freq = copy.deepcopy(self.dataset.metadata.bridge.mw_frequency)
-        self.corrector.parameters['frequency'] = 9.5
+        self.corrector.parameters["frequency"] = 9.5
         self.dataset.process(self.corrector)
         new_freq = self.dataset.metadata.bridge.mw_frequency
         self.assertNotEqual(new_freq.value, old_freq.value)
 
     def test_frequency_given_as_int(self):
         old_freq = copy.deepcopy(self.dataset.metadata.bridge.mw_frequency)
-        self.corrector.parameters['frequency'] = 9
+        self.corrector.parameters["frequency"] = 9
         self.dataset.process(self.corrector)
         new_freq = self.dataset.metadata.bridge.mw_frequency
         self.assertNotEqual(new_freq.value, old_freq.value)
 
     def test_no_frequency_given(self):
-        self.dataset.metadata.bridge.mw_frequency = \
+        self.dataset.metadata.bridge.mw_frequency = (
             aspecd.metadata.PhysicalQuantity()
+        )
         with self.assertRaises(aspecd.exceptions.NotApplicableToDatasetError):
             self.dataset.process(self.corrector)
 
     def test_magnetic_field_axis_is_different(self):
-        old_field_axis = copy.deepcopy(
-            self.dataset.data.axes[0].values)
-        self.corrector.parameters['frequency'] = 8.
+        old_field_axis = copy.deepcopy(self.dataset.data.axes[0].values)
+        self.corrector.parameters["frequency"] = 8.0
         self.dataset.process(self.corrector)
         new_field_axis = self.dataset.data.axes[0].values
         diffs = old_field_axis - new_field_axis
@@ -113,19 +119,17 @@ class TestFrequencyCorrection(unittest.TestCase):
         self.assertFalse(all(conditions))
 
     def test_magnetic_field_points_have_non_constant_offset(self):
-        old_field_axis = copy.deepcopy(
-            self.dataset.data.axes[0].values)
-        self.corrector.parameters['frequency'] = 8.
+        old_field_axis = copy.deepcopy(self.dataset.data.axes[0].values)
+        self.corrector.parameters["frequency"] = 8.0
         self.dataset.process(self.corrector)
         new_field_axis = self.dataset.data.axes[0].values
         diffs = old_field_axis - new_field_axis
         self.assertTrue(diffs[0] != diffs[-1])
 
     def test_correct_with_offset_writes_new_magnetic_field_values(self):
-        old_field_axis = copy.deepcopy(
-            self.dataset.data.axes[0].values)
-        self.corrector.parameters['frequency'] = 8.5
-        self.corrector.parameters['kind'] = 'offset'
+        old_field_axis = copy.deepcopy(self.dataset.data.axes[0].values)
+        self.corrector.parameters["frequency"] = 8.5
+        self.corrector.parameters["kind"] = "offset"
         self.dataset.process(self.corrector)
         new_field_axis = self.dataset.data.axes[0].values
         diffs = old_field_axis - new_field_axis
@@ -133,10 +137,9 @@ class TestFrequencyCorrection(unittest.TestCase):
         self.assertFalse(all(conditions))
 
     def test_correct_with_offset_center_point_is_lower_than_before(self):
-        old_field_axis = copy.deepcopy(
-            self.dataset.data.axes[0].values)
-        self.corrector.parameters['frequency'] = 8.5
-        self.corrector.parameters['kind'] = 'offset'
+        old_field_axis = copy.deepcopy(self.dataset.data.axes[0].values)
+        self.corrector.parameters["frequency"] = 8.5
+        self.corrector.parameters["kind"] = "offset"
         self.dataset.process(self.corrector)
         new_field_axis = self.dataset.data.axes[0].values
         idx = round(len(old_field_axis) / 2)
@@ -146,17 +149,16 @@ class TestFrequencyCorrection(unittest.TestCase):
 
     def test_correct_with_offset_writes_new_frequency(self):
         old_freq = copy.deepcopy(self.dataset.metadata.bridge.mw_frequency)
-        self.corrector.parameters['kind'] = 'offset'
-        self.corrector.parameters['frequency'] = 8.5
+        self.corrector.parameters["kind"] = "offset"
+        self.corrector.parameters["frequency"] = 8.5
         self.dataset.process(self.corrector)
         new_freq = self.dataset.metadata.bridge.mw_frequency
         self.assertNotEqual(new_freq.value, old_freq.value)
 
     def test_correct_with_offset_field_points_have_constant_offset(self):
-        old_field_axis = copy.deepcopy(
-            self.dataset.data.axes[0].values)
-        self.corrector.parameters['kind'] = 'offset'
-        self.corrector.parameters['frequency'] = 8.5
+        old_field_axis = copy.deepcopy(self.dataset.data.axes[0].values)
+        self.corrector.parameters["kind"] = "offset"
+        self.corrector.parameters["frequency"] = 8.5
         self.dataset.process(self.corrector)
         new_field_axis = self.dataset.data.axes[0].values
         diffs = old_field_axis - new_field_axis
@@ -169,8 +171,8 @@ class GAxisCreation(unittest.TestCase):
         self.dataset = cwepr.dataset.ExperimentalDataset()
         self.dataset.data.data = np.random.random(100)
         self.dataset.data.axes[0].values = np.linspace(300, 400, num=100)
-        self.dataset.data.axes[0].unit = 'mT'
-        self.dataset.data.axes[0].quantity = 'magnetic field'
+        self.dataset.data.axes[0].unit = "mT"
+        self.dataset.data.axes[0].quantity = "magnetic field"
         self.dataset.metadata.bridge.mw_frequency.value = 9.5
 
     def test_instantiate_class(self):
@@ -179,7 +181,7 @@ class GAxisCreation(unittest.TestCase):
 
     def test_description_is_appropriate(self):
         self.assertTrue(self.proc.description)
-        self.assertIn('magnetic field axis to g axis', self.proc.description)
+        self.assertIn("magnetic field axis to g axis", self.proc.description)
 
     def test_axis_values_differs_after(self):
         values_before = np.copy(self.dataset.data.axes[0].values)
@@ -215,7 +217,7 @@ class TestAxisInterpolation(unittest.TestCase):
         pass
 
     def test_interpolate_returns_new_axis(self):
-        source = os.path.join(ROOTPATH, 'io/testdata/test-magnettech')
+        source = os.path.join(ROOTPATH, "io/testdata/test-magnettech")
         importer = cwepr.io.magnettech.MagnettechXMLImporter(source=source)
         dataset = cwepr.dataset.ExperimentalDataset()
         dataset.import_from(importer)
@@ -228,7 +230,7 @@ class TestAxisInterpolation(unittest.TestCase):
 
 class TestNormalisationOfDerivativeToArea(unittest.TestCase):
     def setUp(self):
-        source = os.path.join(ROOTPATH, 'io/testdata/not_noisy_data')
+        source = os.path.join(ROOTPATH, "io/testdata/not_noisy_data")
         importer = cwepr.io.txt_file.TxtImporter(source=source)
         self.dataset = cwepr.dataset.ExperimentalDataset()
         self.dataset.import_from(importer)
@@ -242,23 +244,24 @@ class TestNormalisationOfDerivativeToArea(unittest.TestCase):
 
 class TestNormalisation(unittest.TestCase):
     def setUp(self):
-        source = os.path.join(ROOTPATH, 'io/testdata/BDPA-1DFieldSweep')
+        source = os.path.join(ROOTPATH, "io/testdata/BDPA-1DFieldSweep")
         importer = cwepr.dataset.DatasetFactory()
         self.dataset = importer.get_dataset(source=source)
 
     def test_normalisation_to_receiver_gain(self):
         correction = cwepr.processing.Normalisation()
-        correction.parameters['kind'] = 'receiver_gain'
+        correction.parameters["kind"] = "receiver_gain"
         before = max(self.dataset.data.data)
         rg = 10 ** (
-                self.dataset.metadata.signal_channel.receiver_gain.value / 20)
+            self.dataset.metadata.signal_channel.receiver_gain.value / 20
+        )
         self.dataset.process(correction)
         after = max(self.dataset.data.data)
         self.assertEqual(before / rg, after)
 
     def test_normalisation_to_scan_number(self):
         correction = cwepr.processing.Normalisation()
-        correction.parameters['kind'] = 'scan_number'
+        correction.parameters["kind"] = "scan_number"
         before = max(self.dataset.data.data)
         scans = self.dataset.metadata.signal_channel.accumulations
         self.dataset.process(correction)
@@ -267,7 +270,7 @@ class TestNormalisation(unittest.TestCase):
 
     def test_normalisation_to_maximum(self):
         correction = cwepr.processing.Normalisation()
-        correction.parameters['kind'] = 'max'
+        correction.parameters["kind"] = "max"
         before = np.max(self.dataset.data.data)
         max_ = max(self.dataset.data.data)
         self.dataset.process(correction)
@@ -276,7 +279,7 @@ class TestNormalisation(unittest.TestCase):
 
     def test_normalisation_to_minimum(self):
         correction = cwepr.processing.Normalisation()
-        correction.parameters['kind'] = 'min'
+        correction.parameters["kind"] = "min"
         before = min(self.dataset.data.data)
         min_ = min(self.dataset.data.data)
         self.dataset.process(correction)

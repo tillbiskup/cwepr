@@ -8,6 +8,7 @@ cwepr.io package
 
 .. toctree::
    :maxdepth: 1
+   :hidden:
 
    cwepr.io.factory
    cwepr.io.bes3t

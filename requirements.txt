@@ -1,6 +1,5 @@
-aspecd>=0.2.1
+aspecd>=0.9.0
 numpy
 scipy
 matplotlib
-setuptools
 python-dateutil

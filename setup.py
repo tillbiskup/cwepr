@@ -1,30 +1,30 @@
 import os
 import setuptools
 
-with open(os.path.join(os.path.dirname(__file__), 'VERSION')) as version_file:
+with open(os.path.join(os.path.dirname(__file__), "VERSION")) as version_file:
     version = version_file.read().strip()
 
-with open(os.path.join(os.path.dirname(__file__), 'README.rst')) as f:
+with open(os.path.join(os.path.dirname(__file__), "README.rst")) as f:
     readme = f.read()
 
 
 setuptools.setup(
-    name='cwepr',
+    name="cwepr",
     version=version,
-    description='Package for handling cw-EPR data.',
+    description="Package for handling cw-EPR data.",
     long_description=readme,
-    long_description_content_type='text/x-rst',
-    author='Mirjam Schröder, Pascal Kirchner, Till Biskup',
-    author_email='till@till-biskup.de',
-    url='https://www.cwepr.de/',
+    long_description_content_type="text/x-rst",
+    author="Mirjam Schröder, Pascal Kirchner, Till Biskup",
+    author_email="till@till-biskup.de",
+    url="https://www.cwepr.de/",
     project_urls={
         "Documentation": "https://docs.cwepr.de/",
         "Source": "https://github.com/tillbiskup/cwepr",
-        'Bug Tracker': 'https://github.com/tillbiskup/cwepr/issues',
+        "Bug Tracker": "https://github.com/tillbiskup/cwepr/issues",
     },
-    packages=setuptools.find_packages(exclude=('tests', 'docs')),
+    packages=setuptools.find_packages(exclude=("tests", "docs")),
     include_package_data=True,
-    license='BSD',
+    license="BSD",
     keywords=[
         "EPR spectroscopy",
         "data processing and analysis",
@@ -47,15 +47,22 @@ setuptools.setup(
         "Topic :: Scientific/Engineering",
     ],
     install_requires=[
-        'aspecd>=0.8.0',
-        'numpy',
-        'scipy',
-        'matplotlib',
+        "aspecd>=0.9.0",
+        "numpy",
+        "scipy",
+        "matplotlib",
     ],
     extras_require={
-        'dev': ['prospector[with_pyroma]'],
-        'docs': ['sphinx', 'sphinx-rtd-theme', 'sphinxcontrib-bibtex',
-                 'sphinx-multiversion'],
+        "dev": [
+            "prospector[with_pyroma]",
+            "black",
+        ],
+        "docs": [
+            "sphinx",
+            "sphinx-rtd-theme",
+            "sphinxcontrib-bibtex",
+            "sphinx-multiversion",
+        ],
     },
-    python_requires='>=3.7',
+    python_requires=">=3.7",
 )

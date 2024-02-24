@@ -12,6 +12,7 @@ Currently, there is only one factory class:
     need to explicitly provide either the file format or an importer.
 
 """
+
 import os.path
 
 import aspecd.io
@@ -47,15 +48,16 @@ class DatasetImporterFactory(aspecd.io.DatasetImporterFactory):
 
     def __init__(self):
         super().__init__()
-        self.supported_formats = {"BES3T": [".DTA", ".DSC"],
-                                  "ESPWinEPR": [".spc", ".par"],
-                                  "MagnettechXML": [".xml"],
-                                  "NIEHSDat": [".dat"],
-                                  "NIEHSLmb": [".lmb"],
-                                  "NIEHSExp": [".exp"],
-                                  "Txt": [".txt"],
-                                  "Csv": [".csv"],
-                                  }
+        self.supported_formats = {
+            "BES3T": [".DTA", ".DSC"],
+            "ESPWinEPR": [".spc", ".par"],
+            "MagnettechXML": [".xml"],
+            "NIEHSDat": [".dat"],
+            "NIEHSLmb": [".lmb"],
+            "NIEHSExp": [".exp"],
+            "Txt": [".txt"],
+            "Csv": [".csv"],
+        }
         self.data_format = None
 
     def _get_importer(self):
@@ -80,27 +82,31 @@ class DatasetImporterFactory(aspecd.io.DatasetImporterFactory):
         """
         if os.path.isdir(self.source):
             if self._directory_contains_gon_data():
-                self.data_format = 'GoniometerSweep'
-                importer = \
-                    object_from_class_name('cwepr.io.GoniometerSweepImporter')
+                self.data_format = "GoniometerSweep"
+                importer = object_from_class_name(
+                    "cwepr.io.GoniometerSweepImporter"
+                )
                 importer.source = self.source
                 return importer
             if self._directory_contains_amplitude_sweep_data():
-                self.data_format = 'AmplitudeSweep'
-                importer = \
-                    object_from_class_name('cwepr.io.AmplitudeSweepImporter')
+                self.data_format = "AmplitudeSweep"
+                importer = object_from_class_name(
+                    "cwepr.io.AmplitudeSweepImporter"
+                )
                 importer.source = self.source
                 return importer
             if self._directory_contains_power_sweep_data():
-                self.data_format = 'PowerSweep'
-                importer = \
-                    object_from_class_name('cwepr.io.PowerSweepImporter')
+                self.data_format = "PowerSweep"
+                importer = object_from_class_name(
+                    "cwepr.io.PowerSweepImporter"
+                )
                 importer.source = self.source
                 return importer
         self.data_format = self._find_format()
         if self.data_format:
             importer = object_from_class_name(
-                ".".join(["cwepr", "io", self.data_format + "Importer"]))
+                ".".join(["cwepr", "io", self.data_format + "Importer"])
+            )
             importer.source = self.source
             return importer
 
@@ -117,7 +123,9 @@ class DatasetImporterFactory(aspecd.io.DatasetImporterFactory):
                     detected_format = file_format
             elif not file_extension:
                 for extension in extensions:
-                    file_exists.append(os.path.isfile(self.source + extension))
+                    file_exists.append(
+                        os.path.isfile(self.source + extension)
+                    )
                 if all(file_exists):
                     detected_format = file_format
         return detected_format
@@ -127,7 +135,7 @@ class DatasetImporterFactory(aspecd.io.DatasetImporterFactory):
         if not os.listdir(self.source):
             return False
         for element in os.listdir(self.source):
-            if 'gon' in element:
+            if "gon" in element:
                 check_gon_filenames.append(True)
             else:
                 check_gon_filenames.append(False)
@@ -140,7 +148,7 @@ class DatasetImporterFactory(aspecd.io.DatasetImporterFactory):
         if not os.listdir(self.source):
             return False
         for element in os.listdir(self.source):
-            if 'mod' in element:
+            if "mod" in element:
                 check_modamp_filenames.append(True)
             else:
                 check_modamp_filenames.append(False)
@@ -153,7 +161,7 @@ class DatasetImporterFactory(aspecd.io.DatasetImporterFactory):
         if not os.listdir(self.source):
             return False
         for element in os.listdir(self.source):
-            if 'pow' in element:
+            if "pow" in element:
                 check_powersweep_filenames.append(True)
             else:
                 check_powersweep_filenames.append(False)

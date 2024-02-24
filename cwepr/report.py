@@ -77,14 +77,14 @@ import cwepr.dataset
 class ExperimentalDatasetLaTeXReporter(aspecd.report.LaTeXReporter):
     """Report implementation for cwepr module."""
 
-    def __init__(self, template='', filename=''):
+    def __init__(self, template="", filename=""):
         super().__init__(template=template, filename=filename)
         self.dataset = cwepr.dataset.ExperimentalDataset()
         # private properties
         self._metadata = {}
         self._tasks = collections.OrderedDict()
         self._figure_name = {}
-        self._exclude_from_to_dict.extend(['dataset'])
+        self._exclude_from_to_dict.extend(["dataset"])
 
     def create(self):
         """Perform all methods to generate a report."""
@@ -96,25 +96,26 @@ class ExperimentalDatasetLaTeXReporter(aspecd.report.LaTeXReporter):
         super().create()
 
     def _prepare_metadata(self):
-        self._metadata = self.context['dataset']['metadata']
-        self._metadata['parameter'] = collections.OrderedDict()
+        self._metadata = self.context["dataset"]["metadata"]
+        self._metadata["parameter"] = collections.OrderedDict()
         self._collect_experimental_parameters()
 
     def _collect_experimental_parameters(self):
         """Collect all the metadata keys."""
         for key in self._metadata.keys():
-            if key not in ['sample', 'measurement', 'parameter']:
-                self._metadata['parameter'][key] = \
-                    self._metadata[key]
+            if key not in ["sample", "measurement", "parameter"]:
+                self._metadata["parameter"][key] = self._metadata[key]
 
     def _get_tasks(self):
         for task in self.dataset.tasks:
-            if task['kind'] in ('analysis', 'processing'):
-                self._tasks[(getattr(task['task'],
-                                     task['kind']).description)] = {
-                    'Parameters': getattr(task['task'],
-                                          task['kind']).parameters,
-                    'Comment': getattr(task['task'], task['kind']).comment
+            if task["kind"] in ("analysis", "processing"):
+                self._tasks[
+                    (getattr(task["task"], task["kind"]).description)
+                ] = {
+                    "Parameters": getattr(
+                        task["task"], task["kind"]
+                    ).parameters,
+                    "Comment": getattr(task["task"], task["kind"]).comment,
                 }
 
     def _get_tasks_recursively(self, dict_=None):
@@ -136,31 +137,31 @@ class ExperimentalDatasetLaTeXReporter(aspecd.report.LaTeXReporter):
 
         """
         for task in dict_.tasks:
-            if task['kind'] == 'annotation':
+            if task["kind"] == "annotation":
                 continue
-            if task['kind'] == 'analysis':
-                if isinstance(task['task'].analysis.result,
-                              aspecd.dataset.CalculatedDataset):
-                    self._get_tasks_recursively(task['task'].analysis.result)
+            if task["kind"] == "analysis":
+                if isinstance(
+                    task["task"].analysis.result,
+                    aspecd.dataset.CalculatedDataset,
+                ):
+                    self._get_tasks_recursively(task["task"].analysis.result)
 
-            self._tasks[(getattr(task['task'],
-                                 task['kind']).description)] = {
-                'Parameters': getattr(task['task'],
-                                      task['kind']).parameters,
-                'Comment': getattr(task['task'], task['kind']).comment,
+            self._tasks[(getattr(task["task"], task["kind"]).description)] = {
+                "Parameters": getattr(task["task"], task["kind"]).parameters,
+                "Comment": getattr(task["task"], task["kind"]).comment,
             }
 
     def _create_context(self):
         """Create a dictionary containing all data to write the report."""
-        self.context['TASKS'] = self._tasks
-        self.context['METADATA'] = self._metadata
-        self.context['FIGURENAMES'] = self.includes
+        self.context["TASKS"] = self._tasks
+        self.context["METADATA"] = self._metadata
+        self.context["FIGURENAMES"] = self.includes
 
     def _sanitise_context(self, dict_=None):
         """Removes corresponding keys to empty values from context."""
         tmp_dict = copy.deepcopy(dict_)
         for key, value in dict_.items():
-            if key == 'dataset':
+            if key == "dataset":
                 continue
             if isinstance(value, (collections.OrderedDict, dict)):
                 tmp_dict[key] = self._sanitise_context(value)
@@ -172,14 +173,20 @@ class ExperimentalDatasetLaTeXReporter(aspecd.report.LaTeXReporter):
     def _get_figure_names(self):
         """Get the names of the figures used for the report."""
         for i, _ in enumerate(self.dataset.representations):
-            if self.dataset.representations[i].plot.description \
-                    == '2D plot as scaled image.':
-                self._figure_name['Figure2D'] = \
-                    self.dataset.representations[i].plot.filename
-            elif self.dataset.representations[i].plot.description \
-                    == '1D line plot.':
-                self._figure_name['Figure1D'] = \
-                    self.dataset.representations[i].plot.filename
+            if (
+                self.dataset.representations[i].plot.description
+                == "2D plot as scaled image."
+            ):
+                self._figure_name["Figure2D"] = self.dataset.representations[
+                    i
+                ].plot.filename
+            elif (
+                self.dataset.representations[i].plot.description
+                == "1D line plot."
+            ):
+                self._figure_name["Figure1D"] = self.dataset.representations[
+                    i
+                ].plot.filename
             else:
                 pass
 
@@ -187,13 +194,13 @@ class ExperimentalDatasetLaTeXReporter(aspecd.report.LaTeXReporter):
 class PowerSweepAnalysisReporter(aspecd.report.LaTeXReporter):
     """Create report for power sweep analysis."""
 
-    def __init__(self, template='', filename=''):
+    def __init__(self, template="", filename=""):
         super().__init__(template=template, filename=filename)
         self.dataset = cwepr.dataset.ExperimentalDataset()
         # private properties
         self._metadata = {}
         self._tasks = {}
-        self._exclude_from_to_dict.extend(['dataset'])
+        self._exclude_from_to_dict.extend(["dataset"])
 
     def create(self):
         """Perform all methods to generate a report.
@@ -206,51 +213,50 @@ class PowerSweepAnalysisReporter(aspecd.report.LaTeXReporter):
 
         """
         self._prepare_metadata()
-        #self._get_tasks()
+        # self._get_tasks()
         # TODO: Put figurenames in a dict instead of a list?
-        #self._get_figure_names()
+        # self._get_figure_names()
         self._create_context()
         self.context = self._sanitise_context(self.context)
         super().create()
 
     def _prepare_metadata(self):
-        self._metadata = self.context['dataset']['metadata']
-        self._metadata['parameter'] = collections.OrderedDict()
+        self._metadata = self.context["dataset"]["metadata"]
+        self._metadata["parameter"] = collections.OrderedDict()
         self._collect_experimental_parameters()
 
     def _collect_experimental_parameters(self):
         """Collect all the metadata keys."""
         for key in self._metadata.keys():
-            if key not in ['sample', 'measurement', 'parameter']:
-                self._metadata['parameter'][key] = \
-                    self._metadata[key]
+            if key not in ["sample", "measurement", "parameter"]:
+                self._metadata["parameter"][key] = self._metadata[key]
 
     def _create_context(self):
         """Create a dictionary containing all data to write the report."""
-        self.context['TASKS'] = self._tasks
-        self.context['METADATA'] = self._metadata
-        self.context['FIGURENAMES'] = self.includes
+        self.context["TASKS"] = self._tasks
+        self.context["METADATA"] = self._metadata
+        self.context["FIGURENAMES"] = self.includes
 
     def _get_tasks(self):
-        for task, _ in enumerate(self.context['dataset']['tasks']):
-            task = self.context['dataset']['tasks'][task]
-            if task['kind'] in ('analysis', 'processing'):
-                self._tasks[task['task'][task['kind']]['description']] = {
-                    'Parameters': task['task'][task['kind']]['parameters'],
-                    'Comment': task['task'][task['kind']]['comment']
+        for task, _ in enumerate(self.context["dataset"]["tasks"]):
+            task = self.context["dataset"]["tasks"][task]
+            if task["kind"] in ("analysis", "processing"):
+                self._tasks[task["task"][task["kind"]]["description"]] = {
+                    "Parameters": task["task"][task["kind"]]["parameters"],
+                    "Comment": task["task"][task["kind"]]["comment"],
                 }
-        fit = self.context['FITTING']
-        fit_coeffs = fit.metadata.calculation.parameters['coefficients']
-        further_tasks = self.context['CALCDATA'].tasks
-        self._tasks[further_tasks[0]['task'].analysis.description] = {
-            'Parameters': str(fit_coeffs),
-            'Comment': further_tasks[0]['task'].analysis.comment
+        fit = self.context["FITTING"]
+        fit_coeffs = fit.metadata.calculation.parameters["coefficients"]
+        further_tasks = self.context["CALCDATA"].tasks
+        self._tasks[further_tasks[0]["task"].analysis.description] = {
+            "Parameters": str(fit_coeffs),
+            "Comment": further_tasks[0]["task"].analysis.comment,
         }
 
     def _sanitise_context(self, dict_=None):
         tmp_dict = copy.deepcopy(dict_)
         for key, value in dict_.items():
-            if key == 'dataset':
+            if key == "dataset":
                 continue
             if isinstance(value, (collections.OrderedDict, dict)):
                 tmp_dict[key] = self._sanitise_context(value)
@@ -269,16 +275,16 @@ class DokuwikiCaptionsReporter(aspecd.report.Reporter):
     has to be inserted.
     """
 
-    def __init__(self, template='', filename=''):
+    def __init__(self, template="", filename=""):
         self.filename = filename
-        self.language = 'de'
+        self.language = "de"
         self.template = template if template else self._get_template()
         super().__init__(template=self.template, filename=self.filename)
         self.dataset = cwepr.dataset.ExperimentalDataset()
         # private properties
         self._metadata = {}
         self._figure_name = {}
-        self._exclude_from_to_dict.extend(['dataset'])
+        self._exclude_from_to_dict.extend(["dataset"])
 
     def create(self):
         """Perform all methods to create captions."""
@@ -289,23 +295,26 @@ class DokuwikiCaptionsReporter(aspecd.report.Reporter):
     def _get_template(self):
         language = self.language
         module_rootpath = os.path.split(os.path.abspath(__file__))[0]
-        return os.path.join(module_rootpath, 'templates', language,
-                            'DokuwikiCaption.txt.jinja')
+        return os.path.join(
+            module_rootpath,
+            "templates",
+            language,
+            "DokuwikiCaption.txt.jinja",
+        )
 
     def _prepare_metadata(self):
-        self._metadata = self.context['dataset']['metadata']
-        self._metadata['parameter'] = collections.OrderedDict()
+        self._metadata = self.context["dataset"]["metadata"]
+        self._metadata["parameter"] = collections.OrderedDict()
         self._collect_experimental_parameters()
 
     def _collect_experimental_parameters(self):
         """Collect all the metadata keys."""
         for key in self._metadata.keys():
-            if key not in ['sample', 'measurement', 'parameter']:
-                self._metadata['parameter'][key] = \
-                    self._metadata[key]
+            if key not in ["sample", "measurement", "parameter"]:
+                self._metadata["parameter"][key] = self._metadata[key]
 
     def _create_context(self):
-        self.context['METADATA'] = self._metadata
+        self.context["METADATA"] = self._metadata
 
 
 class InfofileReporter(DokuwikiCaptionsReporter):
@@ -337,19 +346,21 @@ class InfofileReporter(DokuwikiCaptionsReporter):
     """
 
     def __init__(self):
-        self.filename = ''
-        self.language = 'en'
+        self.filename = ""
+        self.language = "en"
         self.template = self._get_template()
         super().__init__(template=self.template, filename=self.filename)
-        self._exclude_from_to_dict.extend(['dataset'])
+        self._exclude_from_to_dict.extend(["dataset"])
 
     def _get_template(self):
         language = self.language
         module_rootpath = os.path.split(os.path.abspath(__file__))[0]
-        return os.path.join(module_rootpath, 'templates', language,
-                            'Infofile.info.jinja')
+        return os.path.join(
+            module_rootpath, "templates", language, "Infofile.info.jinja"
+        )
 
     def _create_context(self):
         super()._create_context()
-        self.context['DATASET_ID'] = \
-            os.path.split(self.context['dataset']['id'])[-1]
+        self.context["DATASET_ID"] = os.path.split(
+            self.context["dataset"]["id"]
+        )[-1]
