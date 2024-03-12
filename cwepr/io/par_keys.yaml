@@ -31,6 +31,9 @@ signal_channel:
   modulation_amplitude:
     value: RMA
     specified_unit: G
+  modulation_frequency:
+    value: RMF
+    specified_unit: kHz
 temperature_control:
   temperature:
     value: TE

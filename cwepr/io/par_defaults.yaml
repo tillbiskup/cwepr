@@ -7,7 +7,7 @@ experiment:
 magnetic_field:
   start:
     unit: 'G'
-    value: 3480.0
+    value: 3455.0
   stop:
     unit: 'G'
     value: 0.0

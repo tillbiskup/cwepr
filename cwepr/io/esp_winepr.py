@@ -157,7 +157,6 @@ Module documentation
 ====================
 
 """
-
 import glob
 import os
 import re
@@ -171,6 +170,113 @@ import aspecd.infofile
 import aspecd.annotation
 import aspecd.metadata
 import aspecd.utils
+
+
+class BrukerESPWinEPRDefaultParameterValues:
+    """
+    Default parameter values for Bruker ESP/WinEPR parameter files.
+
+    Generally, the format consists of two files per each measurement,
+    a binary spectrum file with ``spc`` extension (and different binary
+    encoding, as mentioned above) and an ASCII parameter file with ``par``
+    extension that should be the same for both binary formats, technically
+    speaking. However, EMX spectrometers operated by WinEPR tend to add
+    parameters to the parameter file that are *not* described in the
+    format specification, but *may* be used to discriminate between
+    EMX/WinEPR and ESP formats.
+
+    Just to make life simpler, a parameter file usually contains *only*
+    those parameters that deviate from what Bruker defined as "default"
+    value. Those default values are tabulated in the specification of the
+    file format and are represented by this class. They are used as
+    basis in the :class:`ESPWinEPRImporter` and the values overwritten by
+    the parameters actually read from the ``par`` file. Note that only
+    those parameters necessary to interpret the data are actually used by
+    the named importer.
+
+    Attributes
+    ----------
+    parameters : :class:`dict`
+        Default parameter values for Bruker ESP/WinEPR parameter files.
+
+        Special care is taken to preserve the type of the individual
+        values, particularly in case of numeric values (int or float).
+
+
+    .. note::
+
+        The list of parameters is definitely not complete, although it
+        follows strictly the Bruker file format specification documented
+        above. Particularly in case of two-dimensional experiments such as
+        microwave power sweeps and kinetics (time) scans, additional fields
+        are written that are not part of the specification, but crucial for
+        a sensible interpretation of the data. Furthermore, the only
+        (partly) reliable distinction between ESP and WinEPR formats is by
+        additional fields in the latter as well not part of the format
+        specification.
+
+    """
+
+    def __init__(self):
+        self.parameters = {
+            "JSS": 0,
+            "JON": "",
+            "JRE": "",
+            "JDA": "",
+            "JTM": "",
+            "JCO": "",
+            "JUN": "Gauss",
+            "JNS": 1,
+            "JSD": 0,
+            "JEX": "EPR",
+            "JAR": "ADD",
+            "GST": 3.455e3,
+            "GSI": 5e1,
+            "TE": -1e0,
+            "HCF": 3.480006e+3,
+            "HSW": 5e1,
+            "NGA": -1,
+            "NOF": 0.0,
+            "MF": -1.0,
+            "MP": -1.0,
+            "MCA": -1,
+            "RMA": 1.0,
+            "RRG": 2e4,
+            "RPH": 0.0,
+            "ROF": 0.0,
+            "RCT": 5.12,
+            "RTC": 1.28,
+            "RMF": 1e2,
+            "RHA": 1,
+            "RRE": 1,
+            "RES": 1024,
+            "DTM": 4096.0,
+            "DSD": 0.0,
+            "DCT": 1000,
+            "DTR": 1000,
+            "DCA": "ON",
+            "DCB": "OFF",
+            "DDM": "OFF",
+            "DRS": 4096,
+            "PPL": "OFF",
+            "PFP": 2,
+            "PSP": 1,
+            "POF": 0,
+            "PFR": "ON",
+            "EMF": 3.3521e3,
+            "ESF": 2e1,
+            "ESW": 1e1,
+            "EFD": 9.977e1,
+            "EPF": 1e1,
+            "ESP": 20,
+            "EPP": 63,
+            "EOP": 0,
+            "EPH": 0,
+            "FME": "",
+            "FWI": "",
+            "FOP": 2,
+            "FER": 2.0
+        }
 
 
 class ESPWinEPRImporter(aspecd.io.DatasetImporter):
@@ -308,14 +414,13 @@ class ESPWinEPRImporter(aspecd.io.DatasetImporter):
         self.load_infofile = True
         # private properties
         self._infofile = aspecd.infofile.Infofile()
-        self._par_dict = {}
+        self._par_dict = BrukerESPWinEPRDefaultParameterValues().parameters
         self._mapper_filename = "par_keys.yaml"
         self._metadata_dict = OrderedDict()
         self._file_encoding = ""
 
     def _import(self):
         self._clean_filenames()
-        self._set_defaults()
         self._read_parameter_file()
         self._import_data()
 
@@ -496,7 +601,7 @@ class ESPWinEPRImporter(aspecd.io.DatasetImporter):
         """Transform selected values and units to common units.
 
         Because of information are doubled from the infofile and the
-        par-file, some units are wrong and are corrected manually here.
+        par file, some units are wrong and are corrected manually here.
         """
         # microwave frequency
         if self.dataset.metadata.bridge.mw_frequency.value > 500:
@@ -512,7 +617,7 @@ class ESPWinEPRImporter(aspecd.io.DatasetImporter):
             magnetic_field_object = getattr(
                 self.dataset.metadata.magnetic_field, object_
             )
-            if magnetic_field_object.unit in ("G", ""):
+            if magnetic_field_object.unit in ("Gauss", "G", ""):
                 magnetic_field_object.value /= 10
                 magnetic_field_object.unit = "mT"
             setattr(
@@ -536,6 +641,7 @@ class ESPWinEPRImporter(aspecd.io.DatasetImporter):
         start = self.dataset.metadata.magnetic_field.start.value
         points = int(self.dataset.metadata.magnetic_field.points)
         sweep_width = self.dataset.metadata.magnetic_field.sweep_width.value
+        #-# print("Start:", start, "Points: ", points, "SW:", sweep_width)
         # in WinEPR, Bruker takes the number of points correctly (in contrast
         # to other formats...)
         stop = start + sweep_width
