@@ -23,8 +23,8 @@ class TestESPWinEPRImporter(unittest.TestCase):
             ]
         ]
         self.source = os.path.join(ROOTPATH, "testdata/winepr.par")
-        self.par_filename = 'delete_me.par'
-        self.spc_filename = 'delete_me.spc'
+        self.par_filename = "delete_me.par"
+        self.spc_filename = "delete_me.spc"
 
     def tearDown(self):
         if os.path.exists(self.par_filename):
@@ -177,18 +177,17 @@ class TestESPWinEPRImporter(unittest.TestCase):
 
     def test_creating_spc_file(self):
         data = self.write_spc_file()
-        np.allclose(data, np.fromfile(self.spc_filename, "<f"))
+        np.testing.assert_allclose(data, np.fromfile(self.spc_filename, "<f"))
         data = self.write_spc_file(format="ESP")
-        np.allclose(data, np.fromfile(self.spc_filename, ">i4"))
+        np.testing.assert_allclose(
+            data, np.fromfile(self.spc_filename, ">i4")
+        )
 
     def test_creating_par_file(self):
-        params = {
-            "DOS": "Format",
-            "RES": "2048"
-        }
+        params = {"DOS": "Format", "RES": "2048"}
         self.write_par_file(params)
 
-    def test_read_winepr_powersweep(self):
+    def test_read_winepr_power_sweep(self):
         params = {
             "DOS": "Format",
             "SSX": "1024",
@@ -208,10 +207,19 @@ class TestESPWinEPRImporter(unittest.TestCase):
             "MPS": "-5.000e+000",
         }
         self.write_par_file(params)
-        self.write_spc_file(n_points=5*1024)
+        self.write_spc_file(n_points=5 * 1024)
         importer = cwepr.io.esp_winepr.ESPWinEPRImporter()
         importer.source = self.par_filename
         self.dataset.import_from(importer)
         self.assertListEqual([1024, 5], list(self.dataset.data.data.shape))
         self.assertEqual(340, self.dataset.data.axes[0].values[0])
-        np.allclose(np.linspace(30, 10, 5), self.dataset.data.axes[1].values)
+        # NOTE: This axis should be in mW, not in dB
+        np.testing.assert_allclose(
+            np.asarray([0.2012, 0.63625, 2.012, 6.3625, 20.12]),
+            self.dataset.data.axes[1].values,
+            rtol=1e-2,
+        )
+        self.assertEqual(
+            "microwave power", self.dataset.data.axes[1].quantity
+        )
+        self.assertEqual("mW", self.dataset.data.axes[1].unit)

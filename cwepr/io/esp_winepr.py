@@ -157,6 +157,7 @@ Module documentation
 ====================
 
 """
+
 import glob
 import os
 import re
@@ -233,7 +234,7 @@ class BrukerESPWinEPRDefaultParameterValues:
             "GST": 3.455e3,
             "GSI": 5e1,
             "TE": -1e0,
-            "HCF": 3.480006e+3,
+            "HCF": 3.480006e3,
             "HSW": 5e1,
             "NGA": -1,
             "NOF": 0.0,
@@ -275,7 +276,7 @@ class BrukerESPWinEPRDefaultParameterValues:
             "FME": "",
             "FWI": "",
             "FOP": 2,
-            "FER": 2.0
+            "FER": 2.0,
         }
 
 
@@ -430,7 +431,8 @@ class ESPWinEPRImporter(aspecd.io.DatasetImporter):
 
         self._map_par_file()
         self._set_metadata()
-        self._get_number_of_points()
+        # self._get_number_of_points()
+        self._check_for_2D_dataset()
         self._ensure_common_units()
         self._fill_axes()
 
@@ -468,7 +470,9 @@ class ESPWinEPRImporter(aspecd.io.DatasetImporter):
         complete_filename = self.source + ".spc"
         self._get_file_encoding()
         raw_data = np.fromfile(complete_filename, self._file_encoding)
-        self.dataset.data.data = raw_data
+        self.dataset.data.data = np.reshape(
+            raw_data, (-1, int(self._par_dict["RES"]))
+        ).T
 
     def _get_file_encoding(self):
         if self.parameters["format"].lower() == "auto":
@@ -597,6 +601,55 @@ class ESPWinEPRImporter(aspecd.io.DatasetImporter):
                 metadata_dict["unit"] = value
         return metadata_dict
 
+    def _check_for_2D_dataset(self):
+        """
+        Handle WinEPR files containing 2D data.
+
+        These files do *not* conform to Bruker's own file format
+        specification. This is particularly problematic for the X axis
+        values, as the suggested parameters ``GSI`` and  ``GST`` contain
+        *wrong* values.
+        """
+        # Set first (magnetic field) axis
+        if "XXLB" in self._par_dict and "XXWI" in self._par_dict:
+            self.dataset.metadata.magnetic_field.start.value = self._par_dict[
+                "XXLB"
+            ]
+            self.dataset.metadata.magnetic_field.start.unit = self._par_dict[
+                "XXUN"
+            ]
+            self.dataset.metadata.magnetic_field.sweep_width.value = (
+                self._par_dict["XXWI"]
+            )
+            self.dataset.metadata.magnetic_field.sweep_width.unit = (
+                self._par_dict["XXUN"]
+            )
+
+        def dB2mW(value):
+            # NOTE: Assumes maximum MW power to be 200 mW
+            return 200 * 10 ** (-value / 10)
+
+        def mW2dB(value):
+            # NOTE: Assumes maximum MW power to be 200 mW
+            return 10 * np.log10(200 / value)
+
+        # Check for type of 2D experiment
+        if "JEY" in self._par_dict:
+            if self._par_dict["JEY"] == "mw-power-sweep":
+                self.dataset.data.axes[1].values = dB2mW(
+                    np.linspace(
+                        mW2dB(self._par_dict["MP"]),
+                        mW2dB(self._par_dict["MP"])
+                        + (self._par_dict["XYWI"] * self._par_dict["MPS"]),
+                        int(self._par_dict["XYWI"]) + 1,
+                    )
+                )
+                self.dataset.data.axes[1].quantity = "microwave power"
+                self.dataset.data.axes[1].unit = "mW"
+            elif self._par_dict["JEY"] == "inc-sweep":
+                self.dataset.data.axes[1].quantity = "time"
+                self.dataset.data.axes[1].unit = "index"
+
     def _ensure_common_units(self):
         """Transform selected values and units to common units.
 
@@ -641,7 +694,6 @@ class ESPWinEPRImporter(aspecd.io.DatasetImporter):
         start = self.dataset.metadata.magnetic_field.start.value
         points = int(self.dataset.metadata.magnetic_field.points)
         sweep_width = self.dataset.metadata.magnetic_field.sweep_width.value
-        #-# print("Start:", start, "Points: ", points, "SW:", sweep_width)
         # in WinEPR, Bruker takes the number of points correctly (in contrast
         # to other formats...)
         stop = start + sweep_width
@@ -660,8 +712,3 @@ class ESPWinEPRImporter(aspecd.io.DatasetImporter):
         )
 
         self.dataset.data.axes[0].values = magnetic_field_axis
-
-    def _get_number_of_points(self):
-        self.dataset.metadata.magnetic_field.points = len(
-            self.dataset.data.data
-        )
