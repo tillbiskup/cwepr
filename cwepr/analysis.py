@@ -867,8 +867,10 @@ class FitOnData(aspecd.analysis.SingleAnalysisStep):
 
     def _get_curve(self):
         self._curve = self.create_dataset()
-        slope = np.polynomial.Polynomial(self.parameters["coefficients"])
-        self._curve.data.data = slope(self.dataset.data.axes[0].values)
+        # slope = np.polynomial.Polynomial(self.parameters["coefficients"])
+        self._curve.data.data = np.polyval(
+            self.parameters["coefficients"], self.dataset.data.axes[0].values
+        )
         self._curve.data.axes[0] = self.dataset.data.axes[0]
 
     def _assign_result(self):
