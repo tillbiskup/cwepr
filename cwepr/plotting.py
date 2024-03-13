@@ -406,7 +406,7 @@ class PowerSweepAnalysisPlotter(aspecd.plotting.MultiPlotter1D):
             return np.sqrt(values)
 
         power_axis = self.ax.secondary_xaxis(
-            "top", functions=(backward, forward)
+            "top", functions=(forward, backward)
         )
         power_axis.set_xlabel("$mw\\ power$")
         power_axis.tick_params(labelrotation=90)
