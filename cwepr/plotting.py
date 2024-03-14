@@ -408,7 +408,7 @@ class PowerSweepAnalysisPlotter(aspecd.plotting.MultiPlotter1D):
         power_axis = self.ax.secondary_xaxis(
             "top", functions=(forward, backward)
         )
-        power_axis.set_xlabel("$mw\\ power$")
+        power_axis.set_xlabel("$mw\\ power$ / mW")
         power_axis.tick_params(labelrotation=90)
 
 
