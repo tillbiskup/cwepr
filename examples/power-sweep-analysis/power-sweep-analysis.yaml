@@ -16,7 +16,7 @@ tasks:
 - kind: processing
   type: BaselineCorrection
 - kind: singleanalysis
-  type: AmplitudeVsPower
+  type: AmplitudeVsSqrtPower
   apply_to:
   - BDPA-2DFieldPower
   result: power_sweep_analysis

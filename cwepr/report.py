@@ -121,7 +121,7 @@ class ExperimentalDatasetLaTeXReporter(aspecd.report.LaTeXReporter):
     def _get_tasks_recursively(self, dict_=None):
         """Gets tasks recursively.
 
-        Is able to get all the tasks performed on an single dataset what is
+        Is able to get all the tasks performed on a single dataset what is
         only possible thanks to *call by reference* of the history records (
         ?). The dataset initially containing all the data has to be given in
         the recipe explicitly.
@@ -132,8 +132,8 @@ class ExperimentalDatasetLaTeXReporter(aspecd.report.LaTeXReporter):
         .. note: :
             Currently, the order of the tasks is *not* preserved because of
             the recursive search and the third step appears before the
-            second. Therefore rework this with a different method, probably
-            an other *context* keyword in a recipe.
+            second. Therefore, rework this with a different method, probably
+            another *context* keyword in a recipe.
 
         """
         for task in dict_.tasks:

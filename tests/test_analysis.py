@@ -134,9 +134,9 @@ class TestAmplitude(unittest.TestCase):
         self.assertEqual(np.ndarray, type(analysis.result))
 
 
-class TestAmplitudeVsPower(unittest.TestCase):
+class TestAmplitudeVsSqrtPower(unittest.TestCase):
     def setUp(self):
-        self.analysator = cwepr.analysis.AmplitudeVsPower()
+        self.analysator = cwepr.analysis.AmplitudeVsSqrtPower()
         self.dataset = cwepr.dataset.ExperimentalDataset()
         data = np.sin(np.linspace(0, 2 * np.pi, num=500))
         self.dataset.data.data = np.transpose(np.tile(data, (4, 1)))
@@ -146,7 +146,7 @@ class TestAmplitudeVsPower(unittest.TestCase):
         self.dataset.data.axes[1].unit = "mW"
 
     def test_instantiate_class(self):
-        cwepr.analysis.AmplitudeVsPower()
+        cwepr.analysis.AmplitudeVsSqrtPower()
 
     def test_has_description(self):
         self.assertNotIn("abstract", self.analysator.description.lower())

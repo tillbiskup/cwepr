@@ -334,7 +334,7 @@ class PowerSweepAnalysisPlotter(aspecd.plotting.MultiPlotter1D):
           - PowerSweep
         tasks:
           - kind: singleanalysis
-            type: AmplitudeVsPower
+            type: AmplitudeVsSqrtPower
             apply_to:
               - PowerSweep
             result: power_sweep_analysis

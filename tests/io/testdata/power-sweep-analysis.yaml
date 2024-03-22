@@ -6,7 +6,7 @@ datasets:
 
 tasks:
   - kind: singleanalysis
-    type: AmplitudeVsPower
+    type: AmplitudeVsSqrtPower
     result: calcAmplitudePower
     
   - kind: singleanalysis

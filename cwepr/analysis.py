@@ -40,7 +40,7 @@ Concrete analysis steps
 
   Determine amplitude of dataset.
 
-* :class:`AmplitudeVsPower`
+* :class:`AmplitudeVsSqrtPower`
 
   Return a calculated dataset to further analyse a power-sweep experiment.
 
@@ -75,6 +75,8 @@ import scipy.constants
 import aspecd.analysis
 import aspecd.dataset
 import aspecd.utils
+
+import cwepr.analysis
 
 
 class FieldCalibration(aspecd.analysis.SingleAnalysisStep):
@@ -117,7 +119,7 @@ class FieldCalibration(aspecd.analysis.SingleAnalysisStep):
 
         The method currently relies on the recorded spectrum of the field
         standard to consist of a single symmetric line accurately recorded
-        with sufficient resolution. The *g* value
+        with sufficient resolution. 
 
 
     Currently, the following field standards are supported:
@@ -603,7 +605,7 @@ class Amplitude(aspecd.analysis.SingleAnalysisStep):
             )
 
 
-class AmplitudeVsPower(aspecd.analysis.SingleAnalysisStep):
+class AmplitudeVsSqrtPower(aspecd.analysis.SingleAnalysisStep):
     r"""Return a calculated dataset to further analyse a power-sweep experiment.
 
     The analysis of a power sweep results in a plot of the peak amplitude
@@ -627,7 +629,7 @@ class AmplitudeVsPower(aspecd.analysis.SingleAnalysisStep):
     .. code-block:: yaml
 
         - kind: singleanalysis
-          type: AmplitudeVsPower
+          type: AmplitudeVsSqrtPower
           result: power_sweep_analysis
 
     A more complete example of a power sweep analysis including linear fit
@@ -640,7 +642,7 @@ class AmplitudeVsPower(aspecd.analysis.SingleAnalysisStep):
           - PowerSweep
         tasks:
           - kind: singleanalysis
-            type: AmplitudeVsPower
+            type: AmplitudeVsSqrtPower
             apply_to:
               - PowerSweep
             result: power_sweep_analysis
@@ -676,6 +678,9 @@ class AmplitudeVsPower(aspecd.analysis.SingleAnalysisStep):
     function of the square root of the microwave power, the latter usually
     in mW), and a linear fit covering in this case the first five data points.
 
+
+    .. versionchanged:: 0.5.2
+        rename class to reflect the processing
     """
 
     def __init__(self):
@@ -741,6 +746,8 @@ class AmplitudeVsPower(aspecd.analysis.SingleAnalysisStep):
         self.result.data.axes[0].quantity = "square root of mw power"
         self.result.data.axes[1].quantity = "EPR amplitude"
 
+class AmplitudeVsPower(cwepr.analysis.AmplitudeVsSqrtPower):
+    """Alias to keep the old name and avoid hard breaks. """
 
 class FitOnData(aspecd.analysis.SingleAnalysisStep):
     # noinspection PyUnresolvedReferences
@@ -1008,3 +1015,4 @@ class AreaUnderCurve(aspecd.analysis.SingleAnalysisStep):
         y_values = self.dataset.data.data
 
         self.result = np.trapz(y_values, x_values)
+        print(self.result)
