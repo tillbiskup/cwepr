@@ -76,8 +76,6 @@ import aspecd.analysis
 import aspecd.dataset
 import aspecd.utils
 
-import cwepr.analysis
-
 
 class FieldCalibration(aspecd.analysis.SingleAnalysisStep):
     # noinspection PyUnresolvedReferences
@@ -681,6 +679,7 @@ class AmplitudeVsSqrtPower(aspecd.analysis.SingleAnalysisStep):
 
     .. versionchanged:: 0.5.2
         rename class to reflect the processing
+
     """
 
     def __init__(self):
@@ -746,8 +745,10 @@ class AmplitudeVsSqrtPower(aspecd.analysis.SingleAnalysisStep):
         self.result.data.axes[0].quantity = "square root of mw power"
         self.result.data.axes[1].quantity = "EPR amplitude"
 
-class AmplitudeVsPower(cwepr.analysis.AmplitudeVsSqrtPower):
-    """Alias to keep the old name and avoid hard breaks. """
+
+class AmplitudeVsPower(AmplitudeVsSqrtPower):
+    """Alias to keep the old name and avoid hard breaks."""
+
 
 class FitOnData(aspecd.analysis.SingleAnalysisStep):
     # noinspection PyUnresolvedReferences
@@ -1015,4 +1016,3 @@ class AreaUnderCurve(aspecd.analysis.SingleAnalysisStep):
         y_values = self.dataset.data.data
 
         self.result = np.trapz(y_values, x_values)
-        print(self.result)
