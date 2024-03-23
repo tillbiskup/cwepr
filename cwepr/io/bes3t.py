@@ -88,7 +88,7 @@ class BES3TImporter(aspecd.io.DatasetImporter):
 
     def _set_dataset_dimension(self):
         for key in ("YPTS", "XPTS"):
-            if key in self._dsc_dict.keys():
+            if key in self._dsc_dict:
                 self._dimensions.append(int(self._dsc_dict[key]))
         if len(self._dimensions) == 2:
             self._is_two_dimensional = True
@@ -147,7 +147,7 @@ class BES3TImporter(aspecd.io.DatasetImporter):
             if isinstance(value, dict):
                 metadata_dict[key] = {}
                 self._traverse(value, metadata_dict[key])
-            elif value in self._dsc_dict.keys():
+            elif value in self._dsc_dict:
                 metadata_dict[key] = self._dsc_dict[value]
             elif key == "specified_unit":
                 metadata_dict["unit"] = value

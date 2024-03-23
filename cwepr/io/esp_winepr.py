@@ -55,67 +55,67 @@ axis of your data:
 Following is the complete list of parameters, together with their default
 values and their meaning, as given in the official specification:
 
-======= ================ =========================================================
-Keyword Default Value    Definition
-======= ================ =========================================================
-JSS     0                spectrum status word
-JON                      operator name
-JRE                      resonator name
-JDA                      date of acquisition
-JTM                      time of acquisition
-JCO                      comment
-JUN     Gauss            units (Gauss/Mhz/sec/...)
-JNS     1                Scans to do
-JSD     0                Scans done
-JEX     EPR              Type of experiment
-JAR     ADD              Mode (Add/Replace)
-GST     3.455000e+03     left border of display
-GSI     5.000000e+01     width of display
-TE      -l.000000e+00    temperature (-1 means not set by software)
-HCF     3.480006e+03     ER032M center field
-HSW     5.000000e+01     ER032M sweep width
-NGA     -1               ER035M gaussmeter address (-1 means not connected)
-NOF     0.000000e+00     ER035M gaussmeter field offset
-MF      -1.000000e+00    Microwave frequency (-1 means no input made)
-MP      -1.000000e+00    Microwave power
-MCA     -1               Microwave counter address (-1 means no counter connected)
-RMA     1.000000e+00     ER023M modulation amplitude [Gauss]
-RRG     2.000000e+04     ER023M receiver gain
-RPH     0                ER023M phase
-ROF     0                ER023M offset
-RCT     5.120000e+00     ER023M conversion time
-RTC     1.280000e+00     ER023M time constant
-RMF     1.000000e+02     ER023M modulation frequency [kHz]
-RHA     1                ER023M harmonic
-RRE     1                ER023M resonator
-RES     1024             resolution of ER023M spectra
-DTM     4.096000e+00     digitizer sweep time [sec]
-DSD     0.000000e+00     digitizer sweep delay [sec]
-DCT     1000             digitizer conversion time [νsec]
-DTR     1000             digitizer trigger rate
-DCA     ON               channel A
-DCB     OFF              channel B
-DDM     OFF              DUAL mode
-DRS     4096             digitizer resolution in x-axis
-PPL     OFF              parameter plot
-PFP     2                frame pen
-PSP     1                spectra pen
-POF     0                plot offset
-PFR     ON               frame On/OFF
-EMF     3.352100e+03     ENMR field
-ESF     2.000000e+01     ENMR start frequency [MHz]
-ESW     1.000000e+01     ENMR sweep width [MHz]
-EFD     9.977000e+0l     FM-modulation [kHz]
-EPF     1.000000e+01     ENMR pump frequency [MHz]
-ESP     20               ENMR RF attenuator [dB]
-EPP     63               ENMR pump power attenuator [dB]
-EOP     0                ENMR total power attenuator [dB]
-EPH     0                ENMR phase
-FME                      filter method
-FWI                      filter width
-FOP     2                filter order of polynomial
-FER     2.000000e+00     filter value 'alpha'
-======= ================ =========================================================
+======= ============== =========================================================
+Keyword Default Value  Definition
+======= ============== =========================================================
+JSS     0              spectrum status word
+JON                    operator name
+JRE                    resonator name
+JDA                    date of acquisition
+JTM                    time of acquisition
+JCO                    comment
+JUN     Gauss          units (Gauss/Mhz/sec/...)
+JNS     1              Scans to do
+JSD     0              Scans done
+JEX     EPR            Type of experiment
+JAR     ADD            Mode (Add/Replace)
+GST     3.455000e+03   left border of display
+GSI     5.000000e+01   width of display
+TE      -l.000000e+00  temperature (-1 means not set by software)
+HCF     3.480006e+03   ER032M center field
+HSW     5.000000e+01   ER032M sweep width
+NGA     -1             ER035M gaussmeter address (-1 means not connected)
+NOF     0.000000e+00   ER035M gaussmeter field offset
+MF      -1.000000e+00  Microwave frequency (-1 means no input made)
+MP      -1.000000e+00  Microwave power
+MCA     -1             Microwave counter address (-1 means no counter connected)
+RMA     1.000000e+00   ER023M modulation amplitude [Gauss]
+RRG     2.000000e+04   ER023M receiver gain
+RPH     0              ER023M phase
+ROF     0              ER023M offset
+RCT     5.120000e+00   ER023M conversion time
+RTC     1.280000e+00   ER023M time constant
+RMF     1.000000e+02   ER023M modulation frequency [kHz]
+RHA     1              ER023M harmonic
+RRE     1              ER023M resonator
+RES     1024           resolution of ER023M spectra
+DTM     4.096000e+00   digitizer sweep time [sec]
+DSD     0.000000e+00   digitizer sweep delay [sec]
+DCT     1000           digitizer conversion time [νsec]
+DTR     1000           digitizer trigger rate
+DCA     ON             channel A
+DCB     OFF            channel B
+DDM     OFF            DUAL mode
+DRS     4096           digitizer resolution in x-axis
+PPL     OFF            parameter plot
+PFP     2              frame pen
+PSP     1              spectra pen
+POF     0              plot offset
+PFR     ON             frame On/OFF
+EMF     3.352100e+03   ENMR field
+ESF     2.000000e+01   ENMR start frequency [MHz]
+ESW     1.000000e+01   ENMR sweep width [MHz]
+EFD     9.977000e+0l   FM-modulation [kHz]
+EPF     1.000000e+01   ENMR pump frequency [MHz]
+ESP     20             ENMR RF attenuator [dB]
+EPP     63             ENMR pump power attenuator [dB]
+EOP     0              ENMR total power attenuator [dB]
+EPH     0              ENMR phase
+FME                    filter method
+FWI                    filter width
+FOP     2              filter order of polynomial
+FER     2.000000e+00   filter value 'alpha'
+======= ============== =========================================================
 
 Note that usually, only a rather small subset of all these possible values
 are of relevance, particularly in case of the EMX spectrometer series only
@@ -128,29 +128,29 @@ available that should be documented here for completeness as well:
 
 .. code-block:: text
 
-    JSS is a number indicating the status of the spectrum. It is a decimal
-    number. The following describes what the numbers mean in hex:
+   JSS is a number indicating the status of the spectrum. It is a decimal
+   number. The following describes what the numbers mean in hex:
 
-    /* CSPS: current spectrum status                                           */
-    #define s_DUAL 0x00000001L  /* current status : DUAL can change            */
-    #define s_2D   0x00000002L  /* manipulated spectrum is 2D-spec.            */
-    #define s_FT   0x00000004L  /* Fourier Transformation was done             */
-    #define s_MAN0 0x00000008L  /* 'soft' manipulation were done               */
-    #define s_MAN1 0x00000010L  /* 'hard' manipulation were done               */
-    /* 'soft' manipulation: baseline correction, addition of constant values   */
-    /* or spectrum fits, multiplication with constant values, phase correction */
-    /* 'hard' manipulation: add. and mult. with extern data (other spectra..)  */
-    /* zero function, smoothing op., expansion (only when fixed);              */
-    /* org. information lost!!!                                                */
-    #define s_PROT 0x00000020L  /* Protection flag: manip. not allowed         */
-    #define s_VEPR 0x00000040L  /* VEPR spectrum                               */
-    #define s_POW  0x00000080L  /* power spectrum                              */
-    #define s_ABS  0x00000100L  /* absolute value spectrum                     */
-    #define s_FTX  0x00000200L  /* Fourier Trans. in x-dir. of 2D-spectrum     */
-    #define s_FTY  0x00000400L  /* FT in y-dir. of 2D-spectrum                 */
-    /* s_FTX and s_FTY : FT on all slices off the spectrum; single slice: s_FT */
-    #define s_POW2 0x00000800L  /* 2D power spectrum                           */
-    #define s_ABS2 0x00001000L  /* 2D absolute value spectrum                  */
+   /* CSPS: current spectrum status                                           */
+   #define s_DUAL 0x00000001L  /* current status : DUAL can change            */
+   #define s_2D   0x00000002L  /* manipulated spectrum is 2D-spec.            */
+   #define s_FT   0x00000004L  /* Fourier Transformation was done             */
+   #define s_MAN0 0x00000008L  /* 'soft' manipulation were done               */
+   #define s_MAN1 0x00000010L  /* 'hard' manipulation were done               */
+   /* 'soft' manipulation: baseline correction, addition of constant values   */
+   /* or spectrum fits, multiplication with constant values, phase correction */
+   /* 'hard' manipulation: add. and mult. with extern data (other spectra..)  */
+   /* zero function, smoothing op., expansion (only when fixed);              */
+   /* org. information lost!!!                                                */
+   #define s_PROT 0x00000020L  /* Protection flag: manip. not allowed         */
+   #define s_VEPR 0x00000040L  /* VEPR spectrum                               */
+   #define s_POW  0x00000080L  /* power spectrum                              */
+   #define s_ABS  0x00000100L  /* absolute value spectrum                     */
+   #define s_FTX  0x00000200L  /* Fourier Trans. in x-dir. of 2D-spectrum     */
+   #define s_FTY  0x00000400L  /* FT in y-dir. of 2D-spectrum                 */
+   /* s_FTX and s_FTY : FT on all slices off the spectrum; single slice: s_FT */
+   #define s_POW2 0x00000800L  /* 2D power spectrum                           */
+   #define s_ABS2 0x00001000L  /* 2D absolute value spectrum                  */
 
 
 Module documentation
@@ -595,13 +595,14 @@ class ESPWinEPRImporter(aspecd.io.DatasetImporter):
             if isinstance(value, dict):
                 metadata_dict[key] = {}
                 self._traverse(value, metadata_dict[key])
-            elif value in self._par_dict.keys():
+            elif value in self._par_dict:
                 metadata_dict[key] = self._par_dict[value]
             elif key == "specified_unit":
                 metadata_dict["unit"] = value
         return metadata_dict
 
-    def _check_for_2D_dataset(self):
+    # noinspection PyPep8Naming
+    def _check_for_2D_dataset(self):  # noqa: N802
         """
         Handle WinEPR files containing 2D data.
 
@@ -625,11 +626,11 @@ class ESPWinEPRImporter(aspecd.io.DatasetImporter):
                 self._par_dict["XXUN"]
             )
 
-        def dB2mW(value):
+        def dB2mW(value):  # noqa: N802
             # NOTE: Assumes maximum MW power to be 200 mW
             return 200 * 10 ** (-value / 10)
 
-        def mW2dB(value):
+        def mW2dB(value):  # noqa: N802
             # NOTE: Assumes maximum MW power to be 200 mW
             return 10 * np.log10(200 / value)
 

@@ -659,7 +659,7 @@ class AmplitudeSweepImporter(aspecd.io.DatasetImporter):
             0
         ].metadata.experiment.type
         self.dataset.metadata.experiment.variable_parameter = (
-            "Modulation " "Amplitude"
+            "Modulation Amplitude"
         )
         self.dataset.metadata.signal_channel.accumulations = self._data[
             0
@@ -893,7 +893,7 @@ class PowerSweepImporter(aspecd.io.DatasetImporter):
             0
         ].metadata.experiment.type
         self.dataset.metadata.experiment.variable_parameter = (
-            "Modulation " "Amplitude"
+            "Modulation Amplitude"
         )
         self.dataset.metadata.signal_channel.accumulations = self._data[
             0
