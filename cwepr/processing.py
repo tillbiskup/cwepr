@@ -442,9 +442,12 @@ class FieldCorrection(aspecd.processing.SingleProcessingStep):
 
     Attributes
     ----------
-    parameters['offset']: :class:`float`
-        Offset to be added to the field axis values. Should be given in the
-        unit of the axis.
+    parameters : :class:`dict`
+        All parameters necessary for this step.
+
+        offset : :class:`float`
+            Offset to be added to the field axis values. Should be given in the
+            unit of the axis.
 
 
     See Also
@@ -518,16 +521,19 @@ class FrequencyCorrection(aspecd.processing.SingleProcessingStep):
 
     Attributes
     ----------
-    self.parameters['frequency']
-        Frequency to correct for.
+    parameters : :class:`dict`
+        All parameters necessary for this step.
 
-        Default: 9.5
+        frequency : :class:`float`
+            Frequency to correct for.
 
-    self.parameters['kind']
-        Method used for frequency correction. Can be ``offset`` or
-        ``proportional``.
+            Default: 9.5
 
-        Default: proportional
+        kind : :class:`str`
+            Method used for frequency correction. Can be ``offset`` or
+            ``proportional``.
+
+            Default: proportional
 
 
     .. versionchanged:: 0.4
@@ -882,8 +888,11 @@ class AxisInterpolation(aspecd.processing.SingleProcessingStep):
 
     Attributes
     ----------
-    parameters['points']
-        Number of points that should be interpolated to.
+    parameters : :class:`dict`
+        All parameters necessary for this step.
+
+        points : :class:`int`
+            Number of points that should be interpolated to.
 
     """
 

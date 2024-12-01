@@ -10,6 +10,25 @@ Version 0.6.0
 Not yet released
 
 
+New features
+------------
+
+* :class:`cwepr.io.esp_winepr.ESPWinEPRImporter` can import 2D datasets (power sweep, kinetic sweep)
+
+
+Changes
+-------
+
+* :class:`cwepr.analysis.AmplitudeVsSqrtPower` was renamed from ``AmplitudeVsPower``; an alias has been created to keep old code working.
+
+
+Fixes
+-----
+
+* :class:`cwepr.analysis.FitOnData` writes correct order of coefficients
+* :class:`cwepr.plotting.PowerSweepAnalysisPlotter` has correct upper axis and unit in axis label
+
+
 Version 0.5.1
 =============
 
